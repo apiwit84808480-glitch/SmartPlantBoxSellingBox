@@ -1,0 +1,125 @@
+[
+  {
+    "id": 1,
+    "name": "กล่องพื้นฐาน - Arduino",
+    "basePrice": 2500,
+    "controller": "Arduino Uno",
+    "isBestSeller": false,
+    "features": [
+      "ระบบควบคุมด้วย Arduino Uno",
+      "เซ็นเซอร์วัดความชื้นในดิน",
+      "ระบบปั๊มน้ำอัตโนมัติ",
+      "ระบบพ่นหมอก",
+      "ไฟ LED เติบโตพืช"
+    ],
+    "sensors": [
+      { "name": "เซ็นเซอร์ความชื้นดิน", "price": 150, "included": true },
+      { "name": "เซ็นเซอร์ความชื้นอากาศ", "price": 200, "included": true },
+      { "name": "เซ็นเซอร์อุณหภูมิ", "price": 180, "included": true },
+      { "name": "เซ็นเซอร์แสง", "price": 120, "included": false },
+      { "name": "เซ็นเซอร์ NPK", "price": 1200, "included": false }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "กล่องมาตรฐาน - ESP32",
+    "basePrice": 3900,
+    "controller": "ESP32",
+    "isBestSeller": true,
+    "features": [
+      "ระบบควบคุมด้วย ESP32 (WiFi + Bluetooth)",
+      "แอปพลิเคชันควบคุมผ่านมือถือ",
+      "เซ็นเซอร์วัดความชื้นแบบแม่นยำ",
+      "ระบบพ่นหมอกปรับระดับได้",
+      "ไฟ LED Full Spectrum"
+    ],
+    "sensors": [
+      { "name": "เซ็นเซอร์ความชื้นดิน Capacitive", "price": 250, "included": true },
+      { "name": "เซ็นเซอร์ความชื้นอากาศ DHT22", "price": 350, "included": true },
+      { "name": "เซ็นเซอร์อุณหภูมิ DS18B20", "price": 280, "included": true },
+      { "name": "เซ็นเซอร์แสง BH1750", "price": 220, "included": true },
+      { "name": "เซ็นเซอร์ NPK แบบ RS485", "price": 1800, "included": false }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "กล่องโปร - Raspberry Pi",
+    "basePrice": 6500,
+    "controller": "Raspberry Pi 4",
+    "isBestSeller": false,
+    "features": [
+      "ระบบควบคุมด้วย Raspberry Pi 4",
+      "หน้าจอ Touchscreen 7 นิ้ว",
+      "กล้องตรวจสอบการเจริญเติบโต",
+      "AI วิเคราะห์สุขภาพพืช",
+      "Cloud Storage บันทึกข้อมูล"
+    ],
+    "sensors": [
+      { "name": "เซ็นเซอร์ความชื้นดิน Industrial", "price": 450, "included": true },
+      { "name": "เซ็นเซอร์ความชื้นอากาศ BME280", "price": 550, "included": true },
+      { "name": "เซ็นเซอร์อุณหภูมิแบบแม่นยำ", "price": 480, "included": true },
+      { "name": "เซ็นเซอร์ NPK แบบแม่นยำสูง", "price": 2500, "included": true },
+      { "name": "เซ็นเซอร์ pH ดิน", "price": 950, "included": true }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "กล่องฉุกเฉิน - Arduino Nano",
+    "basePrice": 1800,
+    "controller": "Arduino Nano",
+    "isBestSeller": true,
+    "features": [
+      "เหมาะสำหรับผู้ประสบภัย",
+      "ติดตั้งง่าย รวดเร็ว",
+      "ระบบปั๊มน้ำพื้นฐาน",
+      "เซ็นเซอร์ความชื้นดิน",
+      "กล่องพลาสติกราคาประหยัด"
+    ],
+    "sensors": [
+      { "name": "เซ็นเซอร์ความชื้นดิน", "price": 120, "included": true },
+      { "name": "เซ็นเซอร์อุณหภูมิ", "price": 150, "included": false },
+      { "name": "เซ็นเซอร์แสง", "price": 100, "included": false }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "กล่องคอนโด - ESP8266",
+    "basePrice": 2900,
+    "controller": "ESP8266",
+    "isBestSeller": false,
+    "features": [
+      "ออกแบบสำหรับพื้นที่เล็ก",
+      "ระบบ WiFi ควบคุมผ่านมือถือ",
+      "ระบบน้ำอัตโนมัติ",
+      "ไฟ LED ประหยัดพลังงาน",
+      "ไร้เสียงรบกวน"
+    ],
+    "sensors": [
+      { "name": "เซ็นเซอร์ความชื้นดิน", "price": 180, "included": true },
+      { "name": "เซ็นเซอร์ความชื้นอากาศ", "price": 250, "included": true },
+      { "name": "เซ็นเซอร์อุณหภูมิ", "price": 200, "included": true },
+      { "name": "เซ็นเซอร์แสง", "price": 150, "included": false }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "กล่องเกษตร - ESP32 Dual",
+    "basePrice": 8900,
+    "controller": "ESP32 Dual Core",
+    "isBestSeller": false,
+    "features": [
+      "สำหรับเกษตรกรมืออาชีพ",
+      "ควบคุมได้หลายโซน (4 โซน)",
+      "ระบบให้น้ำและปุ๋ยอัตโนมัติ",
+      "รายงานผลผ่าน Line/Email",
+      "กล่องกันน้ำ IP65"
+    ],
+    "sensors": [
+      { "name": "เซ็นเซอร์ความชื้นดิน (4 ตัว)", "price": 1200, "included": true },
+      { "name": "เซ็นเซอร์ NPK", "price": 1800, "included": true },
+      { "name": "เซ็นเซอร์ pH", "price": 650, "included": true },
+      { "name": "เซ็นเซอร์ EC", "price": 850, "included": true },
+      { "name": "เซ็นเซอร์ระดับน้ำ", "price": 300, "included": false }
+    ]
+  }
+]

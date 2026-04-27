@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Plant Box V4 - Intelligent Plant Growing System</title>
+    <meta name="description" content="Smart Plant Box V4 — automated plant growing system with sensors, watering, lighting and AI monitoring. Affordable kits priced for the Thai market.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo" onclick="showMainPage()" style="cursor:pointer;">
+                <i class="fas fa-leaf"></i>
+                Smart Plant Box
+            </div>
+            <div class="nav-links">
+                <a href="#" onclick="showMainPage(); return false;">Home</a>
+                <a href="#" onclick="showProductsSection(); return false;">Products</a>
+                <a href="#" onclick="showAboutPage(); return false;">About Us</a>
+                <a href="#" onclick="showContactPage(); return false;">Contact</a>
+                <a href="#" class="cart-btn" onclick="showCart(); return false;">
+                    <i class="fas fa-shopping-cart"></i>
+                    Cart (<span id="cart-count">0</span>)
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN PAGE -->
+    <div id="main-page" class="page-section active">
+
+        <!-- Hero Slider -->
+        <section class="hero-slider" id="home">
+            <div class="slider-container">
+                <div class="slide active" style="background-image: linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.35)), url('images/slide1.jpg');">
+                    <div class="slide-content">
+                        <h1>Smart Planting System</h1>
+                        <p>Complete automated plant growing system — affordable, modular and built for everyone.</p>
+                        <button class="btn btn-primary" onclick="scrollToSection('userTypeSection')">
+                            <i class="fas fa-shopping-cart"></i> Order Now
+                        </button>
+                    </div>
+                </div>
+                <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.38)), url('images/slide2.jpg');">
+                    <div class="slide-content">
+                        <h1>For Disaster Victims &amp; Farmers</h1>
+                        <p>Emergency planting and smart agriculture — increase yield, reduce costs.</p>
+                        <button class="btn btn-primary" onclick="scrollToSection('userTypeSection')">
+                            <i class="fas fa-users"></i> View Products
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button class="slider-btn prev" onclick="changeSlide(-1)" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+            <button class="slider-btn next" onclick="changeSlide(1)" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+            <div class="slider-dots">
+                <span class="dot active" onclick="goToSlide(0)"></span>
+                <span class="dot" onclick="goToSlide(1)"></span>
+            </div>
+        </section>
+
+        <!-- User Type Selection -->
+        <section class="user-selection" id="userTypeSection">
+            <h2 class="section-title">Select Your Use Case</h2>
+            <div class="user-types">
+                <div class="user-card" onclick="selectUserType('disaster')">
+                    <div class="user-icon"><i class="fas fa-home"></i></div>
+                    <h3>For Disaster Victims</h3>
+                    <p>Emergency plant growing system for disaster victims</p>
+                    <div class="card-features">
+                        <span class="feature-badge"><i class="fas fa-bolt"></i> Quick Setup</span>
+                        <span class="feature-badge"><i class="fas fa-dollar-sign"></i> Budget-Friendly</span>
+                    </div>
+                </div>
+                <div class="user-card" onclick="selectUserType('farmer')">
+                    <div class="user-icon"><i class="fas fa-tractor"></i></div>
+                    <h3>For Farmers</h3>
+                    <p>Smart agriculture system — increase yield, reduce costs</p>
+                    <div class="card-features">
+                        <span class="feature-badge"><i class="fas fa-chart-line"></i> High Yield</span>
+                        <span class="feature-badge"><i class="fas fa-robot"></i> Automated</span>
+                    </div>
+                </div>
+                <div class="user-card" onclick="selectUserType('condo')">
+                    <div class="user-icon"><i class="fas fa-building"></i></div>
+                    <h3>For Condominiums</h3>
+                    <p>Grow plants in limited spaces — perfect for urban living</p>
+                    <div class="card-features">
+                        <span class="feature-badge"><i class="fas fa-compress-arrows-alt"></i> Compact</span>
+                        <span class="feature-badge"><i class="fas fa-leaf"></i> Space-Saving</span>
+                    </div>
+                </div>
+                <div class="user-card" onclick="selectUserType('custom')">
+                    <div class="user-icon"><i class="fas fa-cogs"></i></div>
+                    <h3>Custom</h3>
+                    <p>Customize according to your specific needs</p>
+                    <div class="card-features">
+                        <span class="feature-badge"><i class="fas fa-sliders-h"></i> Flexible</span>
+                        <span class="feature-badge"><i class="fas fa-bullseye"></i> Tailored</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Custom Configuration Form -->
+        <section class="custom-form" id="customForm">
+            <button class="back-btn" onclick="backToUserType()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div class="form-container custom-container">
+                <h2 class="section-title">Custom Configuration</h2>
+                <form id="customConfigForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-microchip"></i> Microcontroller</label>
+                        <select id="microcontroller" class="custom-select" onchange="calculateCustomPrice()">
+                            <option value="0">-- Select Microcontroller --</option>
+                            <option value="3.5">Arduino Uno Clone ($3.5)</option>
+                            <option value="14">Arduino Uno Official ($14)</option>
+                            <option value="5">ESP-32 Dev Board ($5)</option>
+                            <option value="6">ESP-32 CAM Module ($6)</option>
+                            <option value="3">Raspberry Pi Pico ($3)</option>
+                            <option value="13">Raspberry Pi Zero W ($13)</option>
+                            <option value="18">Raspberry Pi Zero 2 W ($18)</option>
+                            <option value="35">Raspberry Pi 3 Model B ($35)</option>
+                            <option value="42">Raspberry Pi 3 Model B+ ($42)</option>
+                            <option value="50">Raspberry Pi 4 - 2GB ($50)</option>
+                            <option value="65">Raspberry Pi 4 - 4GB ($65)</option>
+                            <option value="80">Raspberry Pi 4 - 8GB ($80)</option>
+                            <option value="65">Raspberry Pi 5 - 4GB ($65)</option>
+                            <option value="85">Raspberry Pi 5 - 8GB ($85)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-tint"></i> Watering and Fertilizer System</label>
+                        <select id="watering" class="custom-select" onchange="calculateCustomPrice()">
+                            <option value="0">-- Select System --</option>
+                            <option value="0">No watering system ($0)</option>
+                            <option value="0">No fertilizer ($0)</option>
+                            <option value="3">Foggy watering ($3)</option>
+                            <option value="5">Hose watering ($5)</option>
+                            <option value="6">Mist watering ($6)</option>
+                            <option value="7">Herb fertilizer ($7)</option>
+                            <option value="7">Vegetable fertilizer ($7)</option>
+                            <option value="7">Flower fertilizer ($7)</option>
+                            <option value="9">Small fruits fertilizer ($9)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lightbulb"></i> Light System</label>
+                        <select id="light" class="custom-select" onchange="calculateCustomPrice()">
+                            <option value="0">-- Select Light --</option>
+                            <option value="0">No light ($0)</option>
+                            <option value="4">RGB light - No level control ($4)</option>
+                            <option value="7">RGB light - With level control ($7)</option>
+                            <option value="8">RGBW light - No level control ($8)</option>
+                            <option value="11">RGBW light - With level control ($11)</option>
+                            <option value="6">Red light &amp; Blue light ($6)</option>
+                            <option value="4">Red light ($4)</option>
+                            <option value="4">Blue light ($4)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-thermometer"></i> Temperature System</label>
+                        <select id="temperature" class="custom-select" onchange="calculateCustomPrice()">
+                            <option value="0">-- Select System --</option>
+                            <option value="0">No temperature system ($0)</option>
+                            <option value="22">Cooler + Heater + Exhaust fan ($22)</option>
+                            <option value="10">Cooler ($10)</option>
+                            <option value="9">Heater ($9)</option>
+                            <option value="6">Exhaust fan ($6)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-cloud"></i> Mist System</label>
+                        <select id="mist" class="custom-select" onchange="calculateCustomPrice()">
+                            <option value="0">-- Select System --</option>
+                            <option value="0">No misting system ($0)</option>
+                            <option value="2">1 Misting nozzle - No pump ($2)</option>
+                            <option value="4">2 Misting nozzles - No pump ($4)</option>
+                            <option value="8">1 Misting nozzle - With pump ($8)</option>
+                            <option value="12">2 Misting nozzles - With pump ($12)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-camera"></i> Camera</label>
+                        <select id="camera" class="custom-select" onchange="calculateCustomPrice()">
+                            <option value="0">-- Select Camera --</option>
+                            <option value="0">No camera ($0)</option>
+                            <option value="6">USB web camera ($6)</option>
+                            <option value="6">ESP-32 camera ($6)</option>
+                            <option value="14">Raspberry Pi camera ($14)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-box"></i> Material of the Box (Optional)</label>
+                        <select id="boxMaterial" class="custom-select" onchange="calculateCustomPrice()">
+                            <option value="0">-- Select Material (Optional) --</option>
+                            <option value="0.004">Glass ($0.004/cm²)</option>
+                            <option value="0.003">Acrylic ($0.003/cm²)</option>
+                            <option value="0.0015">Plastic ($0.0015/cm²)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-ruler-horizontal"></i> Width (cm)</label>
+                            <input type="number" id="boxWidth" placeholder="Enter width" min="1" onchange="calculateCustomPrice()">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-ruler-vertical"></i> Length (cm)</label>
+                            <input type="number" id="boxLength" placeholder="Enter length" min="1" onchange="calculateCustomPrice()">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-ruler-combined"></i> Height (cm)</label>
+                            <input type="number" id="boxHeight" placeholder="Enter height" min="1" onchange="calculateCustomPrice()">
+                        </div>
+                    </div>
+                    <div class="price-summary" id="priceSummary">
+                        <div class="summary-item">
+                            <span>Components Total:</span>
+                            <span id="componentsTotal">$0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Box Material:</span>
+                            <span id="boxMaterialTotal">$0</span>
+                        </div>
+                        <div class="summary-total">
+                            <span>Grand Total:</span>
+                            <span id="grandTotal">$0</span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button type="button" class="btn btn-secondary" onclick="backToUserType()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="btn" onclick="showCustomOrderForm()">
+                            <i class="fas fa-shopping-cart"></i> Order Now
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Config Form -->
+        <section class="config-form" id="configForm">
+            <button class="back-btn" onclick="backToUserType()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div class="form-container">
+                <h2 class="section-title">Configuration</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+                    Selected: <span id="selectedUserType" style="color: #00c853; font-weight: 600;"></span>
+                </p>
+                <form id="budgetForm">
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button type="submit" class="btn">
+                            <i class="fas fa-search"></i> View Products
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Product Selection -->
+        <section class="product-selection" id="productSelection">
+            <button class="back-btn" onclick="backToConfig()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <h2 class="section-title">Select Equipment and Sensors</h2>
+            <div class="products-grid" id="productsGrid"></div>
+            <div style="text-align: center; margin-top: 3rem;">
+                <button class="btn btn-secondary" onclick="backToConfig()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn" onclick="proceedToOrder()">
+                    Order Now <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Order Form -->
+        <section class="order-form" id="orderForm">
+            <button class="back-btn" onclick="backToProducts()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div class="order-container">
+                <h2 class="section-title">Order Form</h2>
+                <form id="checkoutForm">
+                    <h3>Personal Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" id="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" id="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone Number *</label>
+                            <input type="tel" id="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" id="email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Shipping Address *</label>
+                        <textarea id="address" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Comments</label>
+                        <textarea id="comments" placeholder="Specify your special requirements"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Design File (if any)</label>
+                        <input type="file" id="designFile" accept=".pdf,.dwg,.stl,.obj,.png,.jpg">
+                    </div>
+                    <div class="summary-box" id="orderSummary"></div>
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button type="button" class="btn btn-secondary" onclick="backToProducts()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="submit" class="btn">
+                            Confirm Order <i class="fas fa-check-circle"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ABOUT US PAGE -->
+    <div id="about-page" class="page-section">
+        <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            <div class="blob bg-green-300" style="width:24rem;height:24rem;top:0;left:0;"></div>
+            <div class="blob bg-emerald-300 animation-delay-2000" style="width:24rem;height:24rem;bottom:0;right:0;"></div>
+            <div class="blob bg-teal-300 animation-delay-4000" style="width:18rem;height:18rem;top:50%;left:50%;"></div>
+        </div>
+
+        <section class="about-hero relative z-10">
+            <div class="max-w-7xl mx-auto text-center">
+                <div class="floating inline-block mb-6">
+                    <span class="hero-pill">Meet the Minds Behind the Innovation</span>
+                </div>
+                <h1 class="display-font text-5xl font-bold mb-6 leading-tight">
+                    We Are <span class="gradient-text">Creators</span>,<br>
+                    <span class="gradient-text">Builders</span> &amp; <span class="gradient-text">Innovators</span>
+                </h1>
+                <p class="text-xl text-slate-600 mx-auto mb-12 leading-relaxed" style="max-width:42rem;">
+                    A passionate team dedicated to transforming ideas into reality through technology,
+                    creativity, and collaborative excellence.
+                </p>
+                <button onclick="showContactPage()" class="btn">
+                    <i class="fas fa-envelope"></i> Get In Touch
+                </button>
+            </div>
+        </section>
+
+        <section class="relative z-10 py-20 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16 scroll-reveal">
+                    <h2 class="display-font text-4xl font-bold mb-4 text-slate-800">The Innovators</h2>
+                    <div class="title-bar"></div>
+                    <p class="mt-4 text-slate-600 text-xl">The driving force behind our groundbreaking solutions</p>
+                </div>
+
+                <div class="team-grid">
+                    <div class="team-card scroll-reveal card-hover">
+                        <div class="team-photo">
+                            <img src="images/natapat.jpg" alt="Mr. Natapat Thongkaokam" class="team-img">
+                            <span class="team-badge">LEADER</span>
+                        </div>
+                        <div class="team-info">
+                            <h3>Mr. Natapat Thongkaokam (Pat)</h3>
+                            <p class="team-role">Project Leader</p>
+                            <div class="team-responsibilities">
+                                <span class="resp-tag"><i class="fas fa-video"></i> Presenter</span>
+                                <span class="resp-tag"><i class="fas fa-image"></i> Poster &amp; Video</span>
+                            </div>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                        </div>
+                    </div>
+
+                    <div class="team-card scroll-reveal card-hover" style="transition-delay: 100ms;">
+                        <div class="team-photo">
+                            <img src="images/pun.jpg" alt="Mr. Pannawich Rujirekanusorn" class="team-img">
+                        </div>
+                        <div class="team-info">
+                            <h3>Mr. Pannawich Rujirekanusorn (Pun)</h3>
+                            <p class="team-role">Developer</p>
+                            <div class="team-responsibilities">
+                                <span class="resp-tag"><i class="fas fa-code"></i> Programming</span>
+                                <span class="resp-tag"><i class="fas fa-microchip"></i> Hardware</span>
+                            </div>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                        </div>
+                    </div>
+
+                    <div class="team-card scroll-reveal card-hover" style="transition-delay: 200ms;">
+                        <div class="team-photo">
+                            <img src="images/apiwit.jpg" alt="Mr. Apiwit Ittiphatworakun" class="team-img">
+                        </div>
+                        <div class="team-info">
+                            <h3>Mr. Apiwit Ittiphatworakun (Rj)</h3>
+                            <p class="team-role">Designer</p>
+                            <div class="team-responsibilities">
+                                <span class="resp-tag"><i class="fas fa-paint-brush"></i> UI/UX</span>
+                                <span class="resp-tag"><i class="fas fa-pen"></i> Graphics</span>
+                            </div>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                        </div>
+                    </div>
+
+                    <div class="team-card scroll-reveal card-hover" style="transition-delay: 300ms;">
+                        <div class="team-photo">
+                            <img src="images/kantaphat.jpg" alt="Mr. Kantaphat Khemlai" class="team-img">
+                        </div>
+                        <div class="team-info">
+                            <h3>Mr. Kantaphat Khemlai (Ikkyu)</h3>
+                            <p class="team-role">Researcher</p>
+                            <div class="team-responsibilities">
+                                <span class="resp-tag"><i class="fas fa-flask"></i> Research</span>
+                                <span class="resp-tag"><i class="fas fa-book"></i> Documentation</span>
+                            </div>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="relative z-10 py-20 px-4 bg-slate-100">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16 scroll-reveal">
+                    <h2 class="display-font text-4xl font-bold mb-4 text-slate-800">Our Advisors</h2>
+                    <div class="title-bar amber"></div>
+                    <p class="mt-4 text-slate-600 text-xl">Guiding us with wisdom and expertise</p>
+                </div>
+
+                <div class="team-grid">
+                    <div class="team-card advisor-card scroll-reveal card-hover" style="transition-delay: 100ms;">
+                        <div class="team-photo advisor-photo">
+                            <img src="images/advisor-pimpan.jpg" alt="Mr. Pimpan Honkeanjan" class="team-img">
+                        </div>
+                        <div class="team-info">
+                            <h3 style="color: white;">Mr. Pimpan Honkeanjan (Pat)</h3>
+                            <p style="color: #fbbf24;">Project Advisor</p>
+                            <div class="team-responsibilities">
+                                <span class="resp-tag" style="background: rgba(255,255,255,0.1); color: white;">
+                                    <i class="fas fa-lightbulb" style="color:#fbbf24;"></i> Technical Guidance
+                                </span>
+                            </div>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                        </div>
+                    </div>
+
+                    <div class="team-card advisor-card scroll-reveal card-hover" style="transition-delay: 200ms;">
+                        <div class="team-photo advisor-photo">
+                            <img src="images/advisor-prasop.jpg" alt="Mr. Prasop Ondee" class="team-img">
+                        </div>
+                        <div class="team-info">
+                            <h3 style="color: white;">Mr. Prasop Ondee (Boy)</h3>
+                            <p style="color: #fbbf24;">Academic Advisor</p>
+                            <div class="team-responsibilities">
+                                <span class="resp-tag" style="background: rgba(255,255,255,0.1); color: white;">
+                                    <i class="fas fa-graduation-cap" style="color:#fbbf24;"></i> Academic Support
+                                </span>
+                            </div>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div id="contact-page" class="page-section">
+        <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            <div class="blob bg-green-300" style="width:24rem;height:24rem;top:0;left:0;"></div>
+            <div class="blob bg-emerald-300 animation-delay-2000" style="width:24rem;height:24rem;bottom:0;right:0;"></div>
+        </div>
+
+        <section class="contact-hero relative z-10">
+            <div class="max-w-7xl mx-auto text-center">
+                <div class="floating inline-block mb-6">
+                    <span class="hero-pill">Let's Connect</span>
+                </div>
+                <h1 class="display-font text-5xl font-bold mb-6 leading-tight">
+                    Get In <span class="gradient-text">Touch</span>
+                </h1>
+                <p class="text-xl text-slate-600 mx-auto mb-12 leading-relaxed" style="max-width:42rem;">
+                    Have a question or want to collaborate? We'd love to hear from you.
+                </p>
+                <button onclick="showAboutPage()" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to About Us
+                </button>
+            </div>
+        </section>
+
+        <section class="relative z-10 py-10 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="showContactTab('team', this)">
+                        <i class="fas fa-users"></i> Team Members
+                    </button>
+                    <button class="tab-btn" onclick="showContactTab('advisors', this)">
+                        <i class="fas fa-chalkboard-teacher"></i> Advisors
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="team-contacts" class="relative z-10 pb-20 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="contact-grid">
+                    <div class="contact-card scroll-reveal">
+                        <div class="contact-header">
+                            <img src="images/natapat.jpg" alt="Mr. Natapat Thongkaokam" class="contact-avatar-img">
+                            <div class="contact-name">
+                                <h3>Mr. Natapat Thongkaokam (Pat)</h3>
+                                <p>Project Leader</p>
+                            </div>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>natapat.pooh@gmail.com</span>
+                                <button class="copy-btn" onclick="copyToClipboard('natapat.pooh@gmail.com')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+66 98 929 4322</span>
+                                <button class="copy-btn" onclick="copyToClipboard('+66 98 929 4322')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Bangkok, Thailand</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-card scroll-reveal" style="transition-delay: 100ms;">
+                        <div class="contact-header">
+                            <img src="images/pun.jpg" alt="Mr. Pannawich Rujirekanusorn" class="contact-avatar-img">
+                            <div class="contact-name">
+                                <h3>Mr. Pannawich Rujirekanusorn (Pun)</h3>
+                                <p>Developer</p>
+                            </div>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>punpunruji@gmail.com</span>
+                                <button class="copy-btn" onclick="copyToClipboard('punpunruji@gmail.com')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+66 88 818 0551</span>
+                                <button class="copy-btn" onclick="copyToClipboard('+66 88 818 0551')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Bangkok, Thailand</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-card scroll-reveal" style="transition-delay: 200ms;">
+                        <div class="contact-header">
+                            <img src="images/apiwit.jpg" alt="Mr. Apiwit Ittiphatworakun" class="contact-avatar-img">
+                            <div class="contact-name">
+                                <h3>Mr. Apiwit Ittiphatworakun (Rj)</h3>
+                                <p>Designer</p>
+                            </div>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>apiwit84808480@gmail.com</span>
+                                <button class="copy-btn" onclick="copyToClipboard('apiwit84808480@gmail.com')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+66 64 653 1492</span>
+                                <button class="copy-btn" onclick="copyToClipboard('+66 64 653 1492')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Bangkok, Thailand</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-card scroll-reveal" style="transition-delay: 300ms;">
+                        <div class="contact-header">
+                            <img src="images/kantaphat.jpg" alt="Mr. Kantaphat Khemlai" class="contact-avatar-img">
+                            <div class="contact-name">
+                                <h3>Mr. Kantaphat Khemlai (Ikkyu)</h3>
+                                <p>Researcher</p>
+                            </div>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>iam.ikkyu09@gmail.com</span>
+                                <button class="copy-btn" onclick="copyToClipboard('iam.ikkyu09@gmail.com')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+66 82 965 0025</span>
+                                <button class="copy-btn" onclick="copyToClipboard('+66 82 965 0025')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Bangkok, Thailand</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="advisors-contacts" class="relative z-10 pb-20 px-4" style="display:none;">
+            <div class="max-w-7xl mx-auto">
+                <div class="contact-grid">
+                    <div class="contact-card advisor-contact scroll-reveal">
+                        <div class="contact-header">
+                            <img src="images/advisor-pimpan.jpg" alt="Mr. Pimpan Honkeanjan" class="contact-avatar-img advisor-avatar-img">
+                            <div class="contact-name">
+                                <h3>Mr. Pimpan Honkeanjan (Pat)</h3>
+                                <p>Project Advisor</p>
+                            </div>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>Pat_chr@hotmail.com</span>
+                                <button class="copy-btn" onclick="copyToClipboard('Pat_chr@hotmail.com')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+66 91 565 9591</span>
+                                <button class="copy-btn" onclick="copyToClipboard('+66 91 565 9591')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Bangkok, Thailand</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-card advisor-contact scroll-reveal" style="transition-delay: 100ms;">
+                        <div class="contact-header">
+                            <img src="images/advisor-prasop.jpg" alt="Mr. Prasop Ondee" class="contact-avatar-img advisor-avatar-img">
+                            <div class="contact-name">
+                                <h3>Mr. Prasop Ondee (Boy)</h3>
+                                <p>Academic Advisor</p>
+                            </div>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>booooy13@gmail.com</span>
+                                <button class="copy-btn" onclick="copyToClipboard('booooy13@gmail.com')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+66 89 222 4467</span>
+                                <button class="copy-btn" onclick="copyToClipboard('+66 89 222 4467')"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Bangkok, Thailand</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal-overlay" id="cartModal" onclick="if(event.target===this)closeCart()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-shopping-cart"></i> Shopping Cart</h3>
+                <button class="modal-close" onclick="closeCart()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="cartModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="clearCart()"><i class="fas fa-trash"></i> Clear</button>
+                <button class="btn" onclick="checkoutFromCart()">Checkout <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i> Copied to clipboard!
+    </div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2024 Smart Plant Box V4. Computer Engineering Project</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+</body>
+</html>
