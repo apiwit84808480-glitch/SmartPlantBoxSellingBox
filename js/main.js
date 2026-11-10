@@ -500,6 +500,12 @@ async function handleCheckout(e) {
     };
 
     try {
+        // Save to the customer's account (Supabase). The Google Sheet still gets every order,
+        // so a database hiccup doesn't lose the order.
+        if (typeof window.saveOrderToDatabase === 'function') {
+            try { await window.saveOrderToDatabase(orderData); }
+            catch (dbErr) { console.error('Could not save order to account', dbErr); }
+        }
         await sendToGoogleSheets(orderData);
         showToast('Order received! We will contact you within 24 hours.');
         cart = [];

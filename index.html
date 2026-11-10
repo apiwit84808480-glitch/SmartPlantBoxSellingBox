@@ -52,6 +52,9 @@
                 <a href="#" onclick="showContactPage(); return false;">Contact</a>
             </div>
             <div class="nav-actions">
+                <button class="account-btn" id="accountBtn" type="button" onclick="window.openAccount && openAccount()" aria-label="Account">
+                    <i class="fas fa-user"></i><span>Sign in</span>
+                </button>
                 <a href="#" class="cart-btn" onclick="showCart(); return false;">
                     <i class="fas fa-bag-shopping"></i> Cart <span id="cart-count">0</span>
                 </a>
@@ -833,6 +836,17 @@
         </div>
     </div>
 
+    <!-- Account Modal (js/auth.js) -->
+    <div class="modal-overlay" id="accountModal" onclick="if(event.target===this)closeAccount()">
+        <div class="modal account-modal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+            <div class="modal-header">
+                <h3 id="accountModalTitle">Sign in</h3>
+                <button class="modal-close" type="button" onclick="closeAccount()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="accountModalBody"></div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="toast" id="toast">
         <i class="fas fa-check-circle"></i> Copied to clipboard!
@@ -862,6 +876,8 @@
     <script src="js/main.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/usecases.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
     <script type="module" src="js/scene.js"></script>
 </body>

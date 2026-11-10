@@ -1389,3 +1389,55 @@ select.uc-input { cursor: pointer; }
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
     html { scroll-behavior: auto; }
 }
+
+/* ========== ACCOUNT (Supabase sign-in) ========== */
+.account-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    height: 38px; padding: 0 0.9rem;
+    border-radius: 999px; border: 1px solid var(--line-2);
+    background: transparent; color: var(--text);
+    font: 500 0.88rem var(--sans); cursor: pointer;
+    transition: border-color 0.25s, background 0.25s;
+}
+.account-btn:hover { border-color: var(--pink); background: rgba(255, 79, 160, 0.08); }
+.account-btn i { font-size: 0.8rem; color: var(--muted); }
+.account-btn.signed-in { padding-left: 0.3rem; }
+.account-btn img, .acct-initial {
+    width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+    display: inline-grid; place-items: center;
+    background: var(--pink); color: #1a0610; font-weight: 700; font-size: 0.8rem;
+}
+.acct-initial.big { width: 44px; height: 44px; font-size: 1.1rem; flex-shrink: 0; }
+.account-modal { max-width: 440px; }
+.acct-lead { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.25rem; }
+.acct-google {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.7rem;
+    padding: 0.9rem 1rem; border-radius: 999px; border: 0;
+    background: #fff; color: #1f1f1f; font: 600 0.95rem var(--sans); cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.acct-google:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(255, 52, 140, 0.25); }
+.acct-or { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; color: var(--faint); font-size: 0.8rem; }
+.acct-or::before, .acct-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.acct-guest, .acct-signout { width: 100%; margin: 0; }
+.acct-who { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.25rem; }
+.acct-who strong { display: block; }
+.acct-who small { color: var(--muted); font-size: 0.82rem; }
+.acct-orders-head { margin: 1.5rem 0 0.6rem; }
+.acct-orders { display: grid; gap: 0.5rem; margin-bottom: 1.25rem; max-height: 300px; overflow-y: auto; }
+.acct-order {
+    display: flex; justify-content: space-between; gap: 1rem; align-items: center;
+    padding: 0.75rem 0.9rem; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-2);
+}
+.acct-order strong { display: block; font-weight: 500; font-size: 0.9rem; }
+.acct-order small { color: var(--muted); font-size: 0.78rem; }
+.acct-order-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; }
+.acct-total { font-family: var(--display); color: var(--pink); }
+.acct-status { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 999px; border: 1px solid var(--line-2); color: var(--muted); }
+.acct-status.s-confirmed, .acct-status.s-shipped { color: var(--leaf); border-color: rgba(143, 220, 138, 0.4); }
+.acct-muted { color: var(--muted); font-size: 0.9rem; }
+@media (max-width: 760px) {
+    .account-btn span:not(.acct-initial) { display: none; }
+    .account-btn { width: 38px; padding: 0; justify-content: center; }
+    .account-btn.signed-in { padding: 0; }
+}
