@@ -438,6 +438,7 @@
         const o = (UC[current].options || []).find(x => x.id === id);
         if (!o) return;
         const ok = pushToCart({
+            type: 'option', option_id: o.id,
             id: o.id, name: o.name, controller: o.controller,
             selectedSensors: o.features.map(f => ({ name: f, price: 0, included: true })),
             totalPrice: o.price,
@@ -458,6 +459,9 @@
             return;
         }
         const ok = pushToCart({
+            // What the server prices: chosen controller, parts, material and size
+            type: 'build',
+            build: { label: UC[current].short, controller: cfg.controller, parts: [...cfg.parts], material: cfg.material, size: [...cfg.size] },
             id: `custom-${current}`, name: `Custom ${UC[current].short} Box`, controller: ctrl ? ctrl.name : '',
             selectedSensors: items.map(i => ({ name: `${i.name} (${money(i.price)})`, price: i.price, included: false })),
             totalPrice: total,

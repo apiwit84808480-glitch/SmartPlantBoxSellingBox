@@ -390,7 +390,11 @@ function showCustomOrderForm() {
         width: document.getElementById('boxWidth')?.value || '',
         length: document.getElementById('boxLength')?.value || '',
         height: document.getElementById('boxHeight')?.value || '',
-        total: d.grandTotal
+        total: d.grandTotal,
+        // What the server needs to price it: which option was picked in each list (not the price)
+        choices: Object.fromEntries(['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'boxMaterial']
+            .map(id => [id, document.getElementById(id)?.selectedIndex || 0])),
+        size: ['boxWidth', 'boxLength', 'boxHeight'].map(id => parseFloat(document.getElementById(id)?.value) || 0)
     };
     window.orderReturnTo = 'customForm';
     showOrderForm();
@@ -495,45 +499,50 @@ async function handleCheckout(e) {
         submitBtn.disabled = true;
     }
 
-    const orderData = {
+    const customer = {
         firstName, lastName, phone, email, address,
-        comments: document.getElementById('comments')?.value || '',
-        orderType: customOrderData ? 'Custom' : 'Preset Product',
-        customConfig: customOrderData,
-        cart: cart || [],
-        total: customOrderData ? customOrderData.total : (cart ? cart.reduce((s, x) => s + (Number(x.totalPrice) || 0), 0) : 0),
-        timestamp: new Date().toISOString()
+        comments: document.getElementById('comments')?.value || ''
     };
 
-    try {
-        // Save to the customer's account (Supabase). The Google Sheet still gets every order,
-        // so a database hiccup doesn't lose the order.
-        if (typeof window.saveOrderToDatabase === 'function') {
-            try { await window.saveOrderToDatabase(orderData); }
-            catch (dbErr) { console.error('Could not save order to account', dbErr); }
+    // Send only WHAT was chosen. The server looks up every price itself, so a
+    // tampered price in the browser can't change what the customer pays.
+    let items;
+    if (customOrderData) {
+        items = [{ type: 'custom', choices: customOrderData.choices, size: customOrderData.size }];
+    } else {
+        items = (cart || []).map(toServerItem);
+        if (items.some(x => !x)) {
+            showToast('Some cart items are from an older version of the site. Please clear the cart and add them again.');
+            if (submitBtn) { submitBtn.innerHTML = orig; submitBtn.disabled = false; }
+            return;
         }
-        await sendToGoogleSheets(orderData);
-        showToast('Order received! We will contact you within 24 hours.');
+    }
+
+    try {
+        if (typeof window.placeOrder !== 'function') throw new Error('Ordering is temporarily unavailable');
+        const result = await window.placeOrder(customer, items);
+        showToast(`Order received! Total $${Number(result.total).toFixed(2)}. We will contact you within 24 hours.`);
         cart = [];
         customOrderData = null;
         localStorage.removeItem('smartPlantCart');
         if (typeof updateCartCount === 'function') updateCartCount();
-        setTimeout(() => location.reload(), 1500);
+        setTimeout(() => location.reload(), 2500);
     } catch (err) {
         console.error(err);
-        showToast('Submission failed, please try again.');
+        showToast((err && err.message) ? `Could not place the order: ${err.message}` : 'Submission failed, please try again.');
         if (submitBtn) { submitBtn.innerHTML = orig; submitBtn.disabled = false; }
     }
 }
 
-async function sendToGoogleSheets(data) {
-    const url = 'https://script.google.com/macros/s/AKfycbzpqBxJ6FAuxLIJ8EjGOndFRmvHkplPAscmyqxFzTyzoxt6QwMBnP3iAewUz_UZ853E/exec';
-    return fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
+// Turn a cart entry into the "what was chosen" shape the server prices
+function toServerItem(item) {
+    const base = { notes: item.notes || undefined, useCase: item.useCase || undefined };
+    if (item.type === 'option' && item.option_id) return { ...base, type: 'option', option_id: item.option_id };
+    if (item.type === 'build' && item.build) return { ...base, type: 'build', ...item.build };
+    if (item.type === 'product' || (typeof item.id === 'number' && products.some(p => p.id === item.id))) {
+        return { ...base, type: 'product', product_id: item.product_id || item.id, sensors: item.sensors || [] };
+    }
+    return null;
 }
 
 // ========== SCROLL REVEAL & BACK-TO-TOP ==========

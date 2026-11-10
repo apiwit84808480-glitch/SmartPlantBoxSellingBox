@@ -77,16 +77,29 @@
                 <small>${esc(isGuest(user) ? 'Orders are saved on this device until you sign in with Google' : (user.email || ''))}</small></div>
             </div>
             ${isGuest(user) ? `<button class="acct-google" type="button" data-acct="link"><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M24 20v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5H24z"/></svg> Save my orders with Google</button>` : ''}
+            <div id="acctAdmin"></div>
             <div class="acct-orders-head"><span class="eyebrow">My orders</span></div>
             <div class="acct-orders" id="acctOrders"><p class="acct-muted">Loading…</p></div>
             <button class="btn btn-ghost acct-signout" type="button" data-acct="signout"><i class="fas fa-arrow-right-from-bracket"></i> Sign out</button>`;
         loadOrders();
+        if (!isGuest(user)) showAdminLink();
+    }
+
+    // Team members get a shortcut to the admin page (the database decides who is an admin)
+    async function showAdminLink() {
+        const { data } = await sb.rpc('is_admin');
+        const box = $('acctAdmin');
+        if (data === true && box) {
+            box.innerHTML = '<a class="btn acct-admin" href="/admin/"><i class="fas fa-gauge"></i> Open admin page</a>';
+        }
     }
 
     async function loadOrders() {
         const box = $('acctOrders');
         if (!box) return;
-        const { data, error } = await sb.from('orders').select('id, created_at, status, order_type, items, custom_config, total').order('created_at', { ascending: false }).limit(20);
+        // Only this person's orders (admins can read every order, so filter explicitly)
+        const { data, error } = await sb.from('orders').select('id, created_at, status, order_type, items, custom_config, total')
+            .eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
         if (error) { box.innerHTML = '<p class="acct-muted">Could not load your orders. Please try again.</p>'; return; }
         if (!data.length) { box.innerHTML = '<p class="acct-muted">No orders yet.</p>'; return; }
         box.innerHTML = data.map(o => {
@@ -132,25 +145,18 @@
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-    // ---------- checkout: save the order to the database ----------
+    // ---------- checkout: the server prices and saves the order ----------
     // Called from handleCheckout() in main.js. Customers who never signed in become guests.
-    window.saveOrderToDatabase = async function (orderData) {
-        let { data: { session } } = await sb.auth.getSession();
+    // `items` says only what was chosen; place_order() looks up every price in the database.
+    window.placeOrder = async function (customer, items) {
+        const { data: { session } } = await sb.auth.getSession();
         if (!session) {
             const { error } = await sb.auth.signInAnonymously();
-            if (error) throw error;
+            if (error) throw new Error('Could not start a guest session');
         }
-        const { error } = await sb.from('orders').insert({
-            order_type: orderData.orderType,
-            customer: {
-                firstName: orderData.firstName, lastName: orderData.lastName, phone: orderData.phone,
-                email: orderData.email, address: orderData.address, comments: orderData.comments,
-            },
-            items: orderData.cart || [],
-            custom_config: orderData.customConfig || null,
-            total: Math.round((orderData.total || 0) * 100) / 100,
-        });
-        if (error) throw error;
+        const { data, error } = await sb.rpc('place_order', { p_customer: customer, p_items: items });
+        if (error) throw new Error(error.message || 'Order failed');
+        return data;
     };
 
     // Prefill the order form from the Google profile

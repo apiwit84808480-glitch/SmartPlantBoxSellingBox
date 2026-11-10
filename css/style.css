@@ -1441,3 +1441,4 @@ select.uc-input { cursor: pointer; }
     .account-btn { width: 38px; padding: 0; justify-content: center; }
     .account-btn.signed-in { padding: 0; }
 }
+.acct-admin { width: 100%; margin: 0 0 0.5rem; }

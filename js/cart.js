@@ -29,15 +29,19 @@ function addToCart(productId) {
 
     let totalPrice = product.basePrice;
     const selectedSensors = [];
+    const sensors = [];   // indexes of optional sensors the customer ticked (sent to the server)
     product.sensors.forEach((s, i) => {
         const cb = document.getElementById(`sensor-${productId}-${i}`);
         if (cb && cb.checked) {
             selectedSensors.push({ name: s.name, price: s.price, included: s.included });
-            if (!s.included) totalPrice += s.price;
+            if (!s.included) { totalPrice += s.price; sensors.push(i); }
         }
     });
 
     cart.push({
+        type: 'product',
+        product_id: product.id,
+        sensors,
         id: product.id,
         name: product.name,
         controller: product.controller,
