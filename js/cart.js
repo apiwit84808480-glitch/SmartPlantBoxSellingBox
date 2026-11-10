@@ -74,21 +74,24 @@ function showCart() {
     } else {
         let html = '';
         let total = 0;
+        // The cart lives in localStorage, so treat everything in it as untrusted text
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         cart.forEach((item, i) => {
-            total += item.totalPrice || 0;
+            const price = Number(item.totalPrice) || 0;
+            total += price;
             const sensors = item.selectedSensors && item.selectedSensors.length
-                ? item.selectedSensors.map(s => s.name).join(', ')
+                ? item.selectedSensors.map(s => esc(s && s.name)).join(', ')
                 : 'No additional sensors';
             html += `
                 <div class="cart-item">
                     <div class="cart-item-info">
-                        <strong>${item.name}</strong>
+                        <strong>${esc(item.name)}</strong>
                         <small>${sensors}</small>
                         <button class="cart-remove" onclick="removeFromCart(${i})">
                             <i class="fas fa-times"></i> Remove
                         </button>
                     </div>
-                    <div class="cart-item-price">$${item.totalPrice}</div>
+                    <div class="cart-item-price">$${price}</div>
                 </div>`;
         });
         html += `<div class="cart-total-row"><span>Total</span><span>$${total.toFixed(2)}</span></div>`;

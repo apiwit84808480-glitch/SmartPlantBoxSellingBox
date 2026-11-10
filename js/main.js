@@ -421,7 +421,13 @@ function showOrderForm() {
         html += row('Dimensions', `${customOrderData.width} × ${customOrderData.length} × ${customOrderData.height} cm`);
         html += `<div class="summary-item summary-total"><span>Total:</span><span>$${customOrderData.total.toFixed(2)}</span></div>`;
     } else if (cart && cart.length > 0) {
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         cart.forEach((item, i) => {
+            item = Object.assign({}, item, {
+                name: esc(item.name),
+                totalPrice: Number(item.totalPrice) || 0,
+                selectedSensors: (item.selectedSensors || []).map(s => ({ name: esc(s && s.name) })),
+            });
             html += `
                 <div class="summary-item" style="flex-direction:column;align-items:flex-start;gap:0.5rem;">
                     <div style="display:flex;justify-content:space-between;width:100%;">
@@ -434,7 +440,7 @@ function showOrderForm() {
                     </div>
                 </div>`;
         });
-        const total = cart.reduce((s, x) => s + (x.totalPrice || 0), 0);
+        const total = cart.reduce((s, x) => s + (Number(x.totalPrice) || 0), 0);
         html += `<div class="summary-item summary-total"><span>Total:</span><span>$${total.toFixed(2)}</span></div>`;
     }
 
@@ -495,7 +501,7 @@ async function handleCheckout(e) {
         orderType: customOrderData ? 'Custom' : 'Preset Product',
         customConfig: customOrderData,
         cart: cart || [],
-        total: customOrderData ? customOrderData.total : (cart ? cart.reduce((s, x) => s + (x.totalPrice || 0), 0) : 0),
+        total: customOrderData ? customOrderData.total : (cart ? cart.reduce((s, x) => s + (Number(x.totalPrice) || 0), 0) : 0),
         timestamp: new Date().toISOString()
     };
 
