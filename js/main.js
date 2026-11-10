@@ -120,10 +120,7 @@ function showContactPage() {
 
 function showProductsSection() {
     showMainPage();
-    setTimeout(() => {
-        const el = document.getElementById('userTypeSection');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }, 120);
+    setTimeout(backToUserType, 120);
 }
 
 function hideAllPages() {
@@ -131,7 +128,7 @@ function hideAllPages() {
 }
 
 // ========== SLIDER ==========
-function initSlider() { startSlideTimer(); }
+function initSlider() { if (document.querySelector('.slide')) startSlideTimer(); }
 function startSlideTimer() { slideInterval = setInterval(() => changeSlide(1), 8000); }
 function resetSlideTimer() { clearInterval(slideInterval); startSlideTimer(); }
 
@@ -162,12 +159,14 @@ function goToSlide(index) {
 // ========== NAV / SCROLL ==========
 function scrollToSection(id) {
     const el = document.getElementById(id);
+    // The use-case list is hidden while a use-case page or form is open: bring it back first
+    if (id === 'userTypeSection' && el && el.style.display === 'none') return backToUserType();
     if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 function backToUserType() {
-    ['configForm', 'customForm', 'productSelection', 'orderForm'].forEach(id => {
+    ['configForm', 'customForm', 'productSelection', 'orderForm', 'useCaseDetail'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
     });
@@ -185,11 +184,13 @@ function backToConfig() {
     if (cf) { cf.style.display = 'block'; cf.scrollIntoView({ behavior: 'smooth' }); }
 }
 
+// Back from the order form: return to whichever step sent the customer there
 function backToProducts() {
     const of = document.getElementById('orderForm');
-    const ps = document.getElementById('productSelection');
+    const back = document.getElementById(window.orderReturnTo || 'userTypeSection');
     if (of) of.style.display = 'none';
-    if (ps) { ps.style.display = 'block'; ps.scrollIntoView({ behavior: 'smooth' }); }
+    if (back) { back.style.display = 'block'; back.scrollIntoView({ behavior: 'smooth' }); }
+    else backToUserType();
 }
 
 // ========== CONTACT ==========
@@ -242,27 +243,20 @@ function loadProducts() { return products; }
 
 function selectUserType(type) {
     currentUserType = type;
-    const typeNames = {
-        disaster: 'For Disaster Victims',
-        farmer: 'For Farmers',
-        condo: 'For Condominiums',
-        custom: 'Custom Configuration'
-    };
-    const span = document.getElementById('selectedUserType');
-    if (span) span.textContent = typeNames[type] || type;
 
-    const us = document.getElementById('userTypeSection');
-    const cf = document.getElementById('configForm');
-    const cuf = document.getElementById('customForm');
-    if (us) us.style.display = 'none';
-
-    if (type === 'custom') {
-        if (cf) cf.style.display = 'none';
-        if (cuf) { cuf.style.display = 'block'; cuf.scrollIntoView({ behavior: 'smooth' }); }
-    } else {
-        if (cuf) cuf.style.display = 'none';
-        if (cf) { cf.style.display = 'block'; cf.scrollIntoView({ behavior: 'smooth' }); }
+    // Disaster / farmer / household / condo / commercial each have their own page (js/usecases.js)
+    if (type !== 'custom' && typeof openUseCase === 'function') {
+        openUseCase(type);
+        return;
     }
+
+    // Custom: the full configurator where every part can be chosen
+    ['userTypeSection', 'useCaseDetail', 'orderForm'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    const cuf = document.getElementById('customForm');
+    if (cuf) { cuf.style.display = 'block'; cuf.scrollIntoView({ behavior: 'smooth' }); }
 }
 
 function showProducts() {
@@ -275,7 +269,7 @@ function showProducts() {
     else if (currentUserType === 'farmer') filtered = products.filter(p => [2, 3, 6].includes(p.id));
 
     if (!filtered.length) {
-        grid.innerHTML = '<p style="text-align:center;color:#666;padding:2rem;">No products found for this category.</p>';
+        grid.innerHTML = '<p class="empty-note">No products found for this category.</p>';
     } else {
         filtered.forEach(p => grid.appendChild(createProductCard(p)));
     }
@@ -302,7 +296,7 @@ function createProductCard(product) {
                        onchange="updatePrice(${product.id})">
                 <label for="sensor-${product.id}-${i}">
                     ${sensor.name}
-                    ${!sensor.included ? `(+$${sensor.price})` : '<span style="color:#00b66a;font-weight:600;">(Included)</span>'}
+                    ${!sensor.included ? `(+$${sensor.price})` : '<span class="included-tag">(Included)</span>'}
                 </label>
             </div>`;
     });
@@ -314,13 +308,11 @@ function createProductCard(product) {
         <div class="product-header">
             <div>
                 <div class="product-name">${product.name}</div>
-                <div style="color:#64748b;font-size:0.9rem;margin-top:0.25rem;">
-                    Controller: ${product.controller}
-                </div>
+                <div class="product-controller">Controller: ${product.controller}</div>
             </div>
             <div class="product-price" id="price-${product.id}">$${product.basePrice}</div>
         </div>
-        <div style="margin-bottom:1rem;">
+        <div class="product-features">
             ${product.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
         </div>
         <div class="sensor-options">
@@ -400,6 +392,7 @@ function showCustomOrderForm() {
         height: document.getElementById('boxHeight')?.value || '',
         total: d.grandTotal
     };
+    window.orderReturnTo = 'customForm';
     showOrderForm();
 }
 
@@ -413,7 +406,7 @@ function proceedToOrder() {
 function showOrderForm() {
     const sd = document.getElementById('orderSummary');
     if (!sd) return;
-    let html = '<h3 style="margin-bottom:1rem;color:#0f172a;">Order Summary</h3>';
+    let html = '<h3 class="summary-heading">Order Summary</h3>';
 
     if (customOrderData) {
         const row = (l, v) => `<div class="summary-item"><span>${l}:</span><span>${v}</span></div>`;
@@ -433,10 +426,11 @@ function showOrderForm() {
                 <div class="summary-item" style="flex-direction:column;align-items:flex-start;gap:0.5rem;">
                     <div style="display:flex;justify-content:space-between;width:100%;">
                         <strong>${i + 1}. ${item.name}</strong>
-                        <span style="color:#00a85f;font-weight:700;">$${item.totalPrice}</span>
+                        <span class="summary-price">$${item.totalPrice}</span>
                     </div>
-                    <div style="font-size:0.88rem;color:#64748b;padding-left:1rem;">
+                    <div class="summary-sub">
                         ${item.selectedSensors && item.selectedSensors.length ? item.selectedSensors.map(s => `• ${s.name}`).join('<br>') : 'No additional sensors'}
+                        ${item.notes && item.notes.length ? `<div class="summary-notes">${item.notes.map(n => String(n).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))).join('<br>')}</div>` : ''}
                     </div>
                 </div>`;
         });
@@ -446,12 +440,12 @@ function showOrderForm() {
 
     sd.innerHTML = html;
 
-    const ps = document.getElementById('productSelection');
-    const cuf = document.getElementById('customForm');
     const of = document.getElementById('orderForm');
     closeCart();
-    if (ps) ps.style.display = 'none';
-    if (cuf) cuf.style.display = 'none';
+    ['productSelection', 'customForm', 'useCaseDetail', 'userTypeSection'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
     if (of) { of.style.display = 'block'; of.scrollIntoView({ behavior: 'smooth' }); }
 }
 

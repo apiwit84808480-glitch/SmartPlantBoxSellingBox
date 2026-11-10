@@ -117,6 +117,11 @@ function checkoutFromCart() {
         return;
     }
     customOrderData = null;
+    // Remember where the customer was so "Back" on the order form returns there
+    const detail = document.getElementById('useCaseDetail');
+    const custom = document.getElementById('customForm');
+    window.orderReturnTo = detail && detail.style.display === 'block' ? 'useCaseDetail'
+        : custom && custom.style.display === 'block' ? 'customForm' : 'userTypeSection';
     if (typeof showOrderForm === 'function') showOrderForm();
 }
 

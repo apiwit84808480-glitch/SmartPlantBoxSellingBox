@@ -3,30 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Plant Box V4 - Intelligent Plant Growing System</title>
-    <meta name="description" content="Smart Plant Box V4 — automated plant growing system with sensors, watering, lighting and AI monitoring. Affordable kits priced for the Thai market.">
+    <title>Smart Plant Box V4 — Automated Grow Chamber</title>
+    <meta name="description" content="Smart Plant Box V4 — an automated plant growing box with grow lights, sensors, misting, watering and air-flow. Ready-made kits or build your own.">
+    <meta name="theme-color" content="#0b090e">
+    <link rel="canonical" href="https://www.smartplantbox.com/">
+    <!-- Preview shown when the link is shared on LINE, Facebook, X, etc. -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Smart Plant Box">
+    <meta property="og:title" content="Smart Plant Box V4 — Automated Grow Chamber">
+    <meta property="og:description" content="A grow box that lights, waters and mists your plants by itself. Kits for homes, farms, condos and disaster relief — or build your own.">
+    <meta property="og:url" content="https://www.smartplantbox.com/">
+    <meta property="og:image" content="https://www.smartplantbox.com/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script>
+        // If the 3D scene can't load (old browser / blocked CDN), show the photo version of the hero.
+        setTimeout(function () { if (!window.__boxSceneReady) document.documentElement.classList.add('no-webgl'); }, 8000);
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
 
     <!-- Navigation -->
-    <nav>
+    <nav id="siteNav">
         <div class="nav-container">
-            <div class="logo" onclick="showMainPage()" style="cursor:pointer;">
-                <i class="fas fa-leaf"></i>
-                Smart Plant Box
-            </div>
-            <div class="nav-links">
+            <a href="#" class="logo" onclick="showMainPage(); return false;">
+                <span class="logo-mark"><i class="fas fa-seedling"></i></span>
+                <span>Smart Plant Box</span>
+            </a>
+            <div class="nav-links" id="navLinks">
                 <a href="#" onclick="showMainPage(); return false;">Home</a>
                 <a href="#" onclick="showProductsSection(); return false;">Products</a>
                 <a href="#" onclick="showAboutPage(); return false;">About Us</a>
                 <a href="#" onclick="showContactPage(); return false;">Contact</a>
+            </div>
+            <div class="nav-actions">
                 <a href="#" class="cart-btn" onclick="showCart(); return false;">
-                    <i class="fas fa-shopping-cart"></i>
-                    Cart (<span id="cart-count">0</span>)
+                    <i class="fas fa-bag-shopping"></i> Cart <span id="cart-count">0</span>
                 </a>
+                <button class="nav-toggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+                    <span></span><span></span>
+                </button>
             </div>
         </div>
     </nav>
@@ -34,78 +65,213 @@
     <!-- MAIN PAGE -->
     <div id="main-page" class="page-section active">
 
-        <!-- Hero Slider -->
-        <section class="hero-slider" id="home">
-            <div class="slider-container">
-                <div class="slide active" style="background-image: linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.35)), url('images/slide1.jpg');">
-                    <div class="slide-content">
-                        <h1>Smart Planting System</h1>
-                        <p>Complete automated plant growing system — affordable, modular and built for everyone.</p>
-                        <button class="btn btn-primary" onclick="scrollToSection('userTypeSection')">
-                            <i class="fas fa-shopping-cart"></i> Order Now
-                        </button>
+        <!-- Hero: the box assembles as you scroll -->
+        <section class="hero-track" id="home">
+            <div class="hero-stage">
+                <div class="hero-bg" aria-hidden="true"></div>
+
+                <h1 class="hero-title">
+                    <span class="sr-only">Smart Plant Box</span>
+                    <span class="hero-kicker" aria-hidden="true">Smart</span>
+                    <span class="hero-word" aria-hidden="true">
+                        <span style="--i:-4.5">P</span><span style="--i:-3.5">L</span><span style="--i:-2.5">A</span><span style="--i:-1.5">N</span><span style="--i:-0.5">T</span><span class="gap"></span><span style="--i:0.5">B</span><span style="--i:1.5">O</span><span style="--i:2.5">X</span>
+                    </span>
+                </h1>
+
+                <img class="hero-fallback" src="images/build-front.webp" alt="The Smart Plant Box V4 prototype with its pink LED grow lights on">
+                <canvas id="box-canvas" aria-hidden="true"></canvas>
+
+                <div class="hero-ui">
+                    <div class="hero-meta hero-meta-left">
+                        <span>Smart Plant Box — V4</span>
+                        <span>Automated indoor grow chamber</span>
                     </div>
-                </div>
-                <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.38)), url('images/slide2.jpg');">
-                    <div class="slide-content">
-                        <h1>For Disaster Victims &amp; Farmers</h1>
-                        <p>Emergency planting and smart agriculture — increase yield, reduce costs.</p>
-                        <button class="btn btn-primary" onclick="scrollToSection('userTypeSection')">
-                            <i class="fas fa-users"></i> View Products
-                        </button>
+                    <div class="hero-meta hero-meta-right">
+                        <span>Made in Bangkok</span>
+                        <span>Computer Engineering Project</span>
                     </div>
+
+                    <p class="hero-intro">Light, water, air and data — <em>every part of a greenhouse,</em> folded into one clear box.</p>
+
+                    <div class="scroll-cue" aria-hidden="true">
+                        <span>Scroll to assemble</span>
+                        <span class="scroll-line"></span>
+                    </div>
+
+                    <div class="assembly-counter" aria-hidden="true">
+                        <span class="counter-label">Assembling</span>
+                        <span class="counter-num"><span id="partCount">00</span><span class="counter-sep">/</span><span id="partTotal">24</span></span>
+                        <span class="counter-bar"><i></i></span>
+                    </div>
+
+                    <div class="story">
+                        <span class="eyebrow">Fully assembled · Lights on</span>
+                        <h2 class="story-title">Every part<br><em>knows its place.</em></h2>
+                        <p>A clear acrylic chamber with red-and-blue grow lights, air-flow fans, misting, an automatic pump and sensors watching the soil and air — all run by one controller, so your plant is looked after even when you're not there.</p>
+                        <div class="story-actions">
+                            <button class="btn" type="button" onclick="scrollToSection('userTypeSection')">
+                                Choose your box <i class="fas fa-arrow-right"></i>
+                            </button>
+                            <button class="btn btn-ghost" type="button" onclick="selectUserType('custom')">
+                                Build your own
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="specs-head">
+                        <span class="eyebrow">Inside the box</span>
+                        <h2>Seven systems.<br><em>One controller.</em></h2>
+                    </div>
+
+                    <div class="callouts" id="callouts" aria-hidden="true"></div>
                 </div>
             </div>
-            <button class="slider-btn prev" onclick="changeSlide(-1)" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
-            <button class="slider-btn next" onclick="changeSlide(1)" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
-            <div class="slider-dots">
-                <span class="dot active" onclick="goToSlide(0)"></span>
-                <span class="dot" onclick="goToSlide(1)"></span>
+        </section>
+
+        <!-- Key numbers -->
+        <section class="stats" aria-label="Smart Plant Box at a glance">
+            <div class="stats-inner">
+                <div class="stat scroll-reveal">
+                    <span class="stat-num"><small>from</small>$11</span>
+                    <span class="stat-label">Emergency Box — quick, budget-friendly setup</span>
+                </div>
+                <div class="stat scroll-reveal">
+                    <span class="stat-num">6</span>
+                    <span class="stat-label">Ready-made kits, from Arduino to Raspberry Pi</span>
+                </div>
+                <div class="stat scroll-reveal">
+                    <span class="stat-num">24/7</span>
+                    <span class="stat-label">Automatic light, water and air-flow</span>
+                </div>
+                <div class="stat scroll-reveal">
+                    <span class="stat-num">Wi-Fi</span>
+                    <span class="stat-label">Mobile app control on ESP32 models</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- The real prototype -->
+        <section class="build" id="build">
+            <div class="section-head scroll-reveal">
+                <span class="eyebrow">01 — The prototype</span>
+                <h2 class="section-title">Built by hand.<br><em>Tested on real plants.</em></h2>
+                <p class="section-lead">The box you just watched come together is our V4 prototype — acrylic panels on aluminium feet, a red-and-blue LED canopy, and off-the-shelf electronics wired by our team.</p>
+            </div>
+            <div class="build-grid">
+                <figure class="build-item tall scroll-reveal">
+                    <img src="images/build-front.webp" alt="Front view of the Smart Plant Box with the grow lights on" loading="lazy">
+                    <figcaption><span>01</span> Front — LED canopy on</figcaption>
+                </figure>
+                <figure class="build-item scroll-reveal">
+                    <img src="images/build-lab.webp" alt="The box glowing pink on a table in the lab" loading="lazy">
+                    <figcaption><span>02</span> In the lab</figcaption>
+                </figure>
+                <figure class="build-item scroll-reveal">
+                    <img src="images/build-glow.webp" alt="Inside the box: temperature sensor, fans, misting bottles and the plant" loading="lazy">
+                    <figcaption><span>03</span> Sensors, fans &amp; misting</figcaption>
+                </figure>
+                <figure class="build-item tall scroll-reveal">
+                    <img src="images/build-side.webp" alt="Side view of the box with the controller mounted outside" loading="lazy">
+                    <figcaption><span>04</span> Side — controller outside</figcaption>
+                </figure>
             </div>
         </section>
 
         <!-- User Type Selection -->
         <section class="user-selection" id="userTypeSection">
-            <h2 class="section-title">Select Your Use Case</h2>
-            <div class="user-types">
-                <div class="user-card" onclick="selectUserType('disaster')">
-                    <div class="user-icon"><i class="fas fa-home"></i></div>
-                    <h3>For Disaster Victims</h3>
-                    <p>Emergency plant growing system for disaster victims</p>
-                    <div class="card-features">
-                        <span class="feature-badge"><i class="fas fa-bolt"></i> Quick Setup</span>
-                        <span class="feature-badge"><i class="fas fa-dollar-sign"></i> Budget-Friendly</span>
+            <div class="section-head scroll-reveal">
+                <span class="eyebrow">02 — Choose your box</span>
+                <h2 class="section-title">Select your use case</h2>
+                <p class="section-lead">Tell us who it's for and we'll show the boxes that fit — every one can be customized, or build your own from scratch.</p>
+            </div>
+            <div class="usecase-grid">
+                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('disaster')" aria-label="For Disaster Victims">
+                    <div class="uc-media"><img src="images/usecases/disaster-cover.webp" alt="" loading="lazy"></div>
+                    <div class="uc-shade"></div>
+                    <span class="uc-num">01</span>
+                    <div class="uc-card-body">
+                        <h3>For Disaster Victims</h3>
+                        <p>Grow food again soon after a flood or storm. Two sizes, set up in minutes.</p>
+                        <div class="uc-meta"><span>2–4 people</span><span>4+ people</span><span>from $18</span></div>
+                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
                     </div>
-                </div>
-                <div class="user-card" onclick="selectUserType('farmer')">
-                    <div class="user-icon"><i class="fas fa-tractor"></i></div>
-                    <h3>For Farmers</h3>
-                    <p>Smart agriculture system — increase yield, reduce costs</p>
-                    <div class="card-features">
-                        <span class="feature-badge"><i class="fas fa-chart-line"></i> High Yield</span>
-                        <span class="feature-badge"><i class="fas fa-robot"></i> Automated</span>
+                </article>
+
+                <article class="uc-card wide scroll-reveal" role="button" tabindex="0" onclick="selectUserType('farmer')" aria-label="For Farmers">
+                    <div class="uc-media">
+                        <video muted loop playsinline preload="none" poster="images/usecases/farmer-poster.webp" aria-hidden="true">
+                            <source src="videos/farmer.mp4" type="video/mp4">
+                        </video>
                     </div>
-                </div>
-                <div class="user-card" onclick="selectUserType('condo')">
-                    <div class="user-icon"><i class="fas fa-building"></i></div>
-                    <h3>For Condominiums</h3>
-                    <p>Grow plants in limited spaces — perfect for urban living</p>
-                    <div class="card-features">
-                        <span class="feature-badge"><i class="fas fa-compress-arrows-alt"></i> Compact</span>
-                        <span class="feature-badge"><i class="fas fa-leaf"></i> Space-Saving</span>
+                    <div class="uc-shade"></div>
+                    <span class="uc-num">02</span>
+                    <span class="uc-pill"><i></i> Video</span>
+                    <div class="uc-card-body">
+                        <h3>For Farmers</h3>
+                        <p>Answer a few questions about your farm and we'll match lights, water, misting and AI disease detection to it.</p>
+                        <div class="uc-meta"><span>Soil</span><span>Hydroponics</span><span>Farmer Vision</span></div>
+                        <span class="uc-go">Start <i class="fas fa-arrow-right"></i></span>
                     </div>
-                </div>
-                <div class="user-card" onclick="selectUserType('custom')">
-                    <div class="user-icon"><i class="fas fa-cogs"></i></div>
-                    <h3>Custom</h3>
-                    <p>Customize according to your specific needs</p>
-                    <div class="card-features">
-                        <span class="feature-badge"><i class="fas fa-sliders-h"></i> Flexible</span>
-                        <span class="feature-badge"><i class="fas fa-bullseye"></i> Tailored</span>
+                </article>
+
+                <article class="uc-card wide scroll-reveal" role="button" tabindex="0" onclick="selectUserType('household')" aria-label="For Households">
+                    <div class="uc-media">
+                        <video muted loop playsinline preload="none" poster="images/usecases/household-poster.webp" aria-hidden="true">
+                            <source src="videos/household.mp4" type="video/mp4">
+                        </video>
                     </div>
-                </div>
+                    <div class="uc-shade"></div>
+                    <span class="uc-num">03</span>
+                    <span class="uc-pill"><i></i> Video</span>
+                    <div class="uc-card-body">
+                        <h3>For Households</h3>
+                        <p>A grow tent for home that lights, waters and mists your plants by itself.</p>
+                        <div class="uc-meta"><span>Home Grow Tent</span><span>from $24</span></div>
+                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </article>
+
+                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('condo')" aria-label="For Condominiums">
+                    <div class="uc-media"><img src="images/build-side.webp" alt="" loading="lazy"></div>
+                    <div class="uc-shade"></div>
+                    <span class="uc-num">04</span>
+                    <div class="uc-card-body">
+                        <h3>For Condominiums</h3>
+                        <p>Compact, quiet boxes for small rooms and balconies.</p>
+                        <div class="uc-meta"><span>Compact</span><span>Wi-Fi</span><span>from $16</span></div>
+                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </article>
+
+                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('commercial')" aria-label="Commercial and high-value crops">
+                    <div class="uc-media"><img src="images/usecases/commercial-hydro.webp" alt="" loading="lazy"></div>
+                    <div class="uc-shade"></div>
+                    <span class="uc-num">05</span>
+                    <div class="uc-card-body">
+                        <h3>Commercial &amp; High-Value Crops</h3>
+                        <p>Precision chambers for premium plants, with every input measured and logged.</p>
+                        <div class="uc-meta"><span>2 innovations</span><span>from $48</span></div>
+                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </article>
+
+                <article class="uc-card wide uc-custom scroll-reveal" role="button" tabindex="0" onclick="selectUserType('custom')" aria-label="Custom: build your own">
+                    <div class="uc-blueprint" aria-hidden="true">
+                        <span class="bp-box"></span><span class="bp-box b2"></span><span class="bp-box b3"></span>
+                    </div>
+                    <span class="uc-num">06</span>
+                    <div class="uc-card-body">
+                        <div class="uc-custom-icon"><i class="fas fa-sliders"></i></div>
+                        <h3>Custom</h3>
+                        <p>Choose every part yourself: controller, lights, watering, climate, camera, material and size.</p>
+                        <span class="uc-go">Build your own <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </article>
             </div>
         </section>
+
+        <!-- Use-case page (filled by js/usecases.js) -->
+        <section class="usecase-detail" id="useCaseDetail" aria-live="polite"></section>
 
         <!-- Custom Configuration Form -->
         <section class="custom-form" id="customForm">
@@ -242,43 +408,6 @@
                         </button>
                     </div>
                 </form>
-            </div>
-        </section>
-
-        <!-- Config Form -->
-        <section class="config-form" id="configForm">
-            <button class="back-btn" onclick="backToUserType()">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <div class="form-container">
-                <h2 class="section-title">Configuration</h2>
-                <p style="text-align: center; color: #666; margin-bottom: 2rem;">
-                    Selected: <span id="selectedUserType" style="color: #00c853; font-weight: 600;"></span>
-                </p>
-                <form id="budgetForm">
-                    <div style="text-align: center; margin-top: 2rem;">
-                        <button type="submit" class="btn">
-                            <i class="fas fa-search"></i> View Products
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
-        <!-- Product Selection -->
-        <section class="product-selection" id="productSelection">
-            <button class="back-btn" onclick="backToConfig()">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <h2 class="section-title">Select Equipment and Sensors</h2>
-            <div class="products-grid" id="productsGrid"></div>
-            <div style="text-align: center; margin-top: 3rem;">
-                <button class="btn btn-secondary" onclick="backToConfig()">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
-                <button class="btn" onclick="proceedToOrder()">
-                    Order Now <i class="fas fa-arrow-right"></i>
-                </button>
             </div>
         </section>
 
@@ -715,13 +844,25 @@
     </button>
 
     <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2024 Smart Plant Box V4. Computer Engineering Project</p>
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-word" aria-hidden="true">Smart Plant Box</div>
+            <div class="footer-row">
+                <p>&copy; 2026 Smart Plant Box V4 · Computer Engineering Project</p>
+                <div class="footer-links">
+                    <a href="#" onclick="showMainPage(); return false;">Home</a>
+                    <a href="#" onclick="showProductsSection(); return false;">Products</a>
+                    <a href="#" onclick="showAboutPage(); return false;">About Us</a>
+                    <a href="#" onclick="showContactPage(); return false;">Contact</a>
+                </div>
+            </div>
         </div>
     </footer>
 
     <script src="js/main.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/usecases.js"></script>
+    <script src="js/ui.js"></script>
+    <script type="module" src="js/scene.js"></script>
 </body>
 </html>
