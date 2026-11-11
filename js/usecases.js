@@ -83,7 +83,7 @@
         farmer: {
             num: '02', eyebrow: L('Agriculture', 'เกษตรกรรม'), title: L('For Farmers', 'สำหรับเกษตรกร'), short: 'Farm',
             shortName: L('farm', 'ฟาร์ม'),
-            cover: { video: 'videos/farmer.mp4', poster: 'images/usecases/farmer-poster.webp' },
+            cover: { video: 'videos/farmer.mp4?v=2', poster: 'images/usecases/farmer-poster.webp?v=2' },
             lead: L('Tell us about your farm and we will match the system to your plot, the way you grow, and your budget.',
                 'เล่าเรื่องฟาร์มของคุณให้เราฟัง แล้วเราจะจับคู่ระบบให้เหมาะกับพื้นที่ วิธีปลูก และงบประมาณของคุณ'),
             optionsTitle: L('Matched to your farm', 'จับคู่ให้เหมาะกับฟาร์มของคุณ'),
