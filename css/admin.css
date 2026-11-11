@@ -30,6 +30,9 @@ body.admin { min-height: 100vh; background: radial-gradient(60% 40% at 50% 0%, r
 .adm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 .adm-head .eyebrow { color: var(--pink); margin-bottom: 0.4rem; }
 .adm-head h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2.2rem, 4vw, 3.2rem); line-height: 1; }
+.adm-head-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.adm-toggle[aria-pressed="true"] { color: var(--leaf); border-color: rgba(143, 220, 138, 0.55); }
+.adm-toggle:disabled { opacity: 0.6; cursor: wait; }
 
 .adm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
 .adm-stat { padding: 1rem 1.2rem; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); display: grid; gap: 0.3rem; }

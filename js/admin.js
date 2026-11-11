@@ -54,6 +54,7 @@
         }
         $('gate').hidden = true;
         $('dash').hidden = false;
+        loadEmailAlerts();
         await load();
         subscribe();
     }
@@ -90,6 +91,27 @@
                 if (i >= 0) { orders[i] = { ...orders[i], ...payload.new }; render(); }
             })
             .subscribe(status => { $('liveDot').hidden = status !== 'SUBSCRIBED'; });
+    }
+
+    // ---------- email alerts (each admin opts in for themselves) ----------
+    let emailOn = false;
+    function showEmailAlerts(on) {
+        emailOn = on === true;
+        $('emailBtn').setAttribute('aria-pressed', String(emailOn));
+        $('emailLabel').textContent = `Email alerts: ${emailOn ? 'On' : 'Off'}`;
+    }
+    async function loadEmailAlerts() {
+        const { data, error } = await sb.rpc('my_order_alerts');
+        if (!error) showEmailAlerts(data);
+    }
+    async function toggleEmailAlerts() {
+        const btn = $('emailBtn');
+        btn.disabled = true;
+        const { data, error } = await sb.rpc('set_my_order_alerts', { p_on: !emailOn });
+        btn.disabled = false;
+        if (error) { toast('Could not change email alerts: ' + error.message); return; }
+        showEmailAlerts(data);
+        toast(data ? 'Email alerts on — every new order will be emailed to you' : 'Email alerts off for your account');
     }
 
     async function setStatus(id, status) {
@@ -224,6 +246,7 @@
         orders = [];
         $('liveDot').hidden = true;
     });
+    $('emailBtn').addEventListener('click', toggleEmailAlerts);
     $('notifyBtn').addEventListener('click', async () => {
         if (!('Notification' in window)) { toast('This browser does not support desktop alerts'); return; }
         const p = await Notification.requestPermission();
