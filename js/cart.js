@@ -6,9 +6,9 @@ function loadCart() {
         const saved = localStorage.getItem('smartPlantCart');
         cart = saved ? JSON.parse(saved) : [];
         if (!Array.isArray(cart)) cart = [];
-        // Items saved before prices moved to baht show old dollar amounts: drop them
+        // Items saved under an older price list show old amounts: drop them (bump THB2 when prices change)
         const before = cart.length;
-        cart = cart.filter(x => x && x.cur === 'THB');
+        cart = cart.filter(x => x && x.cur === 'THB2');
         if (cart.length !== before) localStorage.setItem('smartPlantCart', JSON.stringify(cart));
     } catch (e) {
         console.error('Error loading cart:', e);
@@ -21,44 +21,6 @@ function saveCart() {
     try { localStorage.setItem('smartPlantCart', JSON.stringify(cart)); }
     catch (e) { console.error('Error saving cart:', e); }
     updateCartCount();
-}
-
-function addToCart(productId) {
-    if (typeof products === 'undefined') {
-        if (typeof showToast === 'function') showToast(t('Products not loaded — refresh.', 'โหลดสินค้าไม่สำเร็จ กรุณารีเฟรช'));
-        return;
-    }
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    let totalPrice = product.basePrice;
-    const selectedSensors = [];
-    const sensors = [];   // indexes of optional sensors the customer ticked (sent to the server)
-    product.sensors.forEach((s, i) => {
-        const cb = document.getElementById(`sensor-${productId}-${i}`);
-        if (cb && cb.checked) {
-            selectedSensors.push({ name: t(s.name, s.th), price: s.price, included: s.included });
-            if (!s.included) { totalPrice += s.price; sensors.push(i); }
-        }
-    });
-
-    cart.push({
-        type: 'product',
-        product_id: product.id,
-        sensors,
-        cur: 'THB',
-        id: product.id,
-        name: product.name,
-        controller: product.controller,
-        selectedSensors,
-        totalPrice: Math.round(totalPrice * 100) / 100,
-        quantity: 1,
-        addedAt: new Date().toISOString()
-    });
-    saveCart();
-    if (typeof showToast === 'function') {
-        showToast(`${t('Added', 'เพิ่มแล้ว')}: ${product.name} (${baht(totalPrice)})`);
-    }
 }
 
 function updateCartCount() {

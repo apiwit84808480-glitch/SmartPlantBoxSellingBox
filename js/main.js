@@ -8,103 +8,6 @@ let customOrderData = null;
 
 const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// Product catalogue (baht). Names stay in English; features and sensors have Thai versions.
-const products = [
-    {
-        id: 1,
-        name: "Basic Box - Arduino",
-        basePrice: 560,
-        controller: "Arduino Uno",
-        isBestSeller: false,
-        features: ["Arduino Uno Control System", "Soil Moisture Sensor", "Automatic Water Pump", "Misting System", "Plant Growth LED"],
-        features_th: ["ระบบควบคุม Arduino Uno", "เซนเซอร์ความชื้นในดิน", "ปั๊มน้ำอัตโนมัติ", "ระบบพ่นหมอก", "ไฟ LED ปลูกพืช"],
-        sensors: [
-            { name: "Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดิน", price: 35, included: true },
-            { name: "Air Humidity Sensor (DHT11)", th: "เซนเซอร์ความชื้นอากาศ (DHT11)", price: 40, included: true },
-            { name: "Temperature Sensor", th: "เซนเซอร์อุณหภูมิ", price: 40, included: true },
-            { name: "Light Sensor (LDR)", th: "เซนเซอร์แสง (LDR)", price: 30, included: false },
-            { name: "NPK Sensor", th: "เซนเซอร์ NPK", price: 420, included: false }
-        ]
-    },
-    {
-        id: 2,
-        name: "Standard Box - ESP32",
-        basePrice: 840,
-        controller: "ESP32",
-        isBestSeller: true,
-        features: ["ESP32 Control (WiFi + Bluetooth)", "Mobile App Control", "Precision Moisture Sensor", "Adjustable Misting System", "Full Spectrum LED"],
-        features_th: ["ควบคุมด้วย ESP32 (WiFi + Bluetooth)", "ควบคุมผ่านแอปมือถือ", "เซนเซอร์ความชื้นแม่นยำ", "ระบบพ่นหมอกปรับได้", "ไฟ LED ฟูลสเปกตรัม"],
-        sensors: [
-            { name: "Capacitive Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดินแบบ Capacitive", price: 55, included: true },
-            { name: "DHT22 Air Humidity Sensor", th: "เซนเซอร์ความชื้นอากาศ DHT22", price: 90, included: true },
-            { name: "DS18B20 Temperature Sensor", th: "เซนเซอร์อุณหภูมิ DS18B20", price: 55, included: true },
-            { name: "BH1750 Light Sensor", th: "เซนเซอร์แสง BH1750", price: 55, included: true },
-            { name: "RS485 NPK Sensor", th: "เซนเซอร์ NPK แบบ RS485", price: 560, included: false }
-        ]
-    },
-    {
-        id: 3,
-        name: "Pro Box - Raspberry Pi",
-        basePrice: 1680,
-        controller: "Raspberry Pi 4",
-        isBestSeller: false,
-        features: ["Raspberry Pi 4 Control", "7-inch Touchscreen", "Growth Monitoring Camera", "AI Plant Health Analysis", "Cloud Data Storage"],
-        features_th: ["ควบคุมด้วย Raspberry Pi 4", "จอสัมผัส 7 นิ้ว", "กล้องติดตามการเจริญเติบโต", "AI วิเคราะห์สุขภาพพืช", "เก็บข้อมูลบนคลาวด์"],
-        sensors: [
-            { name: "Industrial Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดินเกรดอุตสาหกรรม", price: 105, included: true },
-            { name: "BME280 Air Humidity Sensor", th: "เซนเซอร์ความชื้นอากาศ BME280", price: 125, included: true },
-            { name: "Precision Temperature Sensor", th: "เซนเซอร์อุณหภูมิความแม่นยำสูง", price: 105, included: true },
-            { name: "High-Precision NPK Sensor", th: "เซนเซอร์ NPK ความแม่นยำสูง", price: 700, included: true },
-            { name: "Soil pH Sensor", th: "เซนเซอร์ pH ดิน", price: 280, included: true }
-        ]
-    },
-    {
-        id: 4,
-        name: "Emergency Box - Arduino Nano",
-        basePrice: 385,
-        controller: "Arduino Nano",
-        isBestSeller: true,
-        features: ["Perfect for Disaster Victims", "Quick and Easy Setup", "Basic Water Pump System", "Soil Moisture Sensor", "Budget-Friendly Plastic Box"],
-        features_th: ["เหมาะสำหรับผู้ประสบภัย", "ติดตั้งง่ายและเร็ว", "ระบบปั๊มน้ำพื้นฐาน", "เซนเซอร์ความชื้นในดิน", "กล่องพลาสติกราคาประหยัด"],
-        sensors: [
-            { name: "Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดิน", price: 35, included: true },
-            { name: "Temperature Sensor", th: "เซนเซอร์อุณหภูมิ", price: 40, included: false },
-            { name: "Light Sensor", th: "เซนเซอร์แสง", price: 30, included: false }
-        ]
-    },
-    {
-        id: 5,
-        name: "Condo Box - ESP8266",
-        basePrice: 700,
-        controller: "ESP8266",
-        isBestSeller: false,
-        features: ["Designed for Small Spaces", "WiFi Mobile Control", "Automatic Watering System", "Energy-Efficient LED", "Silent Operation"],
-        features_th: ["ออกแบบสำหรับพื้นที่เล็ก", "ควบคุมผ่านมือถือด้วย WiFi", "ระบบรดน้ำอัตโนมัติ", "ไฟ LED ประหยัดพลังงาน", "ทำงานเงียบ"],
-        sensors: [
-            { name: "Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดิน", price: 40, included: true },
-            { name: "Air Humidity Sensor", th: "เซนเซอร์ความชื้นอากาศ", price: 65, included: true },
-            { name: "Temperature Sensor", th: "เซนเซอร์อุณหภูมิ", price: 40, included: true },
-            { name: "Light Sensor", th: "เซนเซอร์แสง", price: 35, included: false }
-        ]
-    },
-    {
-        id: 6,
-        name: "Agriculture Box - ESP32 Dual",
-        basePrice: 1925,
-        controller: "ESP32 Dual Core",
-        isBestSeller: false,
-        features: ["For Professional Farmers", "Multi-Zone Control (4 Zones)", "Automatic Water & Fertilizer", "Line/Email Reports", "IP65 Waterproof Box"],
-        features_th: ["สำหรับเกษตรกรมืออาชีพ", "ควบคุมหลายโซน (4 โซน)", "รดน้ำและให้ปุ๋ยอัตโนมัติ", "รายงานทาง Line/อีเมล", "กล่องกันน้ำ IP65"],
-        sensors: [
-            { name: "Soil Moisture Sensors (4 units)", th: "เซนเซอร์ความชื้นในดิน (4 ตัว)", price: 175, included: true },
-            { name: "NPK Sensor", th: "เซนเซอร์ NPK", price: 420, included: true },
-            { name: "pH Sensor", th: "เซนเซอร์ pH", price: 210, included: true },
-            { name: "EC Sensor", th: "เซนเซอร์ EC", price: 245, included: true },
-            { name: "Water Level Sensor", th: "เซนเซอร์ระดับน้ำ", price: 55, included: false }
-        ]
-    }
-];
-
 // ========== PAGE NAVIGATION ==========
 function showMainPage() {
     hideAllPages();
@@ -247,8 +150,6 @@ function showContactTab(tabName, btn) {
 }
 
 // ========== PRODUCTS ==========
-function loadProducts() { return products; }
-
 function selectUserType(type) {
     currentUserType = type;
 
@@ -265,87 +166,6 @@ function selectUserType(type) {
     });
     const cuf = document.getElementById('customForm');
     if (cuf) { cuf.style.display = 'block'; cuf.scrollIntoView({ behavior: 'smooth' }); }
-}
-
-function showProducts() {
-    const grid = document.getElementById('productsGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    let filtered = [...products];
-    if (currentUserType === 'disaster') filtered = products.filter(p => [4, 1, 5].includes(p.id));
-    else if (currentUserType === 'condo') filtered = products.filter(p => [5, 2, 1].includes(p.id));
-    else if (currentUserType === 'farmer') filtered = products.filter(p => [2, 3, 6].includes(p.id));
-
-    if (!filtered.length) {
-        grid.innerHTML = '<p class="empty-note">No products found for this category.</p>';
-    } else {
-        filtered.forEach(p => grid.appendChild(createProductCard(p)));
-    }
-
-    const cf = document.getElementById('configForm');
-    const cuf = document.getElementById('customForm');
-    const ps = document.getElementById('productSelection');
-    if (cf) cf.style.display = 'none';
-    if (cuf) cuf.style.display = 'none';
-    if (ps) { ps.style.display = 'block'; ps.scrollIntoView({ behavior: 'smooth' }); }
-}
-
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.id = `product-card-${product.id}`;
-
-    let sensorsHtml = '';
-    product.sensors.forEach((sensor, i) => {
-        sensorsHtml += `
-            <div class="checkbox-group">
-                <input type="checkbox" id="sensor-${product.id}-${i}"
-                       ${sensor.included ? 'checked disabled' : ''}
-                       onchange="updatePrice(${product.id})">
-                <label for="sensor-${product.id}-${i}">
-                    ${escHtml(t(sensor.name, sensor.th))}
-                    ${!sensor.included ? `(+${baht(sensor.price)})` : `<span class="included-tag">(${escHtml(t('Included', 'รวมในชุด'))})</span>`}
-                </label>
-            </div>`;
-    });
-
-    const badge = product.isBestSeller ? `<span class="best-seller">${escHtml(t('Best Seller', 'ขายดี'))}</span>` : '';
-    const features = LANG === 'th' && product.features_th ? product.features_th : product.features;
-
-    card.innerHTML = `
-        ${badge}
-        <div class="product-header">
-            <div>
-                <div class="product-name">${escHtml(product.name)}</div>
-                <div class="product-controller">${escHtml(t('Controller', 'บอร์ดควบคุม'))}: ${escHtml(product.controller)}</div>
-            </div>
-            <div class="product-price" id="price-${product.id}">${baht(product.basePrice)}</div>
-        </div>
-        <div class="product-features">
-            ${features.map(f => `<span class="feature-tag">${escHtml(f)}</span>`).join('')}
-        </div>
-        <div class="sensor-options">
-            <h4><i class="fas fa-microchip"></i> ${escHtml(t('Sensors', 'เซนเซอร์'))}</h4>
-            ${sensorsHtml}
-        </div>
-        <div class="product-actions">
-            <button class="btn-add-to-cart" onclick="addToCart(${product.id})">
-                <i class="fas fa-shopping-cart"></i> ${escHtml(t('Add to Cart', 'ใส่ตะกร้า'))}
-            </button>
-        </div>`;
-    return card;
-}
-
-function updatePrice(productId) {
-    const p = products.find(x => x.id === productId);
-    if (!p) return;
-    let total = p.basePrice;
-    p.sensors.forEach((s, i) => {
-        const cb = document.getElementById(`sensor-${productId}-${i}`);
-        if (cb && cb.checked && !s.included) total += s.price;
-    });
-    const el = document.getElementById(`price-${productId}`);
-    if (el) el.textContent = baht(total);
 }
 
 // ========== CUSTOM ==========
@@ -472,11 +292,7 @@ function initScrollReveal() {
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', function() {
     initSlider();
-    loadProducts();
     if (typeof loadCart === 'function') loadCart();
-
-    const bf = document.getElementById('budgetForm');
-    if (bf) bf.addEventListener('submit', e => { e.preventDefault(); showProducts(); });
 
     const cf = document.getElementById('checkoutForm');
     if (cf) cf.addEventListener('submit', handleCheckout);
@@ -544,9 +360,6 @@ function toServerItem(item) {
     const base = { notes: item.notes || undefined, useCase: item.useCase || undefined };
     if (item.type === 'option' && item.option_id) return { ...base, type: 'option', option_id: item.option_id };
     if (item.type === 'build' && item.build) return { ...base, type: 'build', ...item.build };
-    if (item.type === 'product' || (typeof item.id === 'number' && products.some(p => p.id === item.id))) {
-        return { ...base, type: 'product', product_id: item.product_id || item.id, sensors: item.sensors || [] };
-    }
     return null;
 }
 
