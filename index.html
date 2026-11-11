@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPR Selling Website</title>
-    <meta name="description" content="Smart Plant Box V4 — an automated plant growing box with grow lights, sensors, misting, watering and air-flow. Ready-made kits or build your own.">
+    <meta name="description" content="Smart Plant Box V4 — an automated plant growing box with grow lights, sensors, misting, watering and air-flow. Ready-made kits or build your own. กล่องปลูกพืชอัตโนมัติ เปิดไฟ รดน้ำ พ่นหมอกเอง">
     <meta name="theme-color" content="#0b090e">
     <link rel="canonical" href="https://www.smartplantbox.com/">
     <!-- Preview shown when the link is shared on LINE, Facebook, X, etc. -->
@@ -17,10 +17,24 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <script>
+        // Hide the page for a moment while Thai text is swapped in (js/i18n.js), so English doesn't flash.
+        (function () {
+            var l = 'th';
+            try { l = localStorage.getItem('spbLang') || 'th'; } catch (e) {}
+            document.documentElement.lang = l === 'en' ? 'en' : 'th';
+            if (l !== 'en') {
+                document.documentElement.classList.add('i18n-wait');
+                setTimeout(function () { document.documentElement.classList.remove('i18n-wait'); }, 2500);
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@200;300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="css/style.css">
     <script>
@@ -51,19 +65,27 @@
                 <span>Smart Plant Box</span>
             </a>
             <div class="nav-links" id="navLinks">
-                <a href="#" onclick="showMainPage(); return false;">Home</a>
-                <a href="#" onclick="showProductsSection(); return false;">Products</a>
-                <a href="#" onclick="showAboutPage(); return false;">About Us</a>
-                <a href="#" onclick="showContactPage(); return false;">Contact</a>
+                <a href="#" onclick="showMainPage(); return false;" data-th="หน้าแรก">Home</a>
+                <a href="#" onclick="showProductsSection(); return false;" data-th="สินค้า">Products</a>
+                <a href="#" onclick="showAboutPage(); return false;" data-th="เกี่ยวกับเรา">About Us</a>
+                <a href="#" onclick="showContactPage(); return false;" data-th="ติดต่อ">Contact</a>
+                <div class="lang-switch lang-switch-menu" role="group" aria-label="Language">
+                    <button type="button" data-lang-btn="th" onclick="setLang('th')" lang="th">ไทย</button>
+                    <button type="button" data-lang-btn="en" onclick="setLang('en')" lang="en">English</button>
+                </div>
             </div>
             <div class="nav-actions">
-                <button class="account-btn" id="accountBtn" type="button" onclick="window.openAccount && openAccount()" aria-label="Account">
+                <div class="lang-switch" role="group" aria-label="Language">
+                    <button type="button" data-lang-btn="th" onclick="setLang('th')" lang="th">ไทย</button>
+                    <button type="button" data-lang-btn="en" onclick="setLang('en')" lang="en">EN</button>
+                </div>
+                <button class="account-btn" id="accountBtn" type="button" onclick="window.openAccount && openAccount()" aria-label="Account" data-th-aria="บัญชี">
                     <i class="fas fa-user"></i><span>Sign in</span>
                 </button>
                 <a href="#" class="cart-btn" onclick="showCart(); return false;">
-                    <i class="fas fa-bag-shopping"></i> Cart <span id="cart-count">0</span>
+                    <i class="fas fa-bag-shopping"></i> <span class="cart-word" data-th="ตะกร้า">Cart</span> <span id="cart-count">0</span>
                 </a>
-                <button class="nav-toggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+                <button class="nav-toggle" id="navToggle" type="button" aria-label="Open menu" data-th-aria="เปิดเมนู" aria-expanded="false" aria-controls="navLinks">
                     <span></span><span></span>
                 </button>
             </div>
@@ -73,7 +95,7 @@
     <!-- MAIN PAGE -->
     <div id="main-page" class="page-section active">
 
-        <!-- Hero: the box assembles as you scroll -->
+        <!-- Hero: the box assembles as you scroll (three beats: parts → box → lights on) -->
         <section class="hero-track" id="home">
             <div class="hero-stage">
                 <div class="hero-bg" aria-hidden="true"></div>
@@ -86,101 +108,110 @@
                     </span>
                 </h1>
 
-                <img class="hero-fallback" src="images/build-front.webp" alt="The Smart Plant Box V4 prototype with its pink LED grow lights on">
+                <img class="hero-fallback" src="images/build-front.webp" alt="The Smart Plant Box V4 prototype with its pink LED grow lights on" data-th-alt="ต้นแบบ Smart Plant Box V4 เปิดไฟปลูกพืชสีชมพู">
                 <canvas id="box-canvas" aria-hidden="true"></canvas>
 
                 <div class="hero-ui">
                     <div class="hero-meta hero-meta-left">
                         <span>Smart Plant Box — V4</span>
-                        <span>Automated indoor grow chamber</span>
+                        <span data-th="กล่องปลูกพืชอัตโนมัติ">Automated indoor grow chamber</span>
                     </div>
                     <div class="hero-meta hero-meta-right">
-                        <span>Made in Bangkok</span>
-                        <span>Computer Engineering Project</span>
+                        <span data-th="ผลิตในกรุงเทพฯ">Made in Bangkok</span>
+                        <span data-th="โครงงานวิศวกรรมคอมพิวเตอร์">Computer Engineering Project</span>
                     </div>
 
-                    <p class="hero-intro">Light, water, air and data — <em>every part of a greenhouse,</em> folded into one clear box.</p>
+                    <p class="hero-intro" data-th="แสง น้ำ อากาศ และข้อมูล — <em>ทุกอย่างของโรงเรือน</em> รวมอยู่ในกล่องใสใบเดียว">Light, water, air and data — <em>every part of a greenhouse,</em> folded into one clear box.</p>
 
                     <div class="scroll-cue" aria-hidden="true">
-                        <span>Scroll to assemble</span>
+                        <span data-th="เลื่อนลงเพื่อประกอบ">Scroll to assemble</span>
                         <span class="scroll-line"></span>
                     </div>
 
                     <div class="assembly-counter" aria-hidden="true">
-                        <span class="counter-label">Assembling</span>
+                        <span class="counter-label" data-th="กำลังประกอบ">Assembling</span>
                         <span class="counter-num"><span id="partCount">00</span><span class="counter-sep">/</span><span id="partTotal">24</span></span>
                         <span class="counter-bar"><i></i></span>
                     </div>
 
                     <div class="story">
-                        <span class="eyebrow">Fully assembled · Lights on</span>
-                        <h2 class="story-title">Every part<br><em>knows its place.</em></h2>
-                        <p>A clear acrylic chamber with red-and-blue grow lights, air-flow fans, misting, an automatic pump and sensors watching the soil and air — all run by one controller, so your plant is looked after even when you're not there.</p>
+                        <span class="eyebrow" data-th="ประกอบเสร็จ · ไฟติดแล้ว">Fully assembled · Lights on</span>
+                        <h2 class="story-title" data-th="ทุกชิ้นส่วน<br><em>อยู่ในที่ของมัน</em>">Every part<br><em>knows its place.</em></h2>
+                        <p data-th="กล่องอะคริลิกใสพร้อมไฟปลูกพืชสีแดง-น้ำเงิน พัดลม ระบบพ่นหมอก ปั๊มน้ำอัตโนมัติ และเซนเซอร์ที่คอยดูดินและอากาศ ทั้งหมดควบคุมด้วยบอร์ดเดียว ต้นไม้จึงได้รับการดูแลแม้คุณไม่อยู่">A clear acrylic chamber with red-and-blue grow lights, air-flow fans, misting, an automatic pump and sensors watching the soil and air — all run by one controller, so your plant is looked after even when you're not there.</p>
                         <div class="story-actions">
-                            <button class="btn" type="button" onclick="scrollToSection('userTypeSection')">
-                                Choose your box <i class="fas fa-arrow-right"></i>
+                            <button class="btn" type="button" onclick="scrollToSection('problemSection')">
+                                <span data-th="เริ่มจากปัญหาจริง">Start from a real problem</span> <i class="fas fa-arrow-right"></i>
                             </button>
-                            <button class="btn btn-ghost" type="button" onclick="selectUserType('custom')">
-                                Build your own
+                            <button class="btn btn-ghost" type="button" onclick="scrollToSection('userTypeSection')" data-th="เลือกกล่อง">
+                                Choose your box
                             </button>
                         </div>
                     </div>
 
-                    <div class="specs-head">
-                        <span class="eyebrow">Inside the box</span>
-                        <h2>Seven systems.<br><em>One controller.</em></h2>
-                    </div>
-
-                    <div class="callouts" id="callouts" aria-hidden="true"></div>
+                    <div class="callouts" id="callouts" aria-hidden="true" hidden></div>
                 </div>
             </div>
         </section>
 
+        <!-- Everything after the hero sits on an ivory "sheet" -->
+        <div class="light-zone">
+
         <!-- Key numbers -->
-        <section class="stats" aria-label="Smart Plant Box at a glance">
+        <section class="stats" aria-label="Smart Plant Box at a glance" data-th-aria="Smart Plant Box โดยสรุป">
             <div class="stats-inner">
                 <div class="stat scroll-reveal">
-                    <span class="stat-num"><small>from</small>$11</span>
-                    <span class="stat-label">Emergency Box — quick, budget-friendly setup</span>
+                    <span class="stat-num"><small data-th="เริ่ม">from</small>฿385</span>
+                    <span class="stat-label" data-th="Emergency Box — ติดตั้งเร็ว ราคาประหยัด">Emergency Box — quick, budget-friendly setup</span>
                 </div>
                 <div class="stat scroll-reveal">
                     <span class="stat-num">6</span>
-                    <span class="stat-label">Ready-made kits, from Arduino to Raspberry Pi</span>
+                    <span class="stat-label" data-th="ชุดสำเร็จรูป ตั้งแต่ Arduino ถึง Raspberry Pi">Ready-made kits, from Arduino to Raspberry Pi</span>
                 </div>
                 <div class="stat scroll-reveal">
                     <span class="stat-num">24/7</span>
-                    <span class="stat-label">Automatic light, water and air-flow</span>
+                    <span class="stat-label" data-th="ไฟ น้ำ และลม ทำงานอัตโนมัติ">Automatic light, water and air-flow</span>
                 </div>
                 <div class="stat scroll-reveal">
                     <span class="stat-num">Wi-Fi</span>
-                    <span class="stat-label">Mobile app control on ESP32 models</span>
+                    <span class="stat-label" data-th="ควบคุมผ่านแอปมือถือ ในรุ่น ESP32">Mobile app control on ESP32 models</span>
                 </div>
             </div>
+        </section>
+
+        <!-- Start from a real problem (filled by js/usecases.js) -->
+        <section class="problems" id="problemSection">
+            <div class="section-head scroll-reveal">
+                <span class="eyebrow" data-th="01 — เริ่มจากปัญหาจริง">01 — Start from a real problem</span>
+                <h2 class="section-title" data-th="ต้นไม้ของคุณ<br><em>มีปัญหาอะไร?</em>">What's going wrong<br><em>with your plants?</em></h2>
+                <p class="section-lead" data-th="เลือกปัญหาที่ใกล้เคียงที่สุด แล้วเราจะแสดงชุดที่แก้ปัญหานั้นทันที พร้อมเหตุผลสั้น ๆ ของทุกชิ้นส่วน">Pick the problem closest to yours. We'll show the kit that fixes it right away, with a one-line reason for every part.</p>
+            </div>
+            <div class="problem-chips" id="problemChips"></div>
+            <div class="problem-result" id="problemResult" aria-live="polite" hidden></div>
         </section>
 
         <!-- The real prototype -->
         <section class="build" id="build">
             <div class="section-head scroll-reveal">
-                <span class="eyebrow">01 — The prototype</span>
-                <h2 class="section-title">Built by hand.<br><em>Tested on real plants.</em></h2>
-                <p class="section-lead">The box you just watched come together is our V4 prototype — acrylic panels on aluminium feet, a red-and-blue LED canopy, and off-the-shelf electronics wired by our team.</p>
+                <span class="eyebrow" data-th="02 — ต้นแบบ">02 — The prototype</span>
+                <h2 class="section-title" data-th="ประกอบด้วยมือ<br><em>ทดสอบกับต้นไม้จริง</em>">Built by hand.<br><em>Tested on real plants.</em></h2>
+                <p class="section-lead" data-th="กล่องที่คุณเห็นประกอบตัวเมื่อครู่คือต้นแบบ V4 ของเรา แผ่นอะคริลิกบนขาอะลูมิเนียม หลังคาไฟ LED แดง-น้ำเงิน และอุปกรณ์อิเล็กทรอนิกส์ที่ทีมเดินสายเอง">The box you just watched come together is our V4 prototype — acrylic panels on aluminium feet, a red-and-blue LED canopy, and off-the-shelf electronics wired by our team.</p>
             </div>
             <div class="build-grid">
                 <figure class="build-item tall scroll-reveal">
                     <img src="images/build-front.webp" alt="Front view of the Smart Plant Box with the grow lights on" loading="lazy">
-                    <figcaption><span>01</span> Front — LED canopy on</figcaption>
+                    <figcaption><span>01</span> <b data-th="ด้านหน้า — เปิดไฟ LED">Front — LED canopy on</b></figcaption>
                 </figure>
                 <figure class="build-item scroll-reveal">
                     <img src="images/build-lab.webp" alt="The box glowing pink on a table in the lab" loading="lazy">
-                    <figcaption><span>02</span> In the lab</figcaption>
+                    <figcaption><span>02</span> <b data-th="ในห้องแล็บ">In the lab</b></figcaption>
                 </figure>
                 <figure class="build-item scroll-reveal">
                     <img src="images/build-glow.webp" alt="Inside the box: temperature sensor, fans, misting bottles and the plant" loading="lazy">
-                    <figcaption><span>03</span> Sensors, fans &amp; misting</figcaption>
+                    <figcaption><span>03</span> <b data-th="เซนเซอร์ พัดลม และพ่นหมอก">Sensors, fans &amp; misting</b></figcaption>
                 </figure>
                 <figure class="build-item tall scroll-reveal">
                     <img src="images/build-side.webp" alt="Side view of the box with the controller mounted outside" loading="lazy">
-                    <figcaption><span>04</span> Side — controller outside</figcaption>
+                    <figcaption><span>04</span> <b data-th="ด้านข้าง — กล่องควบคุมอยู่ด้านนอก">Side — controller outside</b></figcaption>
                 </figure>
             </div>
         </section>
@@ -188,91 +219,80 @@
         <!-- User Type Selection -->
         <section class="user-selection" id="userTypeSection">
             <div class="section-head scroll-reveal">
-                <span class="eyebrow">02 — Choose your box</span>
-                <h2 class="section-title">Select your use case</h2>
-                <p class="section-lead">Tell us who it's for and we'll show the boxes that fit — every one can be customized, or build your own from scratch.</p>
+                <span class="eyebrow" data-th="03 — เลือกกล่องของคุณ">03 — Choose your box</span>
+                <h2 class="section-title" data-th="เลือกตามการใช้งาน">Select your use case</h2>
+                <p class="section-lead" data-th="บอกเราว่าใช้ทำอะไร แล้วเราจะแสดงกล่องที่เหมาะ ทุกรุ่นปรับแต่งได้ หรือจะสร้างเองทั้งหมดก็ได้">Tell us who it's for and we'll show the boxes that fit — every one can be customized, or build your own from scratch.</p>
             </div>
             <div class="usecase-grid">
-                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('disaster')" aria-label="For Disaster Victims">
-                    <div class="uc-media"><img src="images/usecases/disaster-cover.webp" alt="" loading="lazy"></div>
-                    <div class="uc-shade"></div>
-                    <span class="uc-num">01</span>
+                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('disaster')" aria-label="For Disaster Victims" data-th-aria="สำหรับผู้ประสบภัย">
+                    <div class="uc-media"><img src="images/usecases/disaster-cover.webp" alt="" loading="lazy" style="object-position: 50% 55%;"></div>
+                    <div class="uc-label"><span class="uc-num">01</span><h3 data-th="สำหรับผู้ประสบภัย">For Disaster Victims</h3></div>
                     <div class="uc-card-body">
-                        <h3>For Disaster Victims</h3>
-                        <p>Grow food again soon after a flood or storm. Two sizes, set up in minutes.</p>
-                        <div class="uc-meta"><span>2–4 people</span><span>4+ people</span><span>from $18</span></div>
-                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
+                        <p data-th="กลับมาปลูกผักกินเองได้เร็วหลังน้ำท่วมหรือพายุ มี 2 ขนาด ติดตั้งได้ในไม่กี่นาที">Grow food again soon after a flood or storm. Two sizes, set up in minutes.</p>
+                        <div class="uc-meta"><span data-th="2–4 คน">2–4 people</span><span data-th="4 คนขึ้นไป">4+ people</span><span data-th="เริ่ม ฿630">from ฿630</span></div>
+                        <span class="uc-go"><span data-th="ดูรายละเอียด">Explore</span> <i class="fas fa-arrow-right"></i></span>
                     </div>
                 </article>
 
-                <article class="uc-card wide scroll-reveal" role="button" tabindex="0" onclick="selectUserType('farmer')" aria-label="For Farmers">
+                <article class="uc-card wide scroll-reveal" role="button" tabindex="0" onclick="selectUserType('farmer')" aria-label="For Farmers" data-th-aria="สำหรับเกษตรกร">
                     <div class="uc-media">
                         <video muted loop playsinline preload="none" poster="images/usecases/farmer-poster.webp" aria-hidden="true">
                             <source src="videos/farmer.mp4" type="video/mp4">
                         </video>
                     </div>
-                    <div class="uc-shade"></div>
-                    <span class="uc-num">02</span>
-                    <span class="uc-pill"><i></i> Video</span>
+                    <span class="uc-pill"><i></i> <span data-th="วิดีโอ">Video</span></span>
+                    <div class="uc-label"><span class="uc-num">02</span><h3 data-th="สำหรับเกษตรกร">For Farmers</h3></div>
                     <div class="uc-card-body">
-                        <h3>For Farmers</h3>
-                        <p>Answer a few questions about your farm and we'll match lights, water, misting and AI disease detection to it.</p>
-                        <div class="uc-meta"><span>Soil</span><span>Hydroponics</span><span>Farmer Vision</span></div>
-                        <span class="uc-go">Start <i class="fas fa-arrow-right"></i></span>
+                        <p data-th="ตอบคำถามสั้น ๆ เกี่ยวกับฟาร์มของคุณ แล้วเราจะจับคู่ไฟ น้ำ หมอก และ AI ตรวจโรคพืชให้เหมาะกับพื้นที่และงบประมาณ">Answer a few questions about your farm and we'll match lights, water, misting and AI disease detection to your plot and budget.</p>
+                        <div class="uc-meta"><span data-th="ดิน">Soil</span><span data-th="ไฮโดรโปนิกส์">Hydroponics</span><span>Farmer Vision</span></div>
+                        <span class="uc-go"><span data-th="เริ่มเลย">Start</span> <i class="fas fa-arrow-right"></i></span>
                     </div>
                 </article>
 
-                <article class="uc-card wide scroll-reveal" role="button" tabindex="0" onclick="selectUserType('household')" aria-label="For Households">
+                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('household')" aria-label="For Households" data-th-aria="สำหรับบ้าน">
                     <div class="uc-media">
                         <video muted loop playsinline preload="none" poster="images/usecases/household-poster.webp" aria-hidden="true">
                             <source src="videos/household.mp4" type="video/mp4">
                         </video>
                     </div>
-                    <div class="uc-shade"></div>
-                    <span class="uc-num">03</span>
-                    <span class="uc-pill"><i></i> Video</span>
+                    <span class="uc-pill"><i></i> <span data-th="วิดีโอ">Video</span></span>
+                    <div class="uc-label"><span class="uc-num">03</span><h3 data-th="สำหรับบ้าน">For Households</h3></div>
                     <div class="uc-card-body">
-                        <h3>For Households</h3>
-                        <p>A grow tent for home that lights, waters and mists your plants by itself.</p>
-                        <div class="uc-meta"><span>Home Grow Tent</span><span>from $24</span></div>
-                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
+                        <p data-th="เต็นท์ปลูกพืชสำหรับบ้าน ที่เปิดไฟ รดน้ำ และพ่นหมอกให้ต้นไม้เอง">A grow tent for home that lights, waters and mists your plants by itself.</p>
+                        <div class="uc-meta"><span>Home Grow Tent</span><span data-th="เริ่ม ฿840">from ฿840</span></div>
+                        <span class="uc-go"><span data-th="ดูรายละเอียด">Explore</span> <i class="fas fa-arrow-right"></i></span>
                     </div>
                 </article>
 
-                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('condo')" aria-label="For Condominiums">
-                    <div class="uc-media"><img src="images/build-side.webp" alt="" loading="lazy"></div>
-                    <div class="uc-shade"></div>
-                    <span class="uc-num">04</span>
+                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('condo')" aria-label="For Condominiums" data-th-aria="สำหรับคอนโด">
+                    <div class="uc-media"><img src="images/build-side.webp" alt="" loading="lazy" style="object-position: 50% 40%;"></div>
+                    <div class="uc-label"><span class="uc-num">04</span><h3 data-th="สำหรับคอนโด">For Condominiums</h3></div>
                     <div class="uc-card-body">
-                        <h3>For Condominiums</h3>
-                        <p>Compact, quiet boxes for small rooms and balconies.</p>
-                        <div class="uc-meta"><span>Compact</span><span>Wi-Fi</span><span>from $16</span></div>
-                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
+                        <p data-th="กล่องขนาดกะทัดรัด เงียบ เหมาะกับห้องเล็กและระเบียง">Compact, quiet boxes for small rooms and balconies.</p>
+                        <div class="uc-meta"><span data-th="กะทัดรัด">Compact</span><span>Wi-Fi</span><span data-th="เริ่ม ฿560">from ฿560</span></div>
+                        <span class="uc-go"><span data-th="ดูรายละเอียด">Explore</span> <i class="fas fa-arrow-right"></i></span>
                     </div>
                 </article>
 
-                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('commercial')" aria-label="Commercial and high-value crops">
-                    <div class="uc-media"><img src="images/usecases/commercial-hydro.webp" alt="" loading="lazy"></div>
-                    <div class="uc-shade"></div>
-                    <span class="uc-num">05</span>
+                <article class="uc-card scroll-reveal" role="button" tabindex="0" onclick="selectUserType('commercial')" aria-label="Commercial and high-value crops" data-th-aria="พืชเศรษฐกิจมูลค่าสูง">
+                    <div class="uc-media"><img src="images/usecases/commercial-hydro.webp" alt="" loading="lazy" style="object-position: 50% 45%;"></div>
+                    <div class="uc-label"><span class="uc-num">05</span><h3 data-th="พืชเศรษฐกิจมูลค่าสูง">Commercial &amp; High-Value Crops</h3></div>
                     <div class="uc-card-body">
-                        <h3>Commercial &amp; High-Value Crops</h3>
-                        <p>Precision chambers for premium plants, with every input measured and logged.</p>
-                        <div class="uc-meta"><span>2 innovations</span><span>from $48</span></div>
-                        <span class="uc-go">Explore <i class="fas fa-arrow-right"></i></span>
+                        <p data-th="ห้องปลูกแม่นยำสำหรับพืชราคาสูง วัด ควบคุม และบันทึกทุกค่า">Precision chambers for premium plants, with every input measured and logged.</p>
+                        <div class="uc-meta"><span data-th="2 นวัตกรรม">2 innovations</span><span data-th="เริ่ม ฿1,680">from ฿1,680</span></div>
+                        <span class="uc-go"><span data-th="ดูรายละเอียด">Explore</span> <i class="fas fa-arrow-right"></i></span>
                     </div>
                 </article>
 
-                <article class="uc-card wide uc-custom scroll-reveal" role="button" tabindex="0" onclick="selectUserType('custom')" aria-label="Custom: build your own">
+                <article class="uc-card full uc-custom scroll-reveal" role="button" tabindex="0" onclick="selectUserType('custom')" aria-label="Custom: build your own" data-th-aria="สร้างกล่องเอง">
                     <div class="uc-blueprint" aria-hidden="true">
                         <span class="bp-box"></span><span class="bp-box b2"></span><span class="bp-box b3"></span>
                     </div>
-                    <span class="uc-num">06</span>
                     <div class="uc-card-body">
-                        <div class="uc-custom-icon"><i class="fas fa-sliders"></i></div>
-                        <h3>Custom</h3>
-                        <p>Choose every part yourself: controller, lights, watering, climate, camera, material and size.</p>
-                        <span class="uc-go">Build your own <i class="fas fa-arrow-right"></i></span>
+                        <span class="uc-num">06</span>
+                        <h3 data-th="สร้างเอง">Custom</h3>
+                        <p data-th="เลือกทุกชิ้นเอง ทั้งบอร์ดควบคุม ไฟ ระบบน้ำ อากาศ กล้อง วัสดุ และขนาด">Choose every part yourself: controller, lights, watering, climate, camera, material and size.</p>
+                        <span class="uc-go"><span data-th="เริ่มสร้าง">Build your own</span> <i class="fas fa-arrow-right"></i></span>
                     </div>
                 </article>
             </div>
@@ -284,135 +304,135 @@
         <!-- Custom Configuration Form -->
         <section class="custom-form" id="customForm">
             <button class="back-btn" onclick="backToUserType()">
-                <i class="fas fa-arrow-left"></i> Back
+                <i class="fas fa-arrow-left"></i> <span data-th="กลับ">Back</span>
             </button>
             <div class="form-container custom-container">
-                <h2 class="section-title">Custom Configuration</h2>
+                <h2 class="section-title" data-th="สร้างกล่องเอง">Custom Configuration</h2>
                 <form id="customConfigForm">
                     <div class="form-group">
-                        <label><i class="fas fa-microchip"></i> Microcontroller</label>
+                        <label><i class="fas fa-microchip"></i> <span data-th="บอร์ดควบคุม">Microcontroller</span></label>
                         <select id="microcontroller" class="custom-select" onchange="calculateCustomPrice()">
-                            <option value="0">-- Select Microcontroller --</option>
-                            <option value="3.5">Arduino Uno Clone ($3.5)</option>
-                            <option value="14">Arduino Uno Official ($14)</option>
-                            <option value="5">ESP-32 Dev Board ($5)</option>
-                            <option value="6">ESP-32 CAM Module ($6)</option>
-                            <option value="3">Raspberry Pi Pico ($3)</option>
-                            <option value="13">Raspberry Pi Zero W ($13)</option>
-                            <option value="18">Raspberry Pi Zero 2 W ($18)</option>
-                            <option value="35">Raspberry Pi 3 Model B ($35)</option>
-                            <option value="42">Raspberry Pi 3 Model B+ ($42)</option>
-                            <option value="50">Raspberry Pi 4 - 2GB ($50)</option>
-                            <option value="65">Raspberry Pi 4 - 4GB ($65)</option>
-                            <option value="80">Raspberry Pi 4 - 8GB ($80)</option>
-                            <option value="65">Raspberry Pi 5 - 4GB ($65)</option>
-                            <option value="85">Raspberry Pi 5 - 8GB ($85)</option>
+                            <option value="0" data-th="-- เลือกบอร์ดควบคุม --">-- Select Microcontroller --</option>
+                            <option value="125">Arduino Uno Clone (฿125)</option>
+                            <option value="490">Arduino Uno Official (฿490)</option>
+                            <option value="175">ESP-32 Dev Board (฿175)</option>
+                            <option value="210">ESP-32 CAM Module (฿210)</option>
+                            <option value="105">Raspberry Pi Pico (฿105)</option>
+                            <option value="455">Raspberry Pi Zero W (฿455)</option>
+                            <option value="630">Raspberry Pi Zero 2 W (฿630)</option>
+                            <option value="1225">Raspberry Pi 3 Model B (฿1,225)</option>
+                            <option value="1470">Raspberry Pi 3 Model B+ (฿1,470)</option>
+                            <option value="1750">Raspberry Pi 4 - 2GB (฿1,750)</option>
+                            <option value="2275">Raspberry Pi 4 - 4GB (฿2,275)</option>
+                            <option value="2800">Raspberry Pi 4 - 8GB (฿2,800)</option>
+                            <option value="2275">Raspberry Pi 5 - 4GB (฿2,275)</option>
+                            <option value="2975">Raspberry Pi 5 - 8GB (฿2,975)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><i class="fas fa-tint"></i> Watering and Fertilizer System</label>
+                        <label><i class="fas fa-tint"></i> <span data-th="ระบบรดน้ำและปุ๋ย">Watering and Fertilizer System</span></label>
                         <select id="watering" class="custom-select" onchange="calculateCustomPrice()">
-                            <option value="0">-- Select System --</option>
-                            <option value="0">No watering system ($0)</option>
-                            <option value="0">No fertilizer ($0)</option>
-                            <option value="3">Foggy watering ($3)</option>
-                            <option value="5">Hose watering ($5)</option>
-                            <option value="6">Mist watering ($6)</option>
-                            <option value="7">Herb fertilizer ($7)</option>
-                            <option value="7">Vegetable fertilizer ($7)</option>
-                            <option value="7">Flower fertilizer ($7)</option>
-                            <option value="9">Small fruits fertilizer ($9)</option>
+                            <option value="0" data-th="-- เลือกระบบ --">-- Select System --</option>
+                            <option value="0" data-th="ไม่มีระบบรดน้ำ (฿0)">No watering system (฿0)</option>
+                            <option value="0" data-th="ไม่ใส่ปุ๋ย (฿0)">No fertilizer (฿0)</option>
+                            <option value="105" data-th="รดน้ำแบบละอองฝอย (฿105)">Foggy watering (฿105)</option>
+                            <option value="175" data-th="รดน้ำด้วยสายยาง (฿175)">Hose watering (฿175)</option>
+                            <option value="210" data-th="รดน้ำแบบพ่นหมอก (฿210)">Mist watering (฿210)</option>
+                            <option value="245" data-th="ปุ๋ยสำหรับสมุนไพร (฿245)">Herb fertilizer (฿245)</option>
+                            <option value="245" data-th="ปุ๋ยสำหรับผัก (฿245)">Vegetable fertilizer (฿245)</option>
+                            <option value="245" data-th="ปุ๋ยสำหรับไม้ดอก (฿245)">Flower fertilizer (฿245)</option>
+                            <option value="315" data-th="ปุ๋ยสำหรับไม้ผลขนาดเล็ก (฿315)">Small fruits fertilizer (฿315)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><i class="fas fa-lightbulb"></i> Light System</label>
+                        <label><i class="fas fa-lightbulb"></i> <span data-th="ระบบไฟ">Light System</span></label>
                         <select id="light" class="custom-select" onchange="calculateCustomPrice()">
-                            <option value="0">-- Select Light --</option>
-                            <option value="0">No light ($0)</option>
-                            <option value="4">RGB light - No level control ($4)</option>
-                            <option value="7">RGB light - With level control ($7)</option>
-                            <option value="8">RGBW light - No level control ($8)</option>
-                            <option value="11">RGBW light - With level control ($11)</option>
-                            <option value="6">Red light &amp; Blue light ($6)</option>
-                            <option value="4">Red light ($4)</option>
-                            <option value="4">Blue light ($4)</option>
+                            <option value="0" data-th="-- เลือกไฟ --">-- Select Light --</option>
+                            <option value="0" data-th="ไม่ใช้ไฟ (฿0)">No light (฿0)</option>
+                            <option value="140" data-th="ไฟ RGB - ปรับระดับไม่ได้ (฿140)">RGB light - No level control (฿140)</option>
+                            <option value="245" data-th="ไฟ RGB - ปรับระดับได้ (฿245)">RGB light - With level control (฿245)</option>
+                            <option value="280" data-th="ไฟ RGBW - ปรับระดับไม่ได้ (฿280)">RGBW light - No level control (฿280)</option>
+                            <option value="385" data-th="ไฟ RGBW - ปรับระดับได้ (฿385)">RGBW light - With level control (฿385)</option>
+                            <option value="210" data-th="ไฟแดงและไฟน้ำเงิน (฿210)">Red light &amp; Blue light (฿210)</option>
+                            <option value="140" data-th="ไฟแดง (฿140)">Red light (฿140)</option>
+                            <option value="140" data-th="ไฟน้ำเงิน (฿140)">Blue light (฿140)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><i class="fas fa-thermometer"></i> Temperature System</label>
+                        <label><i class="fas fa-thermometer"></i> <span data-th="ระบบควบคุมอุณหภูมิ">Temperature System</span></label>
                         <select id="temperature" class="custom-select" onchange="calculateCustomPrice()">
-                            <option value="0">-- Select System --</option>
-                            <option value="0">No temperature system ($0)</option>
-                            <option value="22">Cooler + Heater + Exhaust fan ($22)</option>
-                            <option value="10">Cooler ($10)</option>
-                            <option value="9">Heater ($9)</option>
-                            <option value="6">Exhaust fan ($6)</option>
+                            <option value="0" data-th="-- เลือกระบบ --">-- Select System --</option>
+                            <option value="0" data-th="ไม่มีระบบอุณหภูมิ (฿0)">No temperature system (฿0)</option>
+                            <option value="770" data-th="ระบบทำความเย็น + ฮีตเตอร์ + พัดลมระบาย (฿770)">Cooler + Heater + Exhaust fan (฿770)</option>
+                            <option value="350" data-th="ระบบทำความเย็น (฿350)">Cooler (฿350)</option>
+                            <option value="315" data-th="ฮีตเตอร์ (฿315)">Heater (฿315)</option>
+                            <option value="210" data-th="พัดลมระบายอากาศ (฿210)">Exhaust fan (฿210)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><i class="fas fa-cloud"></i> Mist System</label>
+                        <label><i class="fas fa-cloud"></i> <span data-th="ระบบพ่นหมอก">Mist System</span></label>
                         <select id="mist" class="custom-select" onchange="calculateCustomPrice()">
-                            <option value="0">-- Select System --</option>
-                            <option value="0">No misting system ($0)</option>
-                            <option value="2">1 Misting nozzle - No pump ($2)</option>
-                            <option value="4">2 Misting nozzles - No pump ($4)</option>
-                            <option value="8">1 Misting nozzle - With pump ($8)</option>
-                            <option value="12">2 Misting nozzles - With pump ($12)</option>
+                            <option value="0" data-th="-- เลือกระบบ --">-- Select System --</option>
+                            <option value="0" data-th="ไม่มีระบบพ่นหมอก (฿0)">No misting system (฿0)</option>
+                            <option value="70" data-th="หัวพ่นหมอก 1 หัว - ไม่มีปั๊ม (฿70)">1 Misting nozzle - No pump (฿70)</option>
+                            <option value="140" data-th="หัวพ่นหมอก 2 หัว - ไม่มีปั๊ม (฿140)">2 Misting nozzles - No pump (฿140)</option>
+                            <option value="280" data-th="หัวพ่นหมอก 1 หัว - มีปั๊ม (฿280)">1 Misting nozzle - With pump (฿280)</option>
+                            <option value="420" data-th="หัวพ่นหมอก 2 หัว - มีปั๊ม (฿420)">2 Misting nozzles - With pump (฿420)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><i class="fas fa-camera"></i> Camera</label>
+                        <label><i class="fas fa-camera"></i> <span data-th="กล้อง">Camera</span></label>
                         <select id="camera" class="custom-select" onchange="calculateCustomPrice()">
-                            <option value="0">-- Select Camera --</option>
-                            <option value="0">No camera ($0)</option>
-                            <option value="6">USB web camera ($6)</option>
-                            <option value="6">ESP-32 camera ($6)</option>
-                            <option value="14">Raspberry Pi camera ($14)</option>
+                            <option value="0" data-th="-- เลือกกล้อง --">-- Select Camera --</option>
+                            <option value="0" data-th="ไม่ใช้กล้อง (฿0)">No camera (฿0)</option>
+                            <option value="210" data-th="กล้องเว็บแคม USB (฿210)">USB web camera (฿210)</option>
+                            <option value="210" data-th="กล้อง ESP-32 (฿210)">ESP-32 camera (฿210)</option>
+                            <option value="490" data-th="กล้อง Raspberry Pi (฿490)">Raspberry Pi camera (฿490)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label><i class="fas fa-box"></i> Material of the Box (Optional)</label>
+                        <label><i class="fas fa-box"></i> <span data-th="วัสดุกล่อง (ไม่บังคับ)">Material of the Box (Optional)</span></label>
                         <select id="boxMaterial" class="custom-select" onchange="calculateCustomPrice()">
-                            <option value="0">-- Select Material (Optional) --</option>
-                            <option value="0.004">Glass ($0.004/cm²)</option>
-                            <option value="0.003">Acrylic ($0.003/cm²)</option>
-                            <option value="0.0015">Plastic ($0.0015/cm²)</option>
+                            <option value="0" data-th="-- เลือกวัสดุ (ไม่บังคับ) --">-- Select Material (Optional) --</option>
+                            <option value="0.14" data-th="กระจก (฿0.14/ตร.ซม.)">Glass (฿0.14/cm²)</option>
+                            <option value="0.105" data-th="อะคริลิก (฿0.105/ตร.ซม.)">Acrylic (฿0.105/cm²)</option>
+                            <option value="0.0525" data-th="พลาสติก (฿0.0525/ตร.ซม.)">Plastic (฿0.0525/cm²)</option>
                         </select>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label><i class="fas fa-ruler-horizontal"></i> Width (cm)</label>
-                            <input type="number" id="boxWidth" placeholder="Enter width" min="1" onchange="calculateCustomPrice()">
+                            <label><i class="fas fa-ruler-horizontal"></i> <span data-th="กว้าง (ซม.)">Width (cm)</span></label>
+                            <input type="number" id="boxWidth" placeholder="Enter width" data-th-ph="ความกว้าง" min="1" onchange="calculateCustomPrice()">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-ruler-vertical"></i> Length (cm)</label>
-                            <input type="number" id="boxLength" placeholder="Enter length" min="1" onchange="calculateCustomPrice()">
+                            <label><i class="fas fa-ruler-vertical"></i> <span data-th="ยาว (ซม.)">Length (cm)</span></label>
+                            <input type="number" id="boxLength" placeholder="Enter length" data-th-ph="ความยาว" min="1" onchange="calculateCustomPrice()">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-ruler-combined"></i> Height (cm)</label>
-                            <input type="number" id="boxHeight" placeholder="Enter height" min="1" onchange="calculateCustomPrice()">
+                            <label><i class="fas fa-ruler-combined"></i> <span data-th="สูง (ซม.)">Height (cm)</span></label>
+                            <input type="number" id="boxHeight" placeholder="Enter height" data-th-ph="ความสูง" min="1" onchange="calculateCustomPrice()">
                         </div>
                     </div>
                     <div class="price-summary" id="priceSummary">
                         <div class="summary-item">
-                            <span>Components Total:</span>
-                            <span id="componentsTotal">$0</span>
+                            <span data-th="รวมอุปกรณ์:">Components Total:</span>
+                            <span id="componentsTotal">฿0</span>
                         </div>
                         <div class="summary-item">
-                            <span>Box Material:</span>
-                            <span id="boxMaterialTotal">$0</span>
+                            <span data-th="ค่าวัสดุกล่อง:">Box Material:</span>
+                            <span id="boxMaterialTotal">฿0</span>
                         </div>
                         <div class="summary-total">
-                            <span>Grand Total:</span>
-                            <span id="grandTotal">$0</span>
+                            <span data-th="ยอดรวม:">Grand Total:</span>
+                            <span id="grandTotal">฿0</span>
                         </div>
                     </div>
-                    <div style="text-align: center; margin-top: 2rem;">
+                    <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="backToUserType()">
-                            <i class="fas fa-arrow-left"></i> Back
+                            <i class="fas fa-arrow-left"></i> <span data-th="กลับ">Back</span>
                         </button>
                         <button type="button" class="btn" onclick="showCustomOrderForm()">
-                            <i class="fas fa-shopping-cart"></i> Order Now
+                            <i class="fas fa-shopping-cart"></i> <span data-th="สั่งซื้อ">Order Now</span>
                         </button>
                     </div>
                 </form>
@@ -422,57 +442,59 @@
         <!-- Order Form -->
         <section class="order-form" id="orderForm">
             <button class="back-btn" onclick="backToProducts()">
-                <i class="fas fa-arrow-left"></i> Back
+                <i class="fas fa-arrow-left"></i> <span data-th="กลับ">Back</span>
             </button>
             <div class="order-container">
-                <h2 class="section-title">Order Form</h2>
+                <h2 class="section-title" data-th="แบบฟอร์มสั่งซื้อ">Order Form</h2>
                 <form id="checkoutForm">
-                    <h3>Personal Information</h3>
+                    <h3 data-th="ข้อมูลผู้สั่ง">Personal Information</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>First Name *</label>
-                            <input type="text" id="firstName" required>
+                            <label for="firstName" data-th="ชื่อ *">First Name *</label>
+                            <input type="text" id="firstName" autocomplete="given-name" required>
                         </div>
                         <div class="form-group">
-                            <label>Last Name *</label>
-                            <input type="text" id="lastName" required>
+                            <label for="lastName" data-th="นามสกุล *">Last Name *</label>
+                            <input type="text" id="lastName" autocomplete="family-name" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Phone Number *</label>
-                            <input type="tel" id="phone" required>
+                            <label for="phone" data-th="เบอร์โทร *">Phone Number *</label>
+                            <input type="tel" id="phone" autocomplete="tel" required>
                         </div>
                         <div class="form-group">
-                            <label>Email *</label>
-                            <input type="email" id="email" required>
+                            <label for="email" data-th="อีเมล *">Email *</label>
+                            <input type="email" id="email" autocomplete="email" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Shipping Address *</label>
-                        <textarea id="address" required></textarea>
+                        <label for="address" data-th="ที่อยู่จัดส่ง *">Shipping Address *</label>
+                        <textarea id="address" autocomplete="street-address" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Additional Comments</label>
-                        <textarea id="comments" placeholder="Specify your special requirements"></textarea>
+                        <label for="comments" data-th="หมายเหตุเพิ่มเติม">Additional Comments</label>
+                        <textarea id="comments" placeholder="Specify your special requirements" data-th-ph="ระบุความต้องการพิเศษ"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Upload Design File (if any)</label>
+                        <label for="designFile" data-th="แนบไฟล์แบบ (ถ้ามี)">Upload Design File (if any)</label>
                         <input type="file" id="designFile" accept=".pdf,.dwg,.stl,.obj,.png,.jpg">
                     </div>
                     <div class="summary-box" id="orderSummary"></div>
-                    <div style="text-align: center; margin-top: 2rem;">
+                    <p class="order-note" data-th="ราคาทั้งหมดเป็นเงินบาท (฿) ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมงเพื่อยืนยันยอดและการจัดส่งก่อนชำระเงิน">All prices are in Thai baht (฿). We'll contact you within 24 hours to confirm the total and delivery before you pay.</p>
+                    <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="backToProducts()">
-                            <i class="fas fa-arrow-left"></i> Back
+                            <i class="fas fa-arrow-left"></i> <span data-th="กลับ">Back</span>
                         </button>
                         <button type="submit" class="btn">
-                            Confirm Order <i class="fas fa-check-circle"></i>
+                            <span data-th="ยืนยันการสั่งซื้อ">Confirm Order</span> <i class="fas fa-check-circle"></i>
                         </button>
                     </div>
                 </form>
             </div>
         </section>
 
+        </div><!-- /.light-zone -->
     </div>
 
     <!-- ABOUT US PAGE -->
@@ -486,18 +508,18 @@
         <section class="about-hero relative z-10">
             <div class="max-w-7xl mx-auto text-center">
                 <div class="floating inline-block mb-6">
-                    <span class="hero-pill">Meet the Minds Behind the Innovation</span>
+                    <span class="hero-pill" data-th="รู้จักทีมผู้สร้างนวัตกรรม">Meet the Minds Behind the Innovation</span>
                 </div>
-                <h1 class="display-font text-5xl font-bold mb-6 leading-tight">
+                <h1 class="display-font text-5xl font-bold mb-6 leading-tight" data-th="เราคือ<span class=&quot;gradient-text&quot;>นักสร้างสรรค์</span><br><span class=&quot;gradient-text&quot;>นักประดิษฐ์</span> และ<span class=&quot;gradient-text&quot;>นวัตกร</span>">
                     We Are <span class="gradient-text">Creators</span>,<br>
                     <span class="gradient-text">Builders</span> &amp; <span class="gradient-text">Innovators</span>
                 </h1>
-                <p class="text-xl text-slate-600 mx-auto mb-12 leading-relaxed" style="max-width:42rem;">
+                <p class="text-xl text-slate-600 mx-auto mb-12 leading-relaxed" style="max-width:42rem;" data-th="ทีมที่ตั้งใจเปลี่ยนไอเดียให้เป็นของจริง ด้วยเทคโนโลยี ความคิดสร้างสรรค์ และการทำงานร่วมกัน">
                     A passionate team dedicated to transforming ideas into reality through technology,
                     creativity, and collaborative excellence.
                 </p>
                 <button onclick="showContactPage()" class="btn">
-                    <i class="fas fa-envelope"></i> Get In Touch
+                    <i class="fas fa-envelope"></i> <span data-th="ติดต่อเรา">Get In Touch</span>
                 </button>
             </div>
         </section>
@@ -505,25 +527,25 @@
         <section class="relative z-10 py-20 px-4">
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-16 scroll-reveal">
-                    <h2 class="display-font text-4xl font-bold mb-4 text-slate-800">The Innovators</h2>
+                    <h2 class="display-font text-4xl font-bold mb-4 text-slate-800" data-th="ทีมผู้พัฒนา">The Innovators</h2>
                     <div class="title-bar"></div>
-                    <p class="mt-4 text-slate-600 text-xl">The driving force behind our groundbreaking solutions</p>
+                    <p class="mt-4 text-slate-600 text-xl" data-th="ผู้อยู่เบื้องหลังผลงานของเรา">The driving force behind our groundbreaking solutions</p>
                 </div>
 
                 <div class="team-grid">
                     <div class="team-card scroll-reveal card-hover">
                         <div class="team-photo">
                             <img src="images/natapat.jpg" alt="Mr. Natapat Thongkaokam" class="team-img">
-                            <span class="team-badge">LEADER</span>
+                            <span class="team-badge" data-th="หัวหน้า">LEADER</span>
                         </div>
                         <div class="team-info">
                             <h3>Mr. Natapat Thongkaokam (Pat)</h3>
-                            <p class="team-role">Project Leader</p>
+                            <p class="team-role" data-th="หัวหน้าโครงงาน">Project Leader</p>
                             <div class="team-responsibilities">
-                                <span class="resp-tag"><i class="fas fa-video"></i> Presenter</span>
-                                <span class="resp-tag"><i class="fas fa-image"></i> Poster &amp; Video</span>
+                                <span class="resp-tag"><i class="fas fa-video"></i> <span data-th="ผู้นำเสนอ">Presenter</span></span>
+                                <span class="resp-tag"><i class="fas fa-image"></i> <span data-th="โปสเตอร์และวิดีโอ">Poster &amp; Video</span></span>
                             </div>
-                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> <span data-th="ติดต่อ">Contact</span></button>
                         </div>
                     </div>
 
@@ -533,12 +555,12 @@
                         </div>
                         <div class="team-info">
                             <h3>Mr. Pannawich Rujirekanusorn (Pun)</h3>
-                            <p class="team-role">Developer</p>
+                            <p class="team-role" data-th="นักพัฒนา">Developer</p>
                             <div class="team-responsibilities">
-                                <span class="resp-tag"><i class="fas fa-code"></i> Programming</span>
-                                <span class="resp-tag"><i class="fas fa-microchip"></i> Hardware</span>
+                                <span class="resp-tag"><i class="fas fa-code"></i> <span data-th="เขียนโปรแกรม">Programming</span></span>
+                                <span class="resp-tag"><i class="fas fa-microchip"></i> <span data-th="ฮาร์ดแวร์">Hardware</span></span>
                             </div>
-                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> <span data-th="ติดต่อ">Contact</span></button>
                         </div>
                     </div>
 
@@ -548,12 +570,12 @@
                         </div>
                         <div class="team-info">
                             <h3>Mr. Apiwit Ittiphatworakun (Rj)</h3>
-                            <p class="team-role">Designer</p>
+                            <p class="team-role" data-th="นักออกแบบ">Designer</p>
                             <div class="team-responsibilities">
                                 <span class="resp-tag"><i class="fas fa-paint-brush"></i> UI/UX</span>
-                                <span class="resp-tag"><i class="fas fa-pen"></i> Graphics</span>
+                                <span class="resp-tag"><i class="fas fa-pen"></i> <span data-th="กราฟิก">Graphics</span></span>
                             </div>
-                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> <span data-th="ติดต่อ">Contact</span></button>
                         </div>
                     </div>
 
@@ -563,12 +585,12 @@
                         </div>
                         <div class="team-info">
                             <h3>Mr. Kantaphat Khemlai (Ikkyu)</h3>
-                            <p class="team-role">Researcher</p>
+                            <p class="team-role" data-th="นักวิจัย">Researcher</p>
                             <div class="team-responsibilities">
-                                <span class="resp-tag"><i class="fas fa-flask"></i> Research</span>
-                                <span class="resp-tag"><i class="fas fa-book"></i> Documentation</span>
+                                <span class="resp-tag"><i class="fas fa-flask"></i> <span data-th="วิจัย">Research</span></span>
+                                <span class="resp-tag"><i class="fas fa-book"></i> <span data-th="จัดทำเอกสาร">Documentation</span></span>
                             </div>
-                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> <span data-th="ติดต่อ">Contact</span></button>
                         </div>
                     </div>
                 </div>
@@ -578,9 +600,9 @@
         <section class="relative z-10 py-20 px-4 bg-slate-100">
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-16 scroll-reveal">
-                    <h2 class="display-font text-4xl font-bold mb-4 text-slate-800">Our Advisors</h2>
+                    <h2 class="display-font text-4xl font-bold mb-4 text-slate-800" data-th="อาจารย์ที่ปรึกษา">Our Advisors</h2>
                     <div class="title-bar amber"></div>
-                    <p class="mt-4 text-slate-600 text-xl">Guiding us with wisdom and expertise</p>
+                    <p class="mt-4 text-slate-600 text-xl" data-th="ผู้ให้คำแนะนำด้วยความรู้และประสบการณ์">Guiding us with wisdom and expertise</p>
                 </div>
 
                 <div class="team-grid">
@@ -590,13 +612,13 @@
                         </div>
                         <div class="team-info">
                             <h3 style="color: white;">Mr. Pimpan Honkeanjan (Pat)</h3>
-                            <p style="color: #fbbf24;">Project Advisor</p>
+                            <p style="color: #fbbf24;" data-th="อาจารย์ที่ปรึกษาโครงงาน">Project Advisor</p>
                             <div class="team-responsibilities">
                                 <span class="resp-tag" style="background: rgba(255,255,255,0.1); color: white;">
-                                    <i class="fas fa-lightbulb" style="color:#fbbf24;"></i> Technical Guidance
+                                    <i class="fas fa-lightbulb" style="color:#fbbf24;"></i> <span data-th="ให้คำแนะนำด้านเทคนิค">Technical Guidance</span>
                                 </span>
                             </div>
-                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> <span data-th="ติดต่อ">Contact</span></button>
                         </div>
                     </div>
 
@@ -606,13 +628,13 @@
                         </div>
                         <div class="team-info">
                             <h3 style="color: white;">Mr. Prasop Ondee (Boy)</h3>
-                            <p style="color: #fbbf24;">Academic Advisor</p>
+                            <p style="color: #fbbf24;" data-th="อาจารย์ที่ปรึกษาด้านวิชาการ">Academic Advisor</p>
                             <div class="team-responsibilities">
                                 <span class="resp-tag" style="background: rgba(255,255,255,0.1); color: white;">
-                                    <i class="fas fa-graduation-cap" style="color:#fbbf24;"></i> Academic Support
+                                    <i class="fas fa-graduation-cap" style="color:#fbbf24;"></i> <span data-th="สนับสนุนด้านวิชาการ">Academic Support</span>
                                 </span>
                             </div>
-                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> Contact</button>
+                            <button class="contact-btn" onclick="showContactPage()"><i class="fas fa-envelope"></i> <span data-th="ติดต่อ">Contact</span></button>
                         </div>
                     </div>
                 </div>
@@ -630,16 +652,16 @@
         <section class="contact-hero relative z-10">
             <div class="max-w-7xl mx-auto text-center">
                 <div class="floating inline-block mb-6">
-                    <span class="hero-pill">Let's Connect</span>
+                    <span class="hero-pill" data-th="ติดต่อกัน">Let's Connect</span>
                 </div>
-                <h1 class="display-font text-5xl font-bold mb-6 leading-tight">
+                <h1 class="display-font text-5xl font-bold mb-6 leading-tight" data-th="<span class=&quot;gradient-text&quot;>ติดต่อ</span>เรา">
                     Get In <span class="gradient-text">Touch</span>
                 </h1>
-                <p class="text-xl text-slate-600 mx-auto mb-12 leading-relaxed" style="max-width:42rem;">
+                <p class="text-xl text-slate-600 mx-auto mb-12 leading-relaxed" style="max-width:42rem;" data-th="มีคำถามหรืออยากร่วมงานกับเรา? ยินดีรับฟังเสมอ">
                     Have a question or want to collaborate? We'd love to hear from you.
                 </p>
                 <button onclick="showAboutPage()" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to About Us
+                    <i class="fas fa-arrow-left"></i> <span data-th="กลับไปหน้าเกี่ยวกับเรา">Back to About Us</span>
                 </button>
             </div>
         </section>
@@ -648,10 +670,10 @@
             <div class="max-w-7xl mx-auto">
                 <div class="tab-nav">
                     <button class="tab-btn active" onclick="showContactTab('team', this)">
-                        <i class="fas fa-users"></i> Team Members
+                        <i class="fas fa-users"></i> <span data-th="สมาชิกทีม">Team Members</span>
                     </button>
                     <button class="tab-btn" onclick="showContactTab('advisors', this)">
-                        <i class="fas fa-chalkboard-teacher"></i> Advisors
+                        <i class="fas fa-chalkboard-teacher"></i> <span data-th="อาจารย์ที่ปรึกษา">Advisors</span>
                     </button>
                 </div>
             </div>
@@ -665,7 +687,7 @@
                             <img src="images/natapat.jpg" alt="Mr. Natapat Thongkaokam" class="contact-avatar-img">
                             <div class="contact-name">
                                 <h3>Mr. Natapat Thongkaokam (Pat)</h3>
-                                <p>Project Leader</p>
+                                <p data-th="หัวหน้าโครงงาน">Project Leader</p>
                             </div>
                         </div>
                         <div class="contact-details">
@@ -681,7 +703,7 @@
                             </div>
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>Bangkok, Thailand</span>
+                                <span data-th="กรุงเทพฯ ประเทศไทย">Bangkok, Thailand</span>
                             </div>
                         </div>
                     </div>
@@ -691,7 +713,7 @@
                             <img src="images/pun.jpg" alt="Mr. Pannawich Rujirekanusorn" class="contact-avatar-img">
                             <div class="contact-name">
                                 <h3>Mr. Pannawich Rujirekanusorn (Pun)</h3>
-                                <p>Developer</p>
+                                <p data-th="นักพัฒนา">Developer</p>
                             </div>
                         </div>
                         <div class="contact-details">
@@ -707,7 +729,7 @@
                             </div>
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>Bangkok, Thailand</span>
+                                <span data-th="กรุงเทพฯ ประเทศไทย">Bangkok, Thailand</span>
                             </div>
                         </div>
                     </div>
@@ -717,7 +739,7 @@
                             <img src="images/apiwit.jpg" alt="Mr. Apiwit Ittiphatworakun" class="contact-avatar-img">
                             <div class="contact-name">
                                 <h3>Mr. Apiwit Ittiphatworakun (Rj)</h3>
-                                <p>Designer</p>
+                                <p data-th="นักออกแบบ">Designer</p>
                             </div>
                         </div>
                         <div class="contact-details">
@@ -733,7 +755,7 @@
                             </div>
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>Bangkok, Thailand</span>
+                                <span data-th="กรุงเทพฯ ประเทศไทย">Bangkok, Thailand</span>
                             </div>
                         </div>
                     </div>
@@ -743,7 +765,7 @@
                             <img src="images/kantaphat.jpg" alt="Mr. Kantaphat Khemlai" class="contact-avatar-img">
                             <div class="contact-name">
                                 <h3>Mr. Kantaphat Khemlai (Ikkyu)</h3>
-                                <p>Researcher</p>
+                                <p data-th="นักวิจัย">Researcher</p>
                             </div>
                         </div>
                         <div class="contact-details">
@@ -759,7 +781,7 @@
                             </div>
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>Bangkok, Thailand</span>
+                                <span data-th="กรุงเทพฯ ประเทศไทย">Bangkok, Thailand</span>
                             </div>
                         </div>
                     </div>
@@ -775,7 +797,7 @@
                             <img src="images/advisor-pimpan.jpg" alt="Mr. Pimpan Honkeanjan" class="contact-avatar-img advisor-avatar-img">
                             <div class="contact-name">
                                 <h3>Mr. Pimpan Honkeanjan (Pat)</h3>
-                                <p>Project Advisor</p>
+                                <p data-th="อาจารย์ที่ปรึกษาโครงงาน">Project Advisor</p>
                             </div>
                         </div>
                         <div class="contact-details">
@@ -791,7 +813,7 @@
                             </div>
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>Bangkok, Thailand</span>
+                                <span data-th="กรุงเทพฯ ประเทศไทย">Bangkok, Thailand</span>
                             </div>
                         </div>
                     </div>
@@ -801,7 +823,7 @@
                             <img src="images/advisor-prasop.jpg" alt="Mr. Prasop Ondee" class="contact-avatar-img advisor-avatar-img">
                             <div class="contact-name">
                                 <h3>Mr. Prasop Ondee (Boy)</h3>
-                                <p>Academic Advisor</p>
+                                <p data-th="อาจารย์ที่ปรึกษาด้านวิชาการ">Academic Advisor</p>
                             </div>
                         </div>
                         <div class="contact-details">
@@ -817,7 +839,7 @@
                             </div>
                             <div class="contact-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>Bangkok, Thailand</span>
+                                <span data-th="กรุงเทพฯ ประเทศไทย">Bangkok, Thailand</span>
                             </div>
                         </div>
                     </div>
@@ -830,13 +852,13 @@
     <div class="modal-overlay" id="cartModal" onclick="if(event.target===this)closeCart()">
         <div class="modal">
             <div class="modal-header">
-                <h3><i class="fas fa-shopping-cart"></i> Shopping Cart</h3>
-                <button class="modal-close" onclick="closeCart()" aria-label="Close">&times;</button>
+                <h3><i class="fas fa-shopping-cart"></i> <span data-th="ตะกร้าสินค้า">Shopping Cart</span></h3>
+                <button class="modal-close" onclick="closeCart()" aria-label="Close" data-th-aria="ปิด">&times;</button>
             </div>
             <div class="modal-body" id="cartModalBody"></div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="clearCart()"><i class="fas fa-trash"></i> Clear</button>
-                <button class="btn" onclick="checkoutFromCart()">Checkout <i class="fas fa-arrow-right"></i></button>
+                <button class="btn btn-secondary" onclick="clearCart()"><i class="fas fa-trash"></i> <span data-th="ล้างตะกร้า">Clear</span></button>
+                <button class="btn" onclick="checkoutFromCart()"><span data-th="สั่งซื้อ">Checkout</span> <i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
     </div>
@@ -845,20 +867,18 @@
     <div class="modal-overlay" id="accountModal" onclick="if(event.target===this)closeAccount()">
         <div class="modal account-modal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
             <div class="modal-header">
-                <h3 id="accountModalTitle">Sign in</h3>
-                <button class="modal-close" type="button" onclick="closeAccount()" aria-label="Close">&times;</button>
+                <h3 id="accountModalTitle" data-th="เข้าสู่ระบบ">Sign in</h3>
+                <button class="modal-close" type="button" onclick="closeAccount()" aria-label="Close" data-th-aria="ปิด">&times;</button>
             </div>
             <div class="modal-body" id="accountModalBody"></div>
         </div>
     </div>
 
     <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i> Copied to clipboard!
-    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <!-- Back to Top Button -->
-    <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Back to top">
+    <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Back to top" data-th-aria="กลับขึ้นด้านบน">
         <i class="fas fa-arrow-up"></i>
     </button>
 
@@ -867,17 +887,18 @@
         <div class="footer-inner">
             <div class="footer-word" aria-hidden="true">Smart Plant Box</div>
             <div class="footer-row">
-                <p>&copy; 2026 Smart Plant Box V4 · Computer Engineering Project</p>
+                <p data-th="&copy; 2026 Smart Plant Box V4 · โครงงานวิศวกรรมคอมพิวเตอร์">&copy; 2026 Smart Plant Box V4 · Computer Engineering Project</p>
                 <div class="footer-links">
-                    <a href="#" onclick="showMainPage(); return false;">Home</a>
-                    <a href="#" onclick="showProductsSection(); return false;">Products</a>
-                    <a href="#" onclick="showAboutPage(); return false;">About Us</a>
-                    <a href="#" onclick="showContactPage(); return false;">Contact</a>
+                    <a href="#" onclick="showMainPage(); return false;" data-th="หน้าแรก">Home</a>
+                    <a href="#" onclick="showProductsSection(); return false;" data-th="สินค้า">Products</a>
+                    <a href="#" onclick="showAboutPage(); return false;" data-th="เกี่ยวกับเรา">About Us</a>
+                    <a href="#" onclick="showContactPage(); return false;" data-th="ติดต่อ">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
 
+    <script src="js/i18n.js"></script>
     <script src="js/main.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/usecases.js"></script>

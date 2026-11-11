@@ -785,18 +785,17 @@ function init() {
         state.mys += (state.my - state.mys) * (1 - Math.exp(-dt * 3));
         const p = state.ps;
 
-        // Timeline (p = 0..1 across the hero)
-        const a = range(p, 0.03, 0.5);                                   // assembly
+        // Timeline (p = 0..1 across the hero): three beats and done —
+        // parts floating → box assembles → lights come on (and stay on).
+        const a = range(p, 0.02, 0.62);                                  // assembly
         const aE = easeInOut(a);
-        const L = range(p, 0.5, 0.58);                                   // lights on
-        const shiftIn = easeInOut(range(p, 0.58, 0.67));
-        const shiftOut = easeInOut(range(p, 0.78, 0.86));
-        const shift = shiftIn * (1 - shiftOut);
-        const story = range(p, 0.6, 0.66) * (1 - range(p, 0.77, 0.82));
-        const specs = range(p, 0.86, 0.92);
-        const intro = 1 - range(p, 0, 0.06);
-        const titleOut = range(p, 0.1, 0.38);
-        const counterVis = range(p, 0.02, 0.06) * (1 - range(p, 0.52, 0.58));
+        const L = range(p, 0.6, 0.74);                                   // lights on
+        const shift = easeInOut(range(p, 0.7, 0.84));
+        const story = range(p, 0.74, 0.86);
+        const specs = 0;                                                 // spec callouts retired (shorter intro)
+        const intro = 1 - range(p, 0, 0.05);
+        const titleOut = range(p, 0.06, 0.36);
+        const counterVis = range(p, 0.02, 0.06) * (1 - range(p, 0.6, 0.66));
 
         // Parts
         const float = reduceMotion ? 0 : 1;
@@ -815,7 +814,7 @@ function init() {
         }
 
         // Model pose
-        const specsTurn = easeInOut(range(p, 0.84, 1));
+        const specsTurn = 0;
         model.rotation.y = lerp(0.85, -0.5, aE) + (1 - a) * Math.sin(time * 0.15) * 0.12 * float - specsTurn * 0.3 + state.mxs * 0.12;
         model.rotation.x = lerp(0.16, -0.03, aE) + state.mys * 0.05;
         const distK = lerp(view.small ? 1.25 : 1.55, 1.0, aE) + (view.small ? 0.1 : 0.06) * easeInOut(specs);

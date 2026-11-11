@@ -10,7 +10,7 @@
     const STATUSES = ['new', 'confirmed', 'shipped', 'cancelled'];
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const money = v => '$' + Number(v || 0).toFixed(2);
+    const money = v => { const n = Math.round((Number(v) || 0) * 100) / 100; return '฿' + n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); };
     const when = d => new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
     let orders = [];

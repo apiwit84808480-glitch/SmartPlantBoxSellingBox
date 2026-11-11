@@ -1,98 +1,106 @@
 // ============== Smart Plant Box V4 ==============
-// Prices adjusted to realistic Thai-market USD pricing.
+// Prices are in Thai baht and must match public.price_list (the server re-prices every order).
 
 let currentUserType = '';
 let currentSlide = 0;
 let slideInterval;
 let customOrderData = null;
 
-// Product catalogue (USD priced for Thai market)
+const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Product catalogue (baht). Names stay in English; features and sensors have Thai versions.
 const products = [
     {
         id: 1,
         name: "Basic Box - Arduino",
-        basePrice: 16,
+        basePrice: 560,
         controller: "Arduino Uno",
         isBestSeller: false,
         features: ["Arduino Uno Control System", "Soil Moisture Sensor", "Automatic Water Pump", "Misting System", "Plant Growth LED"],
+        features_th: ["ระบบควบคุม Arduino Uno", "เซนเซอร์ความชื้นในดิน", "ปั๊มน้ำอัตโนมัติ", "ระบบพ่นหมอก", "ไฟ LED ปลูกพืช"],
         sensors: [
-            { name: "Soil Moisture Sensor", price: 1, included: true },
-            { name: "Air Humidity Sensor (DHT11)", price: 1.2, included: true },
-            { name: "Temperature Sensor", price: 1.2, included: true },
-            { name: "Light Sensor (LDR)", price: 0.8, included: false },
-            { name: "NPK Sensor", price: 12, included: false }
+            { name: "Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดิน", price: 35, included: true },
+            { name: "Air Humidity Sensor (DHT11)", th: "เซนเซอร์ความชื้นอากาศ (DHT11)", price: 40, included: true },
+            { name: "Temperature Sensor", th: "เซนเซอร์อุณหภูมิ", price: 40, included: true },
+            { name: "Light Sensor (LDR)", th: "เซนเซอร์แสง (LDR)", price: 30, included: false },
+            { name: "NPK Sensor", th: "เซนเซอร์ NPK", price: 420, included: false }
         ]
     },
     {
         id: 2,
         name: "Standard Box - ESP32",
-        basePrice: 24,
+        basePrice: 840,
         controller: "ESP32",
         isBestSeller: true,
         features: ["ESP32 Control (WiFi + Bluetooth)", "Mobile App Control", "Precision Moisture Sensor", "Adjustable Misting System", "Full Spectrum LED"],
+        features_th: ["ควบคุมด้วย ESP32 (WiFi + Bluetooth)", "ควบคุมผ่านแอปมือถือ", "เซนเซอร์ความชื้นแม่นยำ", "ระบบพ่นหมอกปรับได้", "ไฟ LED ฟูลสเปกตรัม"],
         sensors: [
-            { name: "Capacitive Soil Moisture Sensor", price: 1.5, included: true },
-            { name: "DHT22 Air Humidity Sensor", price: 2.5, included: true },
-            { name: "DS18B20 Temperature Sensor", price: 1.5, included: true },
-            { name: "BH1750 Light Sensor", price: 1.5, included: true },
-            { name: "RS485 NPK Sensor", price: 16, included: false }
+            { name: "Capacitive Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดินแบบ Capacitive", price: 55, included: true },
+            { name: "DHT22 Air Humidity Sensor", th: "เซนเซอร์ความชื้นอากาศ DHT22", price: 90, included: true },
+            { name: "DS18B20 Temperature Sensor", th: "เซนเซอร์อุณหภูมิ DS18B20", price: 55, included: true },
+            { name: "BH1750 Light Sensor", th: "เซนเซอร์แสง BH1750", price: 55, included: true },
+            { name: "RS485 NPK Sensor", th: "เซนเซอร์ NPK แบบ RS485", price: 560, included: false }
         ]
     },
     {
         id: 3,
         name: "Pro Box - Raspberry Pi",
-        basePrice: 48,
+        basePrice: 1680,
         controller: "Raspberry Pi 4",
         isBestSeller: false,
         features: ["Raspberry Pi 4 Control", "7-inch Touchscreen", "Growth Monitoring Camera", "AI Plant Health Analysis", "Cloud Data Storage"],
+        features_th: ["ควบคุมด้วย Raspberry Pi 4", "จอสัมผัส 7 นิ้ว", "กล้องติดตามการเจริญเติบโต", "AI วิเคราะห์สุขภาพพืช", "เก็บข้อมูลบนคลาวด์"],
         sensors: [
-            { name: "Industrial Soil Moisture Sensor", price: 3, included: true },
-            { name: "BME280 Air Humidity Sensor", price: 3.5, included: true },
-            { name: "Precision Temperature Sensor", price: 3, included: true },
-            { name: "High-Precision NPK Sensor", price: 20, included: true },
-            { name: "Soil pH Sensor", price: 8, included: true }
+            { name: "Industrial Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดินเกรดอุตสาหกรรม", price: 105, included: true },
+            { name: "BME280 Air Humidity Sensor", th: "เซนเซอร์ความชื้นอากาศ BME280", price: 125, included: true },
+            { name: "Precision Temperature Sensor", th: "เซนเซอร์อุณหภูมิความแม่นยำสูง", price: 105, included: true },
+            { name: "High-Precision NPK Sensor", th: "เซนเซอร์ NPK ความแม่นยำสูง", price: 700, included: true },
+            { name: "Soil pH Sensor", th: "เซนเซอร์ pH ดิน", price: 280, included: true }
         ]
     },
     {
         id: 4,
         name: "Emergency Box - Arduino Nano",
-        basePrice: 11,
+        basePrice: 385,
         controller: "Arduino Nano",
         isBestSeller: true,
         features: ["Perfect for Disaster Victims", "Quick and Easy Setup", "Basic Water Pump System", "Soil Moisture Sensor", "Budget-Friendly Plastic Box"],
+        features_th: ["เหมาะสำหรับผู้ประสบภัย", "ติดตั้งง่ายและเร็ว", "ระบบปั๊มน้ำพื้นฐาน", "เซนเซอร์ความชื้นในดิน", "กล่องพลาสติกราคาประหยัด"],
         sensors: [
-            { name: "Soil Moisture Sensor", price: 1, included: true },
-            { name: "Temperature Sensor", price: 1.2, included: false },
-            { name: "Light Sensor", price: 0.8, included: false }
+            { name: "Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดิน", price: 35, included: true },
+            { name: "Temperature Sensor", th: "เซนเซอร์อุณหภูมิ", price: 40, included: false },
+            { name: "Light Sensor", th: "เซนเซอร์แสง", price: 30, included: false }
         ]
     },
     {
         id: 5,
         name: "Condo Box - ESP8266",
-        basePrice: 20,
+        basePrice: 700,
         controller: "ESP8266",
         isBestSeller: false,
         features: ["Designed for Small Spaces", "WiFi Mobile Control", "Automatic Watering System", "Energy-Efficient LED", "Silent Operation"],
+        features_th: ["ออกแบบสำหรับพื้นที่เล็ก", "ควบคุมผ่านมือถือด้วย WiFi", "ระบบรดน้ำอัตโนมัติ", "ไฟ LED ประหยัดพลังงาน", "ทำงานเงียบ"],
         sensors: [
-            { name: "Soil Moisture Sensor", price: 1.2, included: true },
-            { name: "Air Humidity Sensor", price: 1.8, included: true },
-            { name: "Temperature Sensor", price: 1.2, included: true },
-            { name: "Light Sensor", price: 1, included: false }
+            { name: "Soil Moisture Sensor", th: "เซนเซอร์ความชื้นในดิน", price: 40, included: true },
+            { name: "Air Humidity Sensor", th: "เซนเซอร์ความชื้นอากาศ", price: 65, included: true },
+            { name: "Temperature Sensor", th: "เซนเซอร์อุณหภูมิ", price: 40, included: true },
+            { name: "Light Sensor", th: "เซนเซอร์แสง", price: 35, included: false }
         ]
     },
     {
         id: 6,
         name: "Agriculture Box - ESP32 Dual",
-        basePrice: 55,
+        basePrice: 1925,
         controller: "ESP32 Dual Core",
         isBestSeller: false,
         features: ["For Professional Farmers", "Multi-Zone Control (4 Zones)", "Automatic Water & Fertilizer", "Line/Email Reports", "IP65 Waterproof Box"],
+        features_th: ["สำหรับเกษตรกรมืออาชีพ", "ควบคุมหลายโซน (4 โซน)", "รดน้ำและให้ปุ๋ยอัตโนมัติ", "รายงานทาง Line/อีเมล", "กล่องกันน้ำ IP65"],
         sensors: [
-            { name: "Soil Moisture Sensors (4 units)", price: 5, included: true },
-            { name: "NPK Sensor", price: 12, included: true },
-            { name: "pH Sensor", price: 6, included: true },
-            { name: "EC Sensor", price: 7, included: true },
-            { name: "Water Level Sensor", price: 1.5, included: false }
+            { name: "Soil Moisture Sensors (4 units)", th: "เซนเซอร์ความชื้นในดิน (4 ตัว)", price: 175, included: true },
+            { name: "NPK Sensor", th: "เซนเซอร์ NPK", price: 420, included: true },
+            { name: "pH Sensor", th: "เซนเซอร์ pH", price: 210, included: true },
+            { name: "EC Sensor", th: "เซนเซอร์ EC", price: 245, included: true },
+            { name: "Water Level Sensor", th: "เซนเซอร์ระดับน้ำ", price: 55, included: false }
         ]
     }
 ];
@@ -216,8 +224,8 @@ function fallbackCopy(text) {
 function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) return;
-    if (message) toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-    else toast.innerHTML = `<i class="fas fa-check-circle"></i> Copied to clipboard!`;
+    const text = typeof message === 'string' && message ? message : t('Copied to clipboard!', 'คัดลอกแล้ว!');
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> ${escHtml(text)}`;
     toast.classList.add('show');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => toast.classList.remove('show'), 2200);
@@ -295,33 +303,34 @@ function createProductCard(product) {
                        ${sensor.included ? 'checked disabled' : ''}
                        onchange="updatePrice(${product.id})">
                 <label for="sensor-${product.id}-${i}">
-                    ${sensor.name}
-                    ${!sensor.included ? `(+$${sensor.price})` : '<span class="included-tag">(Included)</span>'}
+                    ${escHtml(t(sensor.name, sensor.th))}
+                    ${!sensor.included ? `(+${baht(sensor.price)})` : `<span class="included-tag">(${escHtml(t('Included', 'รวมในชุด'))})</span>`}
                 </label>
             </div>`;
     });
 
-    const badge = product.isBestSeller ? '<span class="best-seller">⭐ Best Seller</span>' : '';
+    const badge = product.isBestSeller ? `<span class="best-seller">${escHtml(t('Best Seller', 'ขายดี'))}</span>` : '';
+    const features = LANG === 'th' && product.features_th ? product.features_th : product.features;
 
     card.innerHTML = `
         ${badge}
         <div class="product-header">
             <div>
-                <div class="product-name">${product.name}</div>
-                <div class="product-controller">Controller: ${product.controller}</div>
+                <div class="product-name">${escHtml(product.name)}</div>
+                <div class="product-controller">${escHtml(t('Controller', 'บอร์ดควบคุม'))}: ${escHtml(product.controller)}</div>
             </div>
-            <div class="product-price" id="price-${product.id}">$${product.basePrice}</div>
+            <div class="product-price" id="price-${product.id}">${baht(product.basePrice)}</div>
         </div>
         <div class="product-features">
-            ${product.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+            ${features.map(f => `<span class="feature-tag">${escHtml(f)}</span>`).join('')}
         </div>
         <div class="sensor-options">
-            <h4><i class="fas fa-microchip"></i> Sensors</h4>
+            <h4><i class="fas fa-microchip"></i> ${escHtml(t('Sensors', 'เซนเซอร์'))}</h4>
             ${sensorsHtml}
         </div>
         <div class="product-actions">
             <button class="btn-add-to-cart" onclick="addToCart(${product.id})">
-                <i class="fas fa-shopping-cart"></i> Add to Cart
+                <i class="fas fa-shopping-cart"></i> ${escHtml(t('Add to Cart', 'ใส่ตะกร้า'))}
             </button>
         </div>`;
     return card;
@@ -336,7 +345,7 @@ function updatePrice(productId) {
         if (cb && cb.checked && !s.included) total += s.price;
     });
     const el = document.getElementById(`price-${productId}`);
-    if (el) el.textContent = `$${total.toFixed(total % 1 ? 2 : 0)}`;
+    if (el) el.textContent = baht(total);
 }
 
 // ========== CUSTOM ==========
@@ -361,7 +370,7 @@ function calculateCustomPrice() {
     }
     const grandTotal = componentsTotal + boxMaterialTotal;
 
-    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = `$${v.toFixed(2)}`; };
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = baht(v); };
     set('componentsTotal', componentsTotal);
     set('boxMaterialTotal', boxMaterialTotal);
     set('grandTotal', grandTotal);
@@ -371,7 +380,7 @@ function calculateCustomPrice() {
 
 function showCustomOrderForm() {
     const d = calculateCustomPrice();
-    if (d.grandTotal <= 0) { showToast('Please select at least one component'); return; }
+    if (d.grandTotal <= 0) { showToast(t('Please select at least one component', 'กรุณาเลือกอุปกรณ์อย่างน้อย 1 อย่าง')); return; }
 
     const txt = id => {
         const s = document.getElementById(id);
@@ -402,7 +411,7 @@ function showCustomOrderForm() {
 
 // ========== ORDER ==========
 function proceedToOrder() {
-    if (!cart || cart.length === 0) { showToast('Please add products to cart first'); return; }
+    if (!cart || cart.length === 0) { showToast(t('Please add products to cart first', 'กรุณาเพิ่มสินค้าลงตะกร้าก่อน')); return; }
     customOrderData = null;
     showOrderForm();
 }
@@ -410,42 +419,37 @@ function proceedToOrder() {
 function showOrderForm() {
     const sd = document.getElementById('orderSummary');
     if (!sd) return;
-    let html = '<h3 class="summary-heading">Order Summary</h3>';
+    let html = `<h3 class="summary-heading">${escHtml(t('Order Summary', 'สรุปรายการสั่งซื้อ'))}</h3>`;
 
     if (customOrderData) {
-        const row = (l, v) => `<div class="summary-item"><span>${l}:</span><span>${v}</span></div>`;
-        html += row('Configuration', 'Custom Build');
-        html += row('Microcontroller', customOrderData.microcontroller);
-        html += row('Watering', customOrderData.watering);
-        html += row('Light', customOrderData.light);
-        html += row('Temperature', customOrderData.temperature);
-        html += row('Mist', customOrderData.mist);
-        html += row('Camera', customOrderData.camera);
-        html += row('Box Material', customOrderData.boxMaterial);
-        html += row('Dimensions', `${customOrderData.width} × ${customOrderData.length} × ${customOrderData.height} cm`);
-        html += `<div class="summary-item summary-total"><span>Total:</span><span>$${customOrderData.total.toFixed(2)}</span></div>`;
+        const row = (l, v) => `<div class="summary-item"><span>${escHtml(l)}:</span><span>${escHtml(v)}</span></div>`;
+        html += row(t('Configuration', 'รูปแบบ'), t('Custom Build', 'สร้างเอง'));
+        html += row(t('Microcontroller', 'บอร์ดควบคุม'), customOrderData.microcontroller);
+        html += row(t('Watering', 'ระบบรดน้ำ'), customOrderData.watering);
+        html += row(t('Light', 'ไฟ'), customOrderData.light);
+        html += row(t('Temperature', 'อุณหภูมิ'), customOrderData.temperature);
+        html += row(t('Mist', 'พ่นหมอก'), customOrderData.mist);
+        html += row(t('Camera', 'กล้อง'), customOrderData.camera);
+        html += row(t('Box Material', 'วัสดุกล่อง'), customOrderData.boxMaterial);
+        html += row(t('Dimensions', 'ขนาด'), `${customOrderData.width} × ${customOrderData.length} × ${customOrderData.height} ${t('cm', 'ซม.')}`);
+        html += `<div class="summary-item summary-total"><span>${escHtml(t('Total', 'รวม'))}:</span><span>${baht(customOrderData.total)}</span></div>`;
     } else if (cart && cart.length > 0) {
-        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         cart.forEach((item, i) => {
-            item = Object.assign({}, item, {
-                name: esc(item.name),
-                totalPrice: Number(item.totalPrice) || 0,
-                selectedSensors: (item.selectedSensors || []).map(s => ({ name: esc(s && s.name) })),
-            });
+            const sensors = (item.selectedSensors || []).map(s => escHtml(s && s.name));
             html += `
-                <div class="summary-item" style="flex-direction:column;align-items:flex-start;gap:0.5rem;">
-                    <div style="display:flex;justify-content:space-between;width:100%;">
-                        <strong>${i + 1}. ${item.name}</strong>
-                        <span class="summary-price">$${item.totalPrice}</span>
+                <div class="summary-item summary-line">
+                    <div class="summary-line-head">
+                        <strong>${i + 1}. ${escHtml(item.name)}</strong>
+                        <span class="summary-price">${baht(item.totalPrice)}</span>
                     </div>
                     <div class="summary-sub">
-                        ${item.selectedSensors && item.selectedSensors.length ? item.selectedSensors.map(s => `• ${s.name}`).join('<br>') : 'No additional sensors'}
-                        ${item.notes && item.notes.length ? `<div class="summary-notes">${item.notes.map(n => String(n).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))).join('<br>')}</div>` : ''}
+                        ${sensors.length ? sensors.map(s => `• ${s}`).join('<br>') : escHtml(t('No additional sensors', 'ไม่มีเซนเซอร์เพิ่ม'))}
+                        ${item.notes && item.notes.length ? `<div class="summary-notes">${item.notes.map(escHtml).join('<br>')}</div>` : ''}
                     </div>
                 </div>`;
         });
         const total = cart.reduce((s, x) => s + (Number(x.totalPrice) || 0), 0);
-        html += `<div class="summary-item summary-total"><span>Total:</span><span>$${total.toFixed(2)}</span></div>`;
+        html += `<div class="summary-item summary-total"><span>${escHtml(t('Total', 'รวม'))}:</span><span>${baht(total)}</span></div>`;
     }
 
     sd.innerHTML = html;
@@ -488,14 +492,14 @@ async function handleCheckout(e) {
           phone = v('phone'), email = v('email'), address = v('address');
 
     if (!firstName || !lastName || !phone || !email || !address) {
-        showToast('Please fill in all required fields');
+        showToast(t('Please fill in all required fields', 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ'));
         return;
     }
 
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const orig = submitBtn ? submitBtn.innerHTML : 'Confirm Order';
     if (submitBtn) {
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${escHtml(t('Processing...', 'กำลังส่ง...'))}`;
         submitBtn.disabled = true;
     }
 
@@ -512,16 +516,17 @@ async function handleCheckout(e) {
     } else {
         items = (cart || []).map(toServerItem);
         if (items.some(x => !x)) {
-            showToast('Some cart items are from an older version of the site. Please clear the cart and add them again.');
+            showToast(t('Some cart items are from an older version of the site. Please clear the cart and add them again.', 'มีสินค้าในตะกร้าจากเว็บเวอร์ชันเก่า กรุณาล้างตะกร้าแล้วเพิ่มใหม่'));
             if (submitBtn) { submitBtn.innerHTML = orig; submitBtn.disabled = false; }
             return;
         }
     }
 
     try {
-        if (typeof window.placeOrder !== 'function') throw new Error('Ordering is temporarily unavailable');
+        if (typeof window.placeOrder !== 'function') throw new Error(t('Ordering is temporarily unavailable', 'ระบบสั่งซื้อปิดชั่วคราว'));
         const result = await window.placeOrder(customer, items);
-        showToast(`Order received! Total $${Number(result.total).toFixed(2)}. We will contact you within 24 hours.`);
+        showToast(t(`Order received! Total ${baht(result.total)}. We will contact you within 24 hours.`,
+            `ได้รับคำสั่งซื้อแล้ว! ยอดรวม ${baht(result.total)} ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง`));
         cart = [];
         customOrderData = null;
         localStorage.removeItem('smartPlantCart');
@@ -529,7 +534,7 @@ async function handleCheckout(e) {
         setTimeout(() => location.reload(), 2500);
     } catch (err) {
         console.error(err);
-        showToast((err && err.message) ? `Could not place the order: ${err.message}` : 'Submission failed, please try again.');
+        showToast((err && err.message) ? `${t('Could not place the order', 'สั่งซื้อไม่สำเร็จ')}: ${err.message}` : t('Submission failed, please try again.', 'ส่งไม่สำเร็จ กรุณาลองใหม่'));
         if (submitBtn) { submitBtn.innerHTML = orig; submitBtn.disabled = false; }
     }
 }

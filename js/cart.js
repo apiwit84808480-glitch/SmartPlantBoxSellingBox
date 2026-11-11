@@ -1,4 +1,4 @@
-// Cart functionality
+// Cart functionality (prices in baht; the server re-prices everything at checkout)
 let cart = [];
 
 function loadCart() {
@@ -6,6 +6,10 @@ function loadCart() {
         const saved = localStorage.getItem('smartPlantCart');
         cart = saved ? JSON.parse(saved) : [];
         if (!Array.isArray(cart)) cart = [];
+        // Items saved before prices moved to baht show old dollar amounts: drop them
+        const before = cart.length;
+        cart = cart.filter(x => x && x.cur === 'THB');
+        if (cart.length !== before) localStorage.setItem('smartPlantCart', JSON.stringify(cart));
     } catch (e) {
         console.error('Error loading cart:', e);
         cart = [];
@@ -21,7 +25,7 @@ function saveCart() {
 
 function addToCart(productId) {
     if (typeof products === 'undefined') {
-        if (typeof showToast === 'function') showToast('Products not loaded — refresh.');
+        if (typeof showToast === 'function') showToast(t('Products not loaded — refresh.', 'โหลดสินค้าไม่สำเร็จ กรุณารีเฟรช'));
         return;
     }
     const product = products.find(p => p.id === productId);
@@ -33,7 +37,7 @@ function addToCart(productId) {
     product.sensors.forEach((s, i) => {
         const cb = document.getElementById(`sensor-${productId}-${i}`);
         if (cb && cb.checked) {
-            selectedSensors.push({ name: s.name, price: s.price, included: s.included });
+            selectedSensors.push({ name: t(s.name, s.th), price: s.price, included: s.included });
             if (!s.included) { totalPrice += s.price; sensors.push(i); }
         }
     });
@@ -42,6 +46,7 @@ function addToCart(productId) {
         type: 'product',
         product_id: product.id,
         sensors,
+        cur: 'THB',
         id: product.id,
         name: product.name,
         controller: product.controller,
@@ -52,7 +57,7 @@ function addToCart(productId) {
     });
     saveCart();
     if (typeof showToast === 'function') {
-        showToast(`Added: ${product.name} ($${totalPrice.toFixed(2)})`);
+        showToast(`${t('Added', 'เพิ่มแล้ว')}: ${product.name} (${baht(totalPrice)})`);
     }
 }
 
@@ -68,37 +73,37 @@ function showCart() {
     const modal = document.getElementById('cartModal');
     const body = document.getElementById('cartModalBody');
     if (!modal || !body) return;
+    // The cart lives in localStorage, so treat everything in it as untrusted text
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
     if (!cart || cart.length === 0) {
         body.innerHTML = `
             <div class="cart-empty">
                 <i class="fas fa-shopping-basket"></i>
-                <p>Your cart is empty.</p>
+                <p>${esc(t('Your cart is empty.', 'ตะกร้าว่างอยู่'))}</p>
             </div>`;
     } else {
         let html = '';
         let total = 0;
-        // The cart lives in localStorage, so treat everything in it as untrusted text
-        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         cart.forEach((item, i) => {
             const price = Number(item.totalPrice) || 0;
             total += price;
             const sensors = item.selectedSensors && item.selectedSensors.length
                 ? item.selectedSensors.map(s => esc(s && s.name)).join(', ')
-                : 'No additional sensors';
+                : esc(t('No additional sensors', 'ไม่มีเซนเซอร์เพิ่ม'));
             html += `
                 <div class="cart-item">
                     <div class="cart-item-info">
                         <strong>${esc(item.name)}</strong>
                         <small>${sensors}</small>
                         <button class="cart-remove" onclick="removeFromCart(${i})">
-                            <i class="fas fa-times"></i> Remove
+                            <i class="fas fa-times"></i> ${esc(t('Remove', 'ลบ'))}
                         </button>
                     </div>
-                    <div class="cart-item-price">$${price}</div>
+                    <div class="cart-item-price">${baht(price)}</div>
                 </div>`;
         });
-        html += `<div class="cart-total-row"><span>Total</span><span>$${total.toFixed(2)}</span></div>`;
+        html += `<div class="cart-total-row"><span>${esc(t('Total', 'รวม'))}</span><span>${baht(total)}</span></div>`;
         body.innerHTML = html;
     }
 
@@ -120,7 +125,7 @@ function removeFromCart(index) {
 
 function checkoutFromCart() {
     if (!cart || cart.length === 0) {
-        if (typeof showToast === 'function') showToast('Your cart is empty.');
+        if (typeof showToast === 'function') showToast(t('Your cart is empty.', 'ตะกร้าว่างอยู่'));
         return;
     }
     customOrderData = null;
@@ -135,6 +140,6 @@ function checkoutFromCart() {
 function clearCart() {
     cart = [];
     saveCart();
-    if (typeof showToast === 'function') showToast('Cart cleared.');
+    if (typeof showToast === 'function') showToast(t('Cart cleared.', 'ล้างตะกร้าแล้ว'));
     showCart();
 }
