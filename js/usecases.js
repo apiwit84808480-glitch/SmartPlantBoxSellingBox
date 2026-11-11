@@ -127,23 +127,24 @@
         commercial: {
             num: '04', eyebrow: L('Premium crops', 'พืชมูลค่าสูง'), title: L('Commercial & High-Value Crops', 'พืชเศรษฐกิจมูลค่าสูง'), short: 'Commercial',
             shortName: L('commercial', 'พืชมูลค่าสูง'),
-            cover: { img: 'images/usecases/commercial-cover.webp' },
+            // whole: tall photos are shown in full (no cropping) on a blurred copy of themselves
+            cover: { img: 'images/usecases/commercial-hydro.webp', whole: true },
             lead: L('Precision chambers for plants worth protecting — in a greenhouse or a condo. Every input is measured, controlled and logged.', 'ห้องปลูกแม่นยำสำหรับพืชที่มีมูลค่า ใช้ได้ทั้งในโรงเรือนและในคอนโด ทุกค่าถูกวัด ควบคุม และบันทึก'),
             optionsTitle: L('Our innovations', 'นวัตกรรมของเรา'),
             options: [
                 {
                     id: 'hydro-cube', name: L('Hydro Cube', 'Hydro Cube'), tag: L('Hydroponic chamber', 'ห้องปลูกไฮโดรโปนิกส์'), price: 7490, controller: 'ESP32',
-                    img: 'images/usecases/commercial-hydro.webp', alt: L('Acrylic chamber with red and blue LED strips, a plant on a shelf and a water tank below', 'ห้องอะคริลิกมีไฟ LED แดงและน้ำเงิน ต้นไม้บนชั้น และถังน้ำด้านล่าง'),
+                    img: 'images/usecases/commercial-hydro.webp', whole: true, alt: L('Acrylic chamber with red and blue LED strips, a plant on a shelf and a water tank below', 'ห้องอะคริลิกมีไฟ LED แดงและน้ำเงิน ต้นไม้บนชั้น และถังน้ำด้านล่าง'),
                     features: [L('Acrylic chamber with built-in water tank', 'ห้องอะคริลิกพร้อมถังน้ำในตัว'), L('Hydroponic reservoir + pump', 'ถังไฮโดรโปนิกส์ + ปั๊ม'), L('Red + blue LED strips', 'ไฟ LED แดง-น้ำเงิน'), L('Cooling fan & misting', 'พัดลมระบายความร้อนและพ่นหมอก'), L('pH & water-level sensors', 'เซนเซอร์ pH และระดับน้ำ')],
                 },
                 {
                     id: 'v4-pro', name: L('Smart Plant Box V4', 'Smart Plant Box V4'), tag: L('Full climate control', 'ควบคุมสภาพอากาศครบ'), price: 12900, controller: 'Raspberry Pi 4',
-                    img: 'images/build-front.webp', alt: L('Smart Plant Box V4 with its pink LED canopy switched on', 'Smart Plant Box V4 เปิดหลังคาไฟ LED สีชมพู'),
+                    img: 'images/build-front.webp', whole: true, alt: L('Smart Plant Box V4 with its pink LED canopy switched on', 'Smart Plant Box V4 เปิดหลังคาไฟ LED สีชมพู'),
                     features: [L('Acrylic chamber on aluminium feet', 'ห้องอะคริลิกบนขาอะลูมิเนียม'), L('Full red + blue LED canopy', 'หลังคาไฟ LED แดง-น้ำเงินเต็มแผง'), L('Fans, misting & automatic pump', 'พัดลม พ่นหมอก และปั๊มอัตโนมัติ'), L('Camera + AI plant health analysis', 'กล้อง + AI วิเคราะห์สุขภาพพืช'), L('Cloud data & app control', 'เก็บข้อมูลบนคลาวด์และควบคุมผ่านแอป')],
                 },
             ],
             field: {
-                img: 'images/usecases/commercial-hydro.webp', title: L('Hydro Cube chamber', 'ห้องปลูก Hydro Cube'),
+                img: 'images/usecases/commercial-hydro.webp', whole: true, title: L('Hydro Cube chamber', 'ห้องปลูก Hydro Cube'),
                 problem: L('High-value plants need steady water and nutrients every day.', 'พืชมูลค่าสูงต้องได้น้ำและธาตุอาหารสม่ำเสมอทุกวัน'),
                 installed: L('An acrylic chamber with a built-in tank, a hydroponic pump, red + blue LEDs, a cooling fan, and pH and water-level sensors.', 'ห้องอะคริลิกพร้อมถังในตัว ปั๊มไฮโดรโปนิกส์ ไฟ LED แดง-น้ำเงิน พัดลมระบายความร้อน และเซนเซอร์ pH กับระดับน้ำ'),
                 runs: L('The pump circulates nutrient water on a schedule, and you get an alert if the tank runs low or the pH drifts.', 'ปั๊มหมุนเวียนน้ำผสมธาตุอาหารตามเวลา และแจ้งเตือนเมื่อน้ำในถังเหลือน้อยหรือค่า pH เปลี่ยน'),
@@ -274,6 +275,9 @@
             if (el) el.style.display = 'none';
         });
         section.style.display = 'block';
+        // The box page becomes the top of the site until "Back" (see setDetailMode in main.js)
+        if (typeof setDetailMode === 'function') setDetailMode(true);
+        window.scrollTo({ top: 0, behavior: 'instant' });
         const video = $('.uc-hero video', section);
         if (video && !reduceMotion) video.play().catch(() => {});
 
@@ -285,8 +289,6 @@
             if (results) results.hidden = false;
             renderConfig(T(opts.kit.name));
             document.getElementById('ucConfig').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            section.scrollIntoView({ behavior: 'smooth' });
         }
     }
 
@@ -304,13 +306,23 @@
     }
 
     // ---------- rendering ----------
+    // A photo; with `whole`, the full photo is shown (nothing cropped) over a blurred copy of itself
+    function pic(src, alt, whole, cls) {
+        const c = cls ? ` class="${cls}"` : '';
+        const altAttr = alt ? `alt="${esc(alt)}"` : 'alt="" aria-hidden="true"';
+        if (!whole) return `<img${c} src="${src}" ${altAttr} loading="lazy">`;
+        // absolute URL: a relative url() inside a CSS variable resolves against css/, not the page
+        const abs = /^(\/|https?:)/.test(src) ? src : '/' + src;
+        return `<div class="fit-whole${cls ? ' ' + cls : ''}" style="--photo: url('${abs}')"><img src="${src}" ${altAttr} loading="lazy"></div>`;
+    }
+
     function renderPage(uc) {
         const media = uc.cover.video
             ? `<video class="uc-hero-media" muted loop playsinline preload="auto" poster="${uc.cover.poster}" aria-hidden="true"><source src="${uc.cover.video}" type="video/mp4"></video>`
-            : `<img class="uc-hero-media" src="${uc.cover.img}" alt="" aria-hidden="true">`;
+            : pic(uc.cover.img, '', uc.cover.whole, 'uc-hero-media');
         const options = (uc.options || []).map(renderOption).join('');
         return `
-            <button class="back-btn" type="button" onclick="backToUserType()"><i class="fas fa-arrow-left"></i> ${esc(t('Back', 'กลับ'))}</button>
+            <button class="back-btn" type="button" onclick="backToUserType()"><i class="fas fa-arrow-left"></i> ${esc(t('Back to all boxes', 'กลับไปเลือกกล่อง'))}</button>
             <header class="uc-hero">
                 ${media}
                 <div class="uc-hero-shade"></div>
@@ -348,7 +360,7 @@
         return `
             <article class="uc-option">
                 <div class="uc-option-media">
-                    <img src="${o.img}" alt="${esc(T(o.alt))}" loading="lazy">
+                    ${pic(o.img, T(o.alt), o.whole)}
                     <span class="uc-option-tag">${esc(T(o.tag))}</span>
                 </div>
                 <div class="uc-option-body">
@@ -371,7 +383,7 @@
         const f = uc.field;
         return `
             <section class="uc-field" aria-label="${esc(t('From our field work', 'ผลงานจากหน้างานจริง'))}">
-                <figure class="uc-field-media"><img src="${f.img}" alt="${esc(T(f.title))}" loading="lazy"></figure>
+                <figure class="uc-field-media">${pic(f.img, T(f.title), f.whole)}</figure>
                 <div class="uc-field-body">
                     <span class="eyebrow">${esc(t('From our field work', 'ผลงานจากหน้างานจริง'))}</span>
                     <h3>${esc(T(f.title))}</h3>

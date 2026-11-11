@@ -9,10 +9,24 @@ let customOrderData = null;
 const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // ========== PAGE NAVIGATION ==========
+// While a box page, the custom builder or the order form is open, the sections above it
+// (hero, numbers, problem picker) are hidden, so that page starts at the very top and
+// the customer can't scroll past it and lose the Back button.
+const DETAIL_VIEWS = ['configForm', 'customForm', 'productSelection', 'orderForm', 'useCaseDetail'];
+function setDetailMode(on) {
+    document.body.classList.toggle('detail-mode', !!on);
+}
+const jumpTo = top => window.scrollTo({ top, behavior: 'instant' });
+
 function showMainPage() {
     hideAllPages();
     document.getElementById('main-page').classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Home always means the start of the page, not a box page left open
+    DETAIL_VIEWS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    const u = document.getElementById('userTypeSection');
+    if (u) u.style.display = 'block';
+    setDetailMode(false);
+    jumpTo(0);
 }
 
 function showAboutPage() {
@@ -31,7 +45,7 @@ function showContactPage() {
 
 function showProductsSection() {
     showMainPage();
-    setTimeout(backToUserType, 120);
+    backToUserType();
 }
 
 function hideAllPages() {
@@ -77,12 +91,13 @@ function scrollToSection(id) {
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 function backToUserType() {
-    ['configForm', 'customForm', 'productSelection', 'orderForm', 'useCaseDetail'].forEach(id => {
+    DETAIL_VIEWS.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
     });
+    setDetailMode(false);
     const u = document.getElementById('userTypeSection');
-    if (u) { u.style.display = 'block'; u.scrollIntoView({ behavior: 'smooth' }); }
+    if (u) { u.style.display = 'block'; jumpTo(u.getBoundingClientRect().top + window.scrollY - 70); }
     currentUserType = '';
 }
 
@@ -98,10 +113,13 @@ function backToConfig() {
 // Back from the order form: return to whichever step sent the customer there
 function backToProducts() {
     const of = document.getElementById('orderForm');
-    const back = document.getElementById(window.orderReturnTo || 'userTypeSection');
+    const backId = window.orderReturnTo || 'userTypeSection';
+    const back = document.getElementById(backId);
+    if (!back || backId === 'userTypeSection') return backToUserType();
     if (of) of.style.display = 'none';
-    if (back) { back.style.display = 'block'; back.scrollIntoView({ behavior: 'smooth' }); }
-    else backToUserType();
+    back.style.display = 'block';
+    setDetailMode(true);
+    jumpTo(0);
 }
 
 // ========== CONTACT ==========
@@ -165,7 +183,7 @@ function selectUserType(type) {
         if (el) el.style.display = 'none';
     });
     const cuf = document.getElementById('customForm');
-    if (cuf) { cuf.style.display = 'block'; cuf.scrollIntoView({ behavior: 'smooth' }); }
+    if (cuf) { cuf.style.display = 'block'; setDetailMode(true); jumpTo(0); }
 }
 
 // ========== CUSTOM ==========
@@ -280,7 +298,7 @@ function showOrderForm() {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
     });
-    if (of) { of.style.display = 'block'; of.scrollIntoView({ behavior: 'smooth' }); }
+    if (of) { of.style.display = 'block'; setDetailMode(true); jumpTo(0); }
 }
 
 // ========== SCROLL REVEAL ==========
