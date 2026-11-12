@@ -18,38 +18,52 @@
 
     // ---------- catalogue for the preset configurator (baht) ----------
     const CONTROLLERS = [
-        { id: 'nano', name: L('Arduino Nano', 'Arduino Nano'), price: 290, why: L('Simple, low-cost board that runs the basics', 'บอร์ดราคาประหยัด ทำงานพื้นฐานได้ครบ') },
-        { id: 'uno', name: L('Arduino Uno', 'Arduino Uno'), price: 450, why: L('Reliable board with room for more sensors', 'บอร์ดเสถียร ต่อเซนเซอร์เพิ่มได้') },
-        { id: 'esp32', name: L('ESP32 (Wi-Fi app control)', 'ESP32 (ควบคุมผ่านแอปด้วย Wi-Fi)'), price: 390, why: L('Lets you check and control it from your phone', 'ดูสถานะและสั่งงานผ่านมือถือได้') },
-        { id: 'pi4', name: L('Raspberry Pi 4 (AI camera ready)', 'Raspberry Pi 4 (รองรับกล้อง AI)'), price: 3290, why: L('Powerful enough to run the AI camera', 'แรงพอสำหรับประมวลผลกล้อง AI') },
+        { id: 'nano', name: L('Arduino Nano', 'Arduino Nano'), price: 120, why: L('Simple, low-cost board that runs the basics', 'บอร์ดราคาประหยัด ทำงานพื้นฐานได้ครบ') },
+        { id: 'uno', name: L('Arduino Uno', 'Arduino Uno'), price: 140, why: L('Reliable board with room for more sensors', 'บอร์ดเสถียร ต่อเซนเซอร์เพิ่มได้') },
+        { id: 'esp32', name: L('ESP32 (Wi-Fi app control)', 'ESP32 (ควบคุมผ่านแอปด้วย Wi-Fi)'), price: 145, why: L('Lets you check and control it from your phone', 'ดูสถานะและสั่งงานผ่านมือถือได้') },
+        { id: 'pi4', name: L('Raspberry Pi 4 (4 GB)', 'Raspberry Pi 4 (4 GB)'), price: 1500, why: L('Powerful enough to run the most accurate AI model', 'แรงพอสำหรับ AI รุ่นที่แม่นยำที่สุด') },
     ];
-    const GROUPS = { Light: L('Light', 'ไฟ'), Water: L('Water', 'น้ำ'), Climate: L('Climate', 'อากาศ'), Sensors: L('Sensors', 'เซนเซอร์'), Camera: L('Camera', 'กล้อง') };
+    const GROUPS = { Light: L('Light', 'ไฟ'), Water: L('Water', 'น้ำ'), Climate: L('Climate', 'อากาศ'), Sensors: L('Sensors', 'เซนเซอร์'), Camera: L('Camera', 'กล้อง'), AI: L('AI plant disease detection (pick one)', 'AI ตรวจโรคพืช (เลือก 1 รุ่น)') };
     const PARTS = [
-        { id: 'ledRB', group: 'Light', price: 490, name: L('Red + blue LED grow strips', 'ไฟ LED ปลูกพืชแดง-น้ำเงิน'), why: L('Gives plants light when the sun isn\'t enough', 'ให้แสงเมื่อแดดไม่พอ') },
-        { id: 'ledFull', group: 'Light', price: 1290, name: L('Dimmable full-spectrum LED panel', 'แผงไฟ LED ฟูลสเปกตรัม ปรับความสว่างได้'), why: L('Replaces missing sunlight with the full spectrum plants use', 'ทดแทนแสงแดดด้วยแสงครบสเปกตรัมที่พืชใช้') },
-        { id: 'pump', group: 'Water', price: 390, name: L('Automatic watering pump + hose', 'ปั๊มรดน้ำอัตโนมัติ + สายยาง'), why: L('Waters for you when the soil gets dry', 'รดน้ำให้เองเมื่อดินแห้ง') },
-        { id: 'mist', group: 'Water', price: 890, name: L('Misting system (2 nozzles + pump)', 'ระบบพ่นหมอก (2 หัว + ปั๊ม)'), why: L('Raises humidity and cools the leaves', 'เพิ่มความชื้นและช่วยลดความร้อนที่ใบ') },
-        { id: 'fert', group: 'Water', price: 790, name: L('Fertilizer doser', 'ชุดจ่ายปุ๋ยอัตโนมัติ'), why: L('Feeds plants on a schedule', 'ให้ปุ๋ยตามเวลาโดยอัตโนมัติ') },
-        { id: 'hydro', group: 'Water', price: 890, name: L('Hydroponic reservoir + air pump', 'ถังไฮโดรโปนิกส์ + ปั๊มลม'), why: L('Grows plants in nutrient water instead of soil', 'ปลูกในน้ำผสมธาตุอาหารแทนดิน') },
-        { id: 'fan', group: 'Climate', price: 390, name: L('Exhaust fan', 'พัดลมระบายอากาศ'), why: L('Pushes hot, stale air out', 'ดันลมร้อนและอากาศอับออก') },
-        { id: 'cooler', group: 'Climate', price: 690, name: L('Cooling fan', 'พัดลมระบายความร้อน'), why: L('Brings the temperature down on hot days', 'ช่วยลดอุณหภูมิในวันที่ร้อน') },
-        { id: 'heater', group: 'Climate', price: 790, name: L('Heater', 'ฮีตเตอร์'), why: L('Keeps plants warm on cold nights', 'ให้ความอบอุ่นในคืนที่หนาว') },
-        { id: 'soil', group: 'Sensors', price: 120, name: L('Soil moisture sensor', 'เซนเซอร์ความชื้นในดิน'), why: L('Tells the pump when to water, so roots don\'t drown', 'บอกปั๊มว่าเมื่อไรต้องรดน้ำ รากจึงไม่แฉะ') },
-        { id: 'dht', group: 'Sensors', price: 150, name: L('Temperature & humidity sensor', 'เซนเซอร์อุณหภูมิและความชื้นอากาศ'), why: L('Watches heat and humidity so fans and misting start at the right time', 'ดูอุณหภูมิและความชื้น เพื่อสั่งพัดลมและหมอกให้ทำงานถูกเวลา') },
-        { id: 'lux', group: 'Sensors', price: 90, name: L('Light sensor', 'เซนเซอร์วัดแสง'), why: L('Turns the lights on only when it gets dim', 'เปิดไฟเฉพาะตอนแสงน้อย') },
-        { id: 'level', group: 'Sensors', price: 150, name: L('Water level sensor', 'เซนเซอร์ระดับน้ำ'), why: L('Warns you before the tank runs dry', 'เตือนก่อนน้ำในถังหมด') },
-        { id: 'ph', group: 'Sensors', price: 1290, name: L('pH sensor', 'เซนเซอร์วัดค่า pH'), why: L('Keeps the water in a range roots can use', 'คุมค่าน้ำให้อยู่ในช่วงที่รากดูดซึมได้') },
-        { id: 'npk', group: 'Sensors', price: 2490, name: L('NPK soil nutrient sensor', 'เซนเซอร์ธาตุอาหารในดิน (NPK)'), why: L('Shows which nutrients the soil is missing', 'บอกว่าดินขาดธาตุอาหารอะไร') },
-        { id: 'cam', group: 'Camera', price: 390, name: L('Camera (ESP32-CAM)', 'กล้อง (ESP32-CAM)'), why: L('Lets you see your plants from your phone', 'ดูต้นไม้ผ่านมือถือได้') },
-        { id: 'camAI', group: 'Camera', price: 1890, name: L('Camera + AI plant disease detection', 'กล้อง + AI ตรวจโรคพืช'), why: L('Spots leaf disease early', 'ตรวจเจอโรคที่ใบได้ตั้งแต่ระยะแรก') },
+        { id: 'ledRB', group: 'Light', price: 150, name: L('Red + blue LED grow strips', 'ไฟ LED ปลูกพืชแดง-น้ำเงิน'), why: L('Gives plants light when the sun isn\'t enough', 'ให้แสงเมื่อแดดไม่พอ') },
+        { id: 'ledFull', group: 'Light', price: 200, name: L('Dimmable full-spectrum LED panel', 'แผงไฟ LED ฟูลสเปกตรัม ปรับความสว่างได้'), why: L('Replaces missing sunlight with the full spectrum plants use', 'ทดแทนแสงแดดด้วยแสงครบสเปกตรัมที่พืชใช้') },
+        { id: 'pump', group: 'Water', price: 290, name: L('Automatic watering pump + hose', 'ปั๊มรดน้ำอัตโนมัติ + สายยาง'), why: L('Waters for you when the soil gets dry', 'รดน้ำให้เองเมื่อดินแห้ง') },
+        { id: 'mist', group: 'Water', price: 390, name: L('Misting system (2 nozzles + pump)', 'ระบบพ่นหมอก (2 หัว + ปั๊ม)'), why: L('Raises humidity and cools the leaves', 'เพิ่มความชื้นและช่วยลดความร้อนที่ใบ') },
+        { id: 'fert', group: 'Water', price: 390, name: L('Fertilizer doser', 'ชุดจ่ายปุ๋ยอัตโนมัติ'), why: L('Feeds plants on a schedule', 'ให้ปุ๋ยตามเวลาโดยอัตโนมัติ') },
+        { id: 'hydro', group: 'Water', price: 590, name: L('Hydroponic reservoir + air pump', 'ถังไฮโดรโปนิกส์ + ปั๊มลม'), why: L('Grows plants in nutrient water instead of soil', 'ปลูกในน้ำผสมธาตุอาหารแทนดิน') },
+        { id: 'fan', group: 'Climate', price: 60, name: L('Exhaust fan', 'พัดลมระบายอากาศ'), why: L('Pushes hot, stale air out', 'ดันลมร้อนและอากาศอับออก') },
+        { id: 'cooler', group: 'Climate', price: 250, name: L('Cooling fan', 'พัดลมระบายความร้อน'), why: L('Brings the temperature down on hot days', 'ช่วยลดอุณหภูมิในวันที่ร้อน') },
+        { id: 'heater', group: 'Climate', price: 400, name: L('Heater', 'ฮีตเตอร์'), why: L('Keeps plants warm on cold nights', 'ให้ความอบอุ่นในคืนที่หนาว') },
+        { id: 'soil', group: 'Sensors', price: 30, name: L('Soil moisture sensor', 'เซนเซอร์ความชื้นในดิน'), why: L('Tells the pump when to water, so roots don\'t drown', 'บอกปั๊มว่าเมื่อไรต้องรดน้ำ รากจึงไม่แฉะ') },
+        { id: 'dht', group: 'Sensors', price: 60, name: L('Temperature & humidity sensor', 'เซนเซอร์อุณหภูมิและความชื้นอากาศ'), why: L('Watches heat and humidity so fans and misting start at the right time', 'ดูอุณหภูมิและความชื้น เพื่อสั่งพัดลมและหมอกให้ทำงานถูกเวลา') },
+        { id: 'lux', group: 'Sensors', price: 40, name: L('Light sensor', 'เซนเซอร์วัดแสง'), why: L('Turns the lights on only when it gets dim', 'เปิดไฟเฉพาะตอนแสงน้อย') },
+        { id: 'level', group: 'Sensors', price: 50, name: L('Water level sensor', 'เซนเซอร์ระดับน้ำ'), why: L('Warns you before the tank runs dry', 'เตือนก่อนน้ำในถังหมด') },
+        { id: 'ph', group: 'Sensors', price: 480, name: L('pH sensor', 'เซนเซอร์วัดค่า pH'), why: L('Keeps the water in a range roots can use', 'คุมค่าน้ำให้อยู่ในช่วงที่รากดูดซึมได้') },
+        { id: 'tds', group: 'Sensors', price: 140, name: L('TDS (nutrient strength) sensor', 'เซนเซอร์ TDS (วัดความเข้มข้นธาตุอาหารในน้ำ)'), why: L('Tells you when the nutrient water is too weak or too strong', 'บอกว่าน้ำผสมธาตุอาหารเจือจางหรือเข้มข้นเกินไป') },
+        { id: 'npk', group: 'Sensors', price: 1500, name: L('NPK soil nutrient sensor', 'เซนเซอร์ธาตุอาหารในดิน (NPK)'), why: L('Shows which nutrients the soil is missing', 'บอกว่าดินขาดธาตุอาหารอะไร') },
+        { id: 'cam', group: 'Camera', price: 260, name: L('Camera (ESP32-CAM)', 'กล้อง (ESP32-CAM)'), why: L('Lets you see your plants from your phone', 'ดูต้นไม้ผ่านมือถือได้') },
+        { id: 'picam', group: 'Camera', price: 1000, name: L('Raspberry Pi camera', 'กล้อง Raspberry Pi'), why: L('Sharper photos for the most accurate AI model', 'ภาพคมชัด เหมาะกับ AI รุ่นที่แม่นยำที่สุด') },
+        // AI models: one at a time; Arduino boards can't run Model 3 (see aiRules below)
+        { id: 'ai1', group: 'AI', price: 200, ai: 1, name: L('AI Model 1 · 60% accuracy', 'AI Model 1 · แม่นยำ 60%'), why: L('Basic leaf disease alerts', 'แจ้งเตือนโรคที่ใบขั้นพื้นฐาน') },
+        { id: 'ai2', group: 'AI', price: 400, ai: 2, name: L('AI Model 2 · 75% accuracy', 'AI Model 2 · แม่นยำ 75%'), why: L('Reads the photos and flags leaf disease early', 'อ่านภาพถ่ายและแจ้งเตือนโรคที่ใบตั้งแต่ระยะแรก') },
+        { id: 'ai3', group: 'AI', price: 800, ai: 3, name: L('AI Model 3 · 90% accuracy', 'AI Model 3 · แม่นยำ 90%'), why: L('Our most accurate disease detection — needs ESP32 or Raspberry Pi', 'ตรวจโรคแม่นยำที่สุด ต้องใช้ ESP32 หรือ Raspberry Pi') },
     ];
     const MATERIALS = [
         { id: 'none', name: L('No enclosure (open plot)', 'ไม่มีกล่อง (แปลงเปิด)'), rate: 0 },
-        { id: 'plastic', name: L('Plastic', 'พลาสติก'), rate: 0.0525 },
-        { id: 'acrylic', name: L('Acrylic', 'อะคริลิก'), rate: 0.105 },
-        { id: 'glass', name: L('Glass', 'กระจก'), rate: 0.14 },
+        { id: 'plastic', name: L('Plastic', 'พลาสติก'), rate: 0.04 },
+        { id: 'acrylic', name: L('Acrylic', 'อะคริลิก'), rate: 0.08 },
+        { id: 'glass', name: L('Glass', 'กระจก'), rate: 0.1 },
     ];
     const part = id => PARTS.find(p => p.id === id);
+    const needsPi = set => set.has('picam') || set.has('ai3');
+    const ARDUINO = ['nano', 'uno'];
+    // AI rules: at most one model; Arduino boards are too small for Model 3 (drop to Model 2)
+    function aiRules(c) {
+        const models = PARTS.filter(p => p.ai && c.parts.has(p.id));
+        models.slice(0, -1).forEach(p => c.parts.delete(p.id));
+        if (ARDUINO.includes(c.controller) && c.parts.has('ai3')) { c.parts.delete('ai3'); c.parts.add('ai2'); return true; }
+        return false;
+    }
 
     // ---------- use cases ----------
     const UC = {
@@ -62,12 +76,12 @@
             optionsTitle: L('Choose by household size', 'เลือกตามจำนวนคนในบ้าน'),
             options: [
                 {
-                    id: 'relief-s', name: L('Relief Box S', 'Relief Box S'), tag: L('Household of 2–4', 'สำหรับ 2–4 คน'), price: 1690, controller: 'Arduino Nano',
+                    id: 'relief-s', name: L('Relief Box S', 'Relief Box S'), tag: L('Household of 2–4', 'สำหรับ 2–4 คน'), price: 890, controller: 'Arduino Nano',
                     img: 'images/usecases/disaster-small.webp', alt: L('Small clear storage box with two potted plants, a power supply and a controller box on the lid', 'กล่องใสขนาดเล็กมีกระถาง 2 ใบ พร้อมแหล่งจ่ายไฟและกล่องควบคุมบนฝา'),
                     features: [L('Clear storage box with lid', 'กล่องใสมีฝาปิด'), L('Holds 2 pots', 'ใส่กระถางได้ 2 ใบ'), L('Automatic watering pump', 'ปั๊มรดน้ำอัตโนมัติ'), L('Soil moisture sensor', 'เซนเซอร์ความชื้นในดิน'), L('Plug-in power supply', 'อะแดปเตอร์เสียบปลั๊ก')],
                 },
                 {
-                    id: 'relief-l', name: L('Relief Box L', 'Relief Box L'), tag: L('Household of 4+', 'สำหรับ 4 คนขึ้นไป'), price: 2990, controller: 'ESP32',
+                    id: 'relief-l', name: L('Relief Box L', 'Relief Box L'), tag: L('Household of 4+', 'สำหรับ 4 คนขึ้นไป'), price: 1390, controller: 'ESP32',
                     img: 'images/usecases/disaster-large.webp', alt: L('Large clear storage box with several potted plants and a misting pipe along the top', 'กล่องใสขนาดใหญ่มีกระถางหลายใบและท่อพ่นหมอกด้านบน'),
                     features: [L('Large clear storage box', 'กล่องใสขนาดใหญ่'), L('Holds 4–6 pots', 'ใส่กระถางได้ 4–6 ใบ'), L('Misting pipe with 3 nozzles', 'ท่อพ่นหมอก 3 หัว'), L('Temperature & humidity sensor', 'เซนเซอร์อุณหภูมิและความชื้น'), L('Wi-Fi alerts to your phone', 'แจ้งเตือนเข้ามือถือผ่าน Wi-Fi')],
                 },
@@ -90,9 +104,9 @@
             survey: true,
             options: [
                 {
-                    id: 'farmer-vision', name: L('Farmer Vision', 'Farmer Vision'), tag: L('Soil & hydroponic plots', 'แปลงดินและไฮโดรโปนิกส์'), price: 14900, priceNote: L('from', 'เริ่ม'), controller: 'ESP32 Dual Core',
+                    id: 'farmer-vision', name: L('Farmer Vision', 'Farmer Vision'), tag: L('Soil & hydroponic plots', 'แปลงดินและไฮโดรโปนิกส์'), price: 5900, priceNote: L('from', 'เริ่ม'), controller: 'ESP32 Dual Core',
                     img: 'images/usecases/farmer-vision.webp', alt: L('Hydroponic growing room lit by pink LED grow lights', 'ห้องปลูกไฮโดรโปนิกส์ที่เปิดไฟ LED ปลูกพืชสีชมพู'),
-                    features: [L('Red + blue LED grow lights', 'ไฟ LED ปลูกพืชแดง-น้ำเงิน'), L('Automatic water & fertilizer', 'รดน้ำและให้ปุ๋ยอัตโนมัติ'), L('Misting for humidity', 'พ่นหมอกเพิ่มความชื้น'), L('Camera with AI plant disease detection', 'กล้อง AI ตรวจโรคพืช'), L('Multi-zone control + Line/email reports', 'ควบคุมหลายโซน + รายงานทาง Line/อีเมล')],
+                    features: [L('Red + blue LED grow lights', 'ไฟ LED ปลูกพืชแดง-น้ำเงิน'), L('Automatic water & fertilizer', 'รดน้ำและให้ปุ๋ยอัตโนมัติ'), L('Misting for humidity', 'พ่นหมอกเพิ่มความชื้น'), L('Camera + AI Model 2 disease detection', 'กล้อง + AI Model 2 ตรวจโรคพืช'), L('Multi-zone control + Line/email reports', 'ควบคุมหลายโซน + รายงานทาง Line/อีเมล')],
                 },
             ],
             field: {
@@ -111,7 +125,7 @@
             optionsTitle: L('Our household box', 'กล่องสำหรับครัวเรือน'),
             options: [
                 {
-                    id: 'home-tent', name: L('Home Grow Tent', 'Home Grow Tent'), tag: L('Balcony, porch or living room', 'ระเบียง หน้าบ้าน หรือห้องนั่งเล่น'), price: 4290, controller: 'ESP32',
+                    id: 'home-tent', name: L('Home Grow Tent', 'Home Grow Tent'), tag: L('Balcony, porch or living room', 'ระเบียง หน้าบ้าน หรือห้องนั่งเล่น'), price: 2290, controller: 'ESP32',
                     img: 'images/usecases/household-tent.webp', alt: L('PVC frame grow tent with mesh walls and a pink LED light above a potted plant', 'เต็นท์โครง PVC ผนังตาข่าย มีไฟ LED สีชมพูเหนือกระถางต้นไม้'),
                     features: [L('PVC frame with mesh walls', 'โครง PVC ผนังตาข่าย'), L('Clip-on LED grow light', 'ไฟ LED ปลูกพืชแบบหนีบ'), L('Misting nozzles on both sides', 'หัวพ่นหมอกสองด้าน'), L('Water pump + reservoir', 'ปั๊มน้ำ + ถังเก็บน้ำ'), L('App control over Wi-Fi', 'ควบคุมผ่านแอปด้วย Wi-Fi')],
                 },
@@ -133,14 +147,14 @@
             optionsTitle: L('Our innovations', 'นวัตกรรมของเรา'),
             options: [
                 {
-                    id: 'hydro-cube', name: L('Hydro Cube', 'Hydro Cube'), tag: L('Hydroponic chamber', 'ห้องปลูกไฮโดรโปนิกส์'), price: 7490, controller: 'ESP32',
+                    id: 'hydro-cube', name: L('Hydro Cube', 'Hydro Cube'), tag: L('Hydroponic chamber', 'ห้องปลูกไฮโดรโปนิกส์'), price: 3690, controller: 'ESP32',
                     img: 'images/usecases/commercial-hydro.webp', whole: true, alt: L('Acrylic chamber with red and blue LED strips, a plant on a shelf and a water tank below', 'ห้องอะคริลิกมีไฟ LED แดงและน้ำเงิน ต้นไม้บนชั้น และถังน้ำด้านล่าง'),
                     features: [L('Acrylic chamber with built-in water tank', 'ห้องอะคริลิกพร้อมถังน้ำในตัว'), L('Hydroponic reservoir + pump', 'ถังไฮโดรโปนิกส์ + ปั๊ม'), L('Red + blue LED strips', 'ไฟ LED แดง-น้ำเงิน'), L('Cooling fan & misting', 'พัดลมระบายความร้อนและพ่นหมอก'), L('pH & water-level sensors', 'เซนเซอร์ pH และระดับน้ำ')],
                 },
                 {
-                    id: 'v4-pro', name: L('Smart Plant Box V4', 'Smart Plant Box V4'), tag: L('Full climate control', 'ควบคุมสภาพอากาศครบ'), price: 12900, controller: 'Raspberry Pi 4',
+                    id: 'v4-pro', name: L('Smart Plant Box V4', 'Smart Plant Box V4'), tag: L('Full climate control', 'ควบคุมสภาพอากาศครบ'), price: 6900, controller: 'Raspberry Pi 4',
                     img: 'images/build-front.webp', whole: true, alt: L('Smart Plant Box V4 with its pink LED canopy switched on', 'Smart Plant Box V4 เปิดหลังคาไฟ LED สีชมพู'),
-                    features: [L('Acrylic chamber on aluminium feet', 'ห้องอะคริลิกบนขาอะลูมิเนียม'), L('Full red + blue LED canopy', 'หลังคาไฟ LED แดง-น้ำเงินเต็มแผง'), L('Fans, misting & automatic pump', 'พัดลม พ่นหมอก และปั๊มอัตโนมัติ'), L('Camera + AI plant health analysis', 'กล้อง + AI วิเคราะห์สุขภาพพืช'), L('Cloud data & app control', 'เก็บข้อมูลบนคลาวด์และควบคุมผ่านแอป')],
+                    features: [L('Acrylic chamber on aluminium feet', 'ห้องอะคริลิกบนขาอะลูมิเนียม'), L('Full red + blue LED canopy', 'หลังคาไฟ LED แดง-น้ำเงินเต็มแผง'), L('Fans, misting & automatic pump', 'พัดลม พ่นหมอก และปั๊มอัตโนมัติ'), L('Pi camera + AI Model 3 (90% accuracy)', 'กล้อง Pi + AI Model 3 (แม่นยำ 90%)'), L('Cloud data & app control', 'เก็บข้อมูลบนคลาวด์และควบคุมผ่านแอป')],
                 },
             ],
             field: {
@@ -149,7 +163,7 @@
                 installed: L('An acrylic chamber with a built-in tank, a hydroponic pump, red + blue LEDs, a cooling fan, and pH and water-level sensors.', 'ห้องอะคริลิกพร้อมถังในตัว ปั๊มไฮโดรโปนิกส์ ไฟ LED แดง-น้ำเงิน พัดลมระบายความร้อน และเซนเซอร์ pH กับระดับน้ำ'),
                 runs: L('The pump circulates nutrient water on a schedule, and you get an alert if the tank runs low or the pH drifts.', 'ปั๊มหมุนเวียนน้ำผสมธาตุอาหารตามเวลา และแจ้งเตือนเมื่อน้ำในถังเหลือน้อยหรือค่า pH เปลี่ยน'),
             },
-            preset: { controller: 'pi4', parts: ['ledRB', 'hydro', 'ph', 'level', 'dht', 'cooler', 'mist', 'camAI'], material: 'acrylic', size: [40, 32, 56] },
+            preset: { controller: 'pi4', parts: ['ledRB', 'hydro', 'ph', 'level', 'dht', 'cooler', 'mist', 'picam', 'ai3'], material: 'acrylic', size: [40, 32, 56] },
         },
     };
 
@@ -196,11 +210,12 @@
             id: 'disease', icon: 'fa-bug', uc: 'farmer', label: 'Leaf Health',
             problem: L('Leaves get spots and disease', 'ใบมีจุด เป็นโรค'),
             name: L('Leaf health kit', 'ชุดตรวจสุขภาพใบ'),
-            preset: { controller: 'pi4', parts: ['camAI', 'dht'], material: 'none', size: [100, 100, 60] },
+            preset: { controller: 'esp32', parts: ['cam', 'ai2', 'dht'], material: 'none', size: [100, 100, 60] },
             why: {
-                camAI: L('Photographs the leaves and flags disease early', 'ถ่ายภาพใบและแจ้งเตือนเมื่อพบโรคตั้งแต่ระยะแรก'),
+                cam: L('Photographs the leaves every day', 'ถ่ายภาพใบทุกวัน'),
+                ai2: L('Reads the photos and flags disease early', 'อ่านภาพถ่ายและแจ้งเตือนเมื่อพบโรคตั้งแต่ระยะแรก'),
                 dht: L('High humidity spreads fungus — this tells you when the risk is high', 'ความชื้นสูงทำให้เชื้อราลาม เซนเซอร์นี้บอกเมื่อมีความเสี่ยง'),
-                pi4: L('Runs the AI that reads the photos', 'ประมวลผล AI ที่อ่านภาพถ่าย'),
+                esp32: L('Runs the AI and sends alerts to your phone', 'ประมวลผล AI และส่งแจ้งเตือนเข้ามือถือ'),
             },
         },
         {
@@ -233,7 +248,7 @@
         { id: 'light', label: L('Not enough light (seedlings stretch)', 'แสงไม่พอ (ต้นกล้ายืด)'), parts: ['ledFull', 'lux'], because: L('you said your seedlings don\'t get enough light', 'คุณระบุว่าต้นกล้าได้รับแสงไม่พอ') },
         { id: 'heat', label: L('Too hot', 'ร้อนเกินไป'), parts: ['fan', 'cooler', 'dht'], because: L('you said it gets too hot', 'คุณระบุว่าพื้นที่ร้อนเกินไป') },
         { id: 'water', label: L('Not enough water', 'น้ำไม่พอ'), parts: ['pump', 'soil', 'level'], because: L('you said water runs short', 'คุณระบุว่าน้ำไม่พอ') },
-        { id: 'pests', label: L('Pests & plant disease', 'แมลงและโรคพืช'), parts: ['camAI'], because: L('you said pests and disease are a problem', 'คุณระบุว่ามีปัญหาแมลงและโรคพืช') },
+        { id: 'pests', label: L('Pests & plant disease', 'แมลงและโรคพืช'), parts: ['cam', 'ai2'], because: L('you said pests and disease are a problem', 'คุณระบุว่ามีปัญหาแมลงและโรคพืช') },
         { id: 'labour', label: L('Not enough workers', 'แรงงานไม่พอ'), parts: ['pump', 'fert'], because: L('you\'re short on workers, so it waters and feeds by itself', 'คุณระบุว่าแรงงานไม่พอ ระบบจึงรดน้ำและให้ปุ๋ยเอง') },
         { id: 'nutrients', label: L('Poor soil nutrients', 'ดินขาดธาตุอาหาร'), parts: ['npk', 'fert'], because: L('you said the soil lacks nutrients', 'คุณระบุว่าดินขาดธาตุอาหาร') },
         { id: 'yield', label: L('Low yield', 'ผลผลิตต่ำ'), parts: ['ledFull', 'npk'], because: L('you want a bigger harvest', 'คุณต้องการเพิ่มผลผลิต') },
@@ -247,7 +262,7 @@
         { id: 'light', label: L('Grow lights', 'ไฟปลูกพืช'), icon: 'fa-lightbulb', parts: ['ledFull'] },
         { id: 'water', label: L('Automatic watering', 'รดน้ำอัตโนมัติ'), icon: 'fa-droplet', parts: ['pump', 'fert'] },
         { id: 'mist', label: L('Misting', 'พ่นหมอก'), icon: 'fa-cloud', parts: ['mist'] },
-        { id: 'camera', label: L('Camera + plant disease detection', 'กล้อง + ตรวจโรคพืช'), icon: 'fa-camera', parts: ['camAI'] },
+        { id: 'camera', label: L('Camera + plant disease detection', 'กล้อง + ตรวจโรคพืช'), icon: 'fa-camera', parts: ['cam', 'ai2'] },
     ];
 
     // ---------- state ----------
@@ -475,9 +490,9 @@
         system.parts.forEach(x => add(x, becauseText(system.because)));
         funcs.forEach(id => { const f = FUNCTIONS.find(x => x.id === id); f.parts.forEach(x => add(x, L(`Recommended because you asked for ${f.label.en.toLowerCase()}`, `แนะนำเพราะคุณต้องการ${f.label.th}`))); });
         add('dht', null);
-        const controller = parts.has('camAI') ? 'pi4' : 'esp32';
+        const controller = needsPi(parts) ? 'pi4' : 'esp32';
         why[controller] = controller === 'pi4'
-            ? L('Needed to run the AI camera you asked for', 'จำเป็นสำหรับประมวลผลกล้อง AI ที่คุณเลือก')
+            ? L('Needed for the Pi camera and the most accurate AI', 'จำเป็นสำหรับกล้อง Pi และ AI รุ่นที่แม่นยำที่สุด')
             : L('Wi-Fi alerts and app control for your farm', 'แจ้งเตือนและควบคุมผ่านแอปด้วย Wi-Fi');
 
         // Essential kit = what fixes the problems they ticked + the minimum for how they grow
@@ -528,8 +543,8 @@
         const rec = new Set(recommended.parts);
         const groups = [...new Set(PARTS.map(p => p.group))];
         const option = (type, name, value, on, label, price, isRec) => `
-            <label class="cfg-option ${type}${on ? ' is-on' : ''}${isRec ? ' is-rec' : ''}">
-                <input type="${type}" name="${name}" value="${value}"${on ? ' checked' : ''}>
+            <label class="cfg-option ${type}${on ? ' is-on' : ''}${isRec ? ' is-rec' : ''}${value === 'ai3' && ARDUINO.includes(cfg.controller) ? ' is-off' : ''}">
+                <input type="${type}" name="${name}" value="${value}"${on ? ' checked' : ''}${value === 'ai3' && ARDUINO.includes(cfg.controller) ? ' disabled' : ''}>
                 <span class="cfg-check" aria-hidden="true"></span>
                 <span class="cfg-name">${esc(label)}${isRec ? `<small class="cfg-why"><i class="fas fa-circle-check"></i> ${esc(reasonFor(value))}</small>` : ''}</span>
                 <span class="cfg-price">${money(price)}</span>
@@ -555,6 +570,7 @@
                     ${groups.map(g => `
                     <fieldset class="cfg-group">
                         <legend>${esc(T(GROUPS[g]))}</legend>
+                        ${g === 'AI' ? `<p class="cfg-note"><i class="fas fa-circle-info"></i> ${esc(t('Runs on the controller you picked. Arduino boards can\'t run Model 3 — choose ESP32 or Raspberry Pi for 90% accuracy.', 'ทำงานบนบอร์ดที่เลือกไว้ บอร์ด Arduino ใช้ Model 3 ไม่ได้ ถ้าต้องการความแม่นยำ 90% ให้เลือก ESP32 หรือ Raspberry Pi'))}</p>` : ''}
                         <div class="cfg-options">${PARTS.filter(p => p.group === g).map(p => option('checkbox', 'cfgPart', p.id, cfg.parts.has(p.id), T(p.name), p.price, rec.has(p.id))).join('')}</div>
                     </fieldset>`).join('')}
                     <fieldset class="cfg-group">
@@ -597,7 +613,7 @@
     // Essential kit: only the parts that fix the ticked problems + the minimum for how they grow
     function essentialCfg() {
         const core = new Set(survey.core.filter(id => recommended.parts.includes(id)));
-        return { controller: core.has('camAI') ? 'pi4' : 'esp32', parts: core, material: recommended.material, size: [...recommended.size] };
+        return { controller: needsPi(core) ? 'pi4' : 'esp32', parts: core, material: recommended.material, size: [...recommended.size] };
     }
     const fullCfg = () => ({ controller: recommended.controller, parts: new Set(recommended.parts), material: recommended.material, size: [...recommended.size] });
     const sameCfg = (a, b) => a.controller === b.controller && a.parts.size === b.parts.size && [...a.parts].every(x => b.parts.has(x));
@@ -658,7 +674,7 @@
     // ---------- cart ----------
     function pushToCart(item) {
         if (typeof cart === 'undefined' || typeof saveCart !== 'function') return false;
-        cart.push(Object.assign({ quantity: 1, cur: 'THB2', addedAt: new Date().toISOString(), useCase: UC[current].title.en }, item));
+        cart.push(Object.assign({ quantity: 1, cur: 'THB3', addedAt: new Date().toISOString(), useCase: UC[current].title.en }, item));
         saveCart();
         return true;
     }
@@ -820,9 +836,14 @@
         if (el.name === 'cfgController') {
             cfg.controller = el.value;
             el.closest('.cfg-options').querySelectorAll('.cfg-option').forEach(l => l.classList.toggle('is-on', l.querySelector('input').checked));
+            if (aiRules(cfg) && typeof showToast === 'function') showToast(t('Arduino can\'t run AI Model 3 — switched to Model 2', 'Arduino ใช้ AI Model 3 ไม่ได้ จึงเปลี่ยนเป็น Model 2'));
+            syncAI();
         } else if (el.name === 'cfgPart') {
+            const m = part(el.value);
+            if (el.checked && m && m.ai) PARTS.forEach(p => { if (p.ai && p.id !== m.id) cfg.parts.delete(p.id); });
             if (el.checked) cfg.parts.add(el.value); else cfg.parts.delete(el.value);
             el.closest('.cfg-option').classList.toggle('is-on', el.checked);
+            if (m && m.ai) syncAI();
         } else if (el.id === 'cfgMaterial') {
             cfg.material = el.value;
             document.querySelectorAll('#ucConfig .cfg-dim').forEach(d => { d.hidden = cfg.material === 'none'; });
@@ -830,6 +851,17 @@
             cfg.size[+el.dataset.dim] = Math.max(0, parseFloat(el.value) || 0);
         } else return;
         renderSummary();
+    }
+    // Keep the AI checkboxes in step with cfg (one model at a time, Model 3 off for Arduino)
+    function syncAI() {
+        document.querySelectorAll('#ucConfigForm input[name="cfgPart"]').forEach(inp => {
+            const p = part(inp.value);
+            if (!p || !p.ai) return;
+            inp.checked = cfg.parts.has(p.id);
+            inp.disabled = p.id === 'ai3' && ARDUINO.includes(cfg.controller);
+            inp.closest('.cfg-option').classList.toggle('is-on', inp.checked);
+            inp.closest('.cfg-option').classList.toggle('is-off', inp.disabled);
+        });
     }
     document.addEventListener('change', onConfigChange);
     document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.dim) onConfigChange(e); });

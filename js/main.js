@@ -187,7 +187,24 @@ function selectUserType(type) {
 }
 
 // ========== CUSTOM ==========
+// AI needs a board; Arduino boards (list positions 1-3) can't run Model 3 (position 3)
+const ARDUINO_BOARDS = [1, 2, 3];
+function applyAiRules() {
+    const mc = document.getElementById('microcontroller'), ai = document.getElementById('ai');
+    if (!mc || !ai) return;
+    const board = mc.selectedIndex || 0;
+    ai.disabled = board === 0;
+    if (ai.disabled) ai.selectedIndex = 0;
+    const arduino = ARDUINO_BOARDS.includes(board);
+    ai.options[3].disabled = arduino;
+    if (arduino && ai.selectedIndex === 3) {
+        ai.selectedIndex = 2;
+        showToast(t("Arduino can't run AI Model 3 — switched to Model 2", 'Arduino ใช้ AI Model 3 ไม่ได้ จึงเปลี่ยนเป็น Model 2'));
+    }
+}
+
 function calculateCustomPrice() {
+    applyAiRules();
     const num = id => parseFloat(document.getElementById(id)?.value) || 0;
     const microcontroller = num('microcontroller');
     const watering = num('watering');
@@ -195,12 +212,13 @@ function calculateCustomPrice() {
     const temperature = num('temperature');
     const mist = num('mist');
     const camera = num('camera');
+    const ai = num('ai');
     const boxMaterial = num('boxMaterial');
     const width = num('boxWidth');
     const length = num('boxLength');
     const height = num('boxHeight');
 
-    const componentsTotal = microcontroller + watering + light + temperature + mist + camera;
+    const componentsTotal = microcontroller + watering + light + temperature + mist + camera + ai;
     let boxMaterialTotal = 0;
     if (boxMaterial > 0 && width > 0 && length > 0 && height > 0) {
         const surface = 2 * (width * length + width * height + length * height);
@@ -213,7 +231,7 @@ function calculateCustomPrice() {
     set('boxMaterialTotal', boxMaterialTotal);
     set('grandTotal', grandTotal);
 
-    return { microcontroller, watering, light, temperature, mist, camera, boxMaterial, width, length, height, componentsTotal, boxMaterialTotal, grandTotal };
+    return { microcontroller, watering, light, temperature, mist, camera, ai, boxMaterial, width, length, height, componentsTotal, boxMaterialTotal, grandTotal };
 }
 
 function showCustomOrderForm() {
@@ -233,13 +251,14 @@ function showCustomOrderForm() {
         temperature: txt('temperature'),
         mist: txt('mist'),
         camera: txt('camera'),
+        ai: txt('ai'),
         boxMaterial: txt('boxMaterial'),
         width: document.getElementById('boxWidth')?.value || '',
         length: document.getElementById('boxLength')?.value || '',
         height: document.getElementById('boxHeight')?.value || '',
         total: d.grandTotal,
         // What the server needs to price it: which option was picked in each list (not the price)
-        choices: Object.fromEntries(['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'boxMaterial']
+        choices: Object.fromEntries(['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'ai', 'boxMaterial']
             .map(id => [id, document.getElementById(id)?.selectedIndex || 0])),
         size: ['boxWidth', 'boxLength', 'boxHeight'].map(id => parseFloat(document.getElementById(id)?.value) || 0)
     };
@@ -268,6 +287,7 @@ function showOrderForm() {
         html += row(t('Temperature', 'อุณหภูมิ'), customOrderData.temperature);
         html += row(t('Mist', 'พ่นหมอก'), customOrderData.mist);
         html += row(t('Camera', 'กล้อง'), customOrderData.camera);
+        html += row(t('AI', 'AI'), customOrderData.ai);
         html += row(t('Box Material', 'วัสดุกล่อง'), customOrderData.boxMaterial);
         html += row(t('Dimensions', 'ขนาด'), `${customOrderData.width} × ${customOrderData.length} × ${customOrderData.height} ${t('cm', 'ซม.')}`);
         html += `<div class="summary-item summary-total"><span>${escHtml(t('Total', 'รวม'))}:</span><span>${baht(customOrderData.total)}</span></div>`;

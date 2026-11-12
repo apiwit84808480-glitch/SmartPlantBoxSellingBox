@@ -38,6 +38,7 @@ const range = (v, a, b) => clamp01((v - a) / (b - a));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOut = t => 1 - Math.pow(1 - t, 3);
+const smoother = t => t * t * t * (t * (t * 6 - 15) + 10); // smootherstep: no jolt at start or end
 let seed = 11;
 const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const rnd = (a, b) => a + (b - a) * rand();
@@ -752,7 +753,7 @@ function init() {
     resize();
 
     // ---------- input / visibility ----------
-    const state = { p: 0, ps: 0, mx: 0, my: 0, mxs: 0, mys: 0, visible: true, lastL: -1, lastCount: -1 };
+    const state = { p: 0, pm: 0, ps: 0, mx: 0, my: 0, mxs: 0, mys: 0, visible: true, lastL: -1, lastCount: -1 };
     window.addEventListener('pointermove', e => {
         if (e.pointerType !== 'mouse') return;
         state.mx = (e.clientX / window.innerWidth) * 2 - 1;
@@ -779,8 +780,14 @@ function init() {
         const time = clock.elapsedTime;
 
         readScroll();
-        state.ps = (reduceMotion || typeof window.__heroP === "number") ? state.p : state.ps + (state.p - state.ps) * (1 - Math.exp(-dt * 6));
-        if (Math.abs(state.p - state.ps) < 0.0002) state.ps = state.p;
+        // Two chained low-pass filters: the second follows the first, so speed
+        // ramps up and down gently instead of jumping with each wheel tick.
+        if (reduceMotion || typeof window.__heroP === "number") { state.pm = state.ps = state.p; }
+        else {
+            state.pm += (state.p - state.pm) * (1 - Math.exp(-dt * 7));
+            state.ps += (state.pm - state.ps) * (1 - Math.exp(-dt * 7));
+        }
+        if (Math.abs(state.p - state.ps) < 0.0002 && Math.abs(state.p - state.pm) < 0.0002) state.pm = state.ps = state.p;
         state.mxs += (state.mx - state.mxs) * (1 - Math.exp(-dt * 3));
         state.mys += (state.my - state.mys) * (1 - Math.exp(-dt * 3));
         const p = state.ps;
@@ -801,7 +808,8 @@ function init() {
         const float = reduceMotion ? 0 : 1;
         let assembled = 0;
         for (const pt of parts) {
-            const t = easeOut(range(a, pt.start, pt.start + 0.27));
+            const s0 = pt.start * 0.86; // longer, overlapping windows so parts glide in together
+            const t = smoother(range(a, s0, s0 + 0.38));
             if (t > 0.995) assembled++;
             const k = 1 - t;
             pt.obj.position.set(

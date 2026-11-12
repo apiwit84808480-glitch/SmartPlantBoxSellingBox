@@ -235,10 +235,13 @@ nav.open .nav-toggle span:last-child { top: 19px; transform: rotate(-45deg); }
     --out: 0;
 }
 .hero-kicker {
-    font-size: clamp(11px, 0.95vw, 14px);
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: clamp(26px, 3.6vw, 64px);
+    line-height: 1;
     letter-spacing: 0.6em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #e9e2ee;
     margin-bottom: clamp(10px, 1.4vw, 22px);
     padding-left: 0.6em;
     opacity: calc(1 - var(--out) * 1.8);
@@ -1455,7 +1458,7 @@ select.uc-input { cursor: pointer; }
 
 /* Calmer small labels: much less letter-spacing */
 .eyebrow { letter-spacing: 0.08em; }
-.hero-kicker { letter-spacing: 0.32em; padding-left: 0.32em; }
+.hero-kicker { letter-spacing: 0.42em; padding-left: 0.42em; }
 .scroll-cue, .assembly-counter { letter-spacing: 0.1em; }
 .field-label, .cfg-group legend, .form-group label, .sensor-options h4 { letter-spacing: 0.04em; }
 .cfg-name em, .uc-price small, .stat-num small { letter-spacing: 0.04em; }
@@ -1790,3 +1793,10 @@ body.detail-mode .light-zone .custom-form, body.detail-mode .light-zone .order-f
     body.detail-mode .light-zone .custom-form, body.detail-mode .light-zone .order-form { padding-top: 6rem; padding-bottom: 7rem; }
     body.detail-mode .light-zone .usecase-detail { padding-bottom: 7rem; }
 }
+
+/* AI model group (configurator + custom form) */
+.cfg-note { grid-column: 1 / -1; margin: 0 0 0.5rem; font-size: 0.82rem; line-height: 1.5; opacity: 0.8; }
+.cfg-note i { margin-right: 0.35rem; }
+.cfg-option.is-off { opacity: 0.45; cursor: not-allowed; }
+.form-hint { display: block; margin-top: 0.35rem; font-size: 0.8rem; opacity: 0.7; }
+.custom-select:disabled { opacity: 0.55; cursor: not-allowed; }
