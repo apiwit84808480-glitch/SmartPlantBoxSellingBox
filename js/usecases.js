@@ -25,9 +25,9 @@
     ];
     const GROUPS = { Light: L('Light', 'ไฟ'), Water: L('Water', 'น้ำ'), Climate: L('Climate', 'อากาศ'), Sensors: L('Sensors', 'เซนเซอร์'), Camera: L('Camera', 'กล้อง'), AI: L('AI plant disease detection (pick one)', 'AI ตรวจโรคพืช (เลือก 1 รุ่น)') };
     const PARTS = [
-        { id: 'ledRB', group: 'Light', price: 150, name: L('Red + blue LED grow strips', 'ไฟ LED ปลูกพืชแดง-น้ำเงิน'), why: L('Gives plants light when the sun isn\'t enough', 'ให้แสงเมื่อแดดไม่พอ') },
+        { id: 'ledRB', group: 'Light', price: 100, name: L('Red + blue LED grow strips', 'ไฟ LED ปลูกพืชแดง-น้ำเงิน'), why: L('Gives plants light when the sun isn\'t enough', 'ให้แสงเมื่อแดดไม่พอ') },
         { id: 'ledFull', group: 'Light', price: 200, name: L('Dimmable full-spectrum LED panel', 'แผงไฟ LED ฟูลสเปกตรัม ปรับความสว่างได้'), why: L('Replaces missing sunlight with the full spectrum plants use', 'ทดแทนแสงแดดด้วยแสงครบสเปกตรัมที่พืชใช้') },
-        { id: 'pump', group: 'Water', price: 290, name: L('Automatic watering pump + hose', 'ปั๊มรดน้ำอัตโนมัติ + สายยาง'), why: L('Waters for you when the soil gets dry', 'รดน้ำให้เองเมื่อดินแห้ง') },
+        { id: 'pump', group: 'Water', price: 200, name: L('Automatic watering pump + hose', 'ปั๊มรดน้ำอัตโนมัติ + สายยาง'), why: L('Waters for you when the soil gets dry', 'รดน้ำให้เองเมื่อดินแห้ง') },
         { id: 'mist', group: 'Water', price: 390, name: L('Misting system (2 nozzles + pump)', 'ระบบพ่นหมอก (2 หัว + ปั๊ม)'), why: L('Raises humidity and cools the leaves', 'เพิ่มความชื้นและช่วยลดความร้อนที่ใบ') },
         { id: 'fert', group: 'Water', price: 390, name: L('Fertilizer doser', 'ชุดจ่ายปุ๋ยอัตโนมัติ'), why: L('Feeds plants on a schedule', 'ให้ปุ๋ยตามเวลาโดยอัตโนมัติ') },
         { id: 'hydro', group: 'Water', price: 590, name: L('Hydroponic reservoir + air pump', 'ถังไฮโดรโปนิกส์ + ปั๊มลม'), why: L('Grows plants in nutrient water instead of soil', 'ปลูกในน้ำผสมธาตุอาหารแทนดิน') },
@@ -76,12 +76,12 @@
             optionsTitle: L('Choose by household size', 'เลือกตามจำนวนคนในบ้าน'),
             options: [
                 {
-                    id: 'relief-s', name: L('Relief Box S', 'Relief Box S'), tag: L('Household of 2–4', 'สำหรับ 2–4 คน'), price: 890, controller: 'Arduino Nano',
+                    id: 'relief-s', name: L('Relief Box S', 'Relief Box S'), tag: L('Household of 2–4', 'สำหรับ 2–4 คน'), price: 690, controller: 'Arduino Nano',
                     img: 'images/usecases/disaster-small.webp', alt: L('Small clear storage box with two potted plants, a power supply and a controller box on the lid', 'กล่องใสขนาดเล็กมีกระถาง 2 ใบ พร้อมแหล่งจ่ายไฟและกล่องควบคุมบนฝา'),
                     features: [L('Clear storage box with lid', 'กล่องใสมีฝาปิด'), L('Holds 2 pots', 'ใส่กระถางได้ 2 ใบ'), L('Automatic watering pump', 'ปั๊มรดน้ำอัตโนมัติ'), L('Soil moisture sensor', 'เซนเซอร์ความชื้นในดิน'), L('Plug-in power supply', 'อะแดปเตอร์เสียบปลั๊ก')],
                 },
                 {
-                    id: 'relief-l', name: L('Relief Box L', 'Relief Box L'), tag: L('Household of 4+', 'สำหรับ 4 คนขึ้นไป'), price: 1390, controller: 'ESP32',
+                    id: 'relief-l', name: L('Relief Box L', 'Relief Box L'), tag: L('Household of 4+', 'สำหรับ 4 คนขึ้นไป'), price: 1190, controller: 'ESP32',
                     img: 'images/usecases/disaster-large.webp', alt: L('Large clear storage box with several potted plants and a misting pipe along the top', 'กล่องใสขนาดใหญ่มีกระถางหลายใบและท่อพ่นหมอกด้านบน'),
                     features: [L('Large clear storage box', 'กล่องใสขนาดใหญ่'), L('Holds 4–6 pots', 'ใส่กระถางได้ 4–6 ใบ'), L('Misting pipe with 3 nozzles', 'ท่อพ่นหมอก 3 หัว'), L('Temperature & humidity sensor', 'เซนเซอร์อุณหภูมิและความชื้น'), L('Wi-Fi alerts to your phone', 'แจ้งเตือนเข้ามือถือผ่าน Wi-Fi')],
                 },
@@ -92,7 +92,7 @@
                 installed: L('A large clear storage box with 4–6 pots, a misting pipe with 3 nozzles, a temperature & humidity sensor and Wi-Fi alerts.', 'กล่องใสขนาดใหญ่ใส่กระถาง 4–6 ใบ ท่อพ่นหมอก 3 หัว เซนเซอร์อุณหภูมิและความชื้น และแจ้งเตือนผ่าน Wi-Fi'),
                 runs: L('Misting runs when the air in the box gets too dry, and a phone alert comes when it needs water.', 'ระบบพ่นหมอกทำงานเมื่ออากาศในกล่องแห้งเกินไป และมีแจ้งเตือนเข้ามือถือเมื่อต้องเติมน้ำ'),
             },
-            preset: { controller: 'nano', parts: ['ledRB', 'pump', 'soil', 'dht'], material: 'plastic', size: [45, 32, 30] },
+            preset: { controller: 'nano', parts: ['ledRB', 'pump', 'soil', 'dht'], material: 'none', size: [45, 32, 30] },
         },
         farmer: {
             num: '02', eyebrow: L('Agriculture', 'เกษตรกรรม'), title: L('For Farmers', 'สำหรับเกษตรกร'), short: 'Farm',
@@ -674,7 +674,7 @@
     // ---------- cart ----------
     function pushToCart(item) {
         if (typeof cart === 'undefined' || typeof saveCart !== 'function') return false;
-        cart.push(Object.assign({ quantity: 1, cur: 'THB3', addedAt: new Date().toISOString(), useCase: UC[current].title.en }, item));
+        cart.push(Object.assign({ quantity: 1, cur: 'THB4', addedAt: new Date().toISOString(), useCase: UC[current].title.en }, item));
         saveCart();
         return true;
     }
