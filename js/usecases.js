@@ -76,12 +76,12 @@
             optionsTitle: L('Choose by household size', 'เลือกตามจำนวนคนในบ้าน'),
             options: [
                 {
-                    id: 'relief-s', name: L('Relief Box S', 'Relief Box S'), tag: L('Household of 2–4', 'สำหรับ 2–4 คน'), price: 690, controller: 'Arduino Nano',
+                    id: 'relief-s', name: L('Relief Box S', 'Relief Box S'), tag: L('Household of 2–4', 'สำหรับ 2–4 คน'), price: 390, controller: 'Arduino Nano',
                     img: 'images/usecases/disaster-small.webp', alt: L('Small clear storage box with two potted plants, a power supply and a controller box on the lid', 'กล่องใสขนาดเล็กมีกระถาง 2 ใบ พร้อมแหล่งจ่ายไฟและกล่องควบคุมบนฝา'),
                     features: [L('Clear storage box with lid', 'กล่องใสมีฝาปิด'), L('Holds 2 pots', 'ใส่กระถางได้ 2 ใบ'), L('Automatic watering pump', 'ปั๊มรดน้ำอัตโนมัติ'), L('Soil moisture sensor', 'เซนเซอร์ความชื้นในดิน'), L('Plug-in power supply', 'อะแดปเตอร์เสียบปลั๊ก')],
                 },
                 {
-                    id: 'relief-l', name: L('Relief Box L', 'Relief Box L'), tag: L('Household of 4+', 'สำหรับ 4 คนขึ้นไป'), price: 1190, controller: 'ESP32',
+                    id: 'relief-l', name: L('Relief Box L', 'Relief Box L'), tag: L('Household of 4+', 'สำหรับ 4 คนขึ้นไป'), price: 690, controller: 'ESP32',
                     img: 'images/usecases/disaster-large.webp', alt: L('Large clear storage box with several potted plants and a misting pipe along the top', 'กล่องใสขนาดใหญ่มีกระถางหลายใบและท่อพ่นหมอกด้านบน'),
                     features: [L('Large clear storage box', 'กล่องใสขนาดใหญ่'), L('Holds 4–6 pots', 'ใส่กระถางได้ 4–6 ใบ'), L('Misting pipe with 3 nozzles', 'ท่อพ่นหมอก 3 หัว'), L('Temperature & humidity sensor', 'เซนเซอร์อุณหภูมิและความชื้น'), L('Wi-Fi alerts to your phone', 'แจ้งเตือนเข้ามือถือผ่าน Wi-Fi')],
                 },
@@ -674,7 +674,7 @@
     // ---------- cart ----------
     function pushToCart(item) {
         if (typeof cart === 'undefined' || typeof saveCart !== 'function') return false;
-        cart.push(Object.assign({ quantity: 1, cur: 'THB4', addedAt: new Date().toISOString(), useCase: UC[current].title.en }, item));
+        cart.push(Object.assign({ quantity: 1, cur: 'THB5', addedAt: new Date().toISOString(), useCase: UC[current].title.en }, item));
         saveCart();
         return true;
     }

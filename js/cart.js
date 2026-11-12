@@ -6,9 +6,9 @@ function loadCart() {
         const saved = localStorage.getItem('smartPlantCart');
         cart = saved ? JSON.parse(saved) : [];
         if (!Array.isArray(cart)) cart = [];
-        // Items saved under an older price list show old amounts: drop them (bump THB4 when prices change)
+        // Items saved under an older price list show old amounts: drop them (bump THB5 when prices change)
         const before = cart.length;
-        cart = cart.filter(x => x && x.cur === 'THB4');
+        cart = cart.filter(x => x && x.cur === 'THB5');
         if (cart.length !== before) localStorage.setItem('smartPlantCart', JSON.stringify(cart));
     } catch (e) {
         console.error('Error loading cart:', e);
