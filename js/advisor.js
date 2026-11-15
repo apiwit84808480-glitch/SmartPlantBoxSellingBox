@@ -1,6 +1,7 @@
 // ============== Box design assistant ==============
-// The customer describes what they want in their own words (Thai or English). We read it
-// with keyword rules (no paid AI service), then route in this order:
+// The customer describes what they want in their own words (Thai or English). Google Gemini
+// (free tier, via the Supabase Edge Function "box-advisor") reads it into plain facts; if the AI
+// is busy or its free quota is used up, keyword rules read it instead. Then we route in this order:
 //   1. a ready-made box fits      -> recommend that box
 //   2. a category fits            -> open that category's builder with the parts pre-ticked
 //   3. nothing fits / very custom -> open the big Custom form (05) with every field filled in
@@ -16,17 +17,17 @@
     const W = {
         disaster: ['น้ำท่วม', 'ภัยพิบัติ', 'ประสบภัย', 'พักพิง', 'อพยพ', 'พายุ', 'น้ำป่า', 'ดินถล่ม', 'บริจาค', 'flood', 'disaster', 'shelter', 'relief', 'evacu', 'storm', 'refugee', 'donat'],
         farmer: ['ฟาร์ม', 'ไร่', 'เกษตรกร', 'แปลง', 'โรงเรือน', 'กรีนเฮาส์', 'ปลูกขาย', 'ทำเกษตร', 'สวนผัก', 'ชาวสวน', 'ชาวไร่', 'farm', 'greenhouse', 'field', /\bplots?\b/, 'grower', 'acre'],
-        household: ['บ้าน', 'ครัวเรือน', 'คอนโด', 'ห้อง', 'ระเบียง', 'ในครัว', 'อพาร์ต', 'หอพัก', 'กินเอง', 'home', 'house', 'condo', 'apartment', 'balcony', 'kitchen', 'indoor', 'bedroom', 'dorm', /\broom\b/],
-        commercial: ['มูลค่าสูง', 'พืชเศรษฐกิจ', 'ราคาสูง', 'พรีเมียม', 'เมลอน', 'สตรอว์เบอร์รี', 'สตรอเบอร์รี', 'สตอเบอรี', 'วาซาบิ', 'หญ้าฝรั่น', 'ส่งออก', 'ห้องแล็บ', 'งานวิจัย', 'premium', 'high-value', 'high value', 'melon', 'strawberr', 'wasabi', 'saffron', 'export', 'precision', /\blab\b/, 'research', 'commercial'],
-        indoor: ['คอนโด', 'ห้อง', 'ในบ้าน', 'อพาร์ต', 'หอพัก', 'condo', 'apartment', 'indoor', 'bedroom', 'dorm', /\broom\b/, 'inside'],
+        household: ['บ้าน', 'ครัวเรือน', 'คอนโด', 'ห้อง', 'ระเบียง', 'ในครัว', 'อพาร์ต', 'หอพัก', /อยู่หอ/, 'โต๊ะ', 'ออฟฟิศ', 'ที่ทำงาน', 'desk', 'office', /\btable\b/, 'windowsill', 'กินเอง', 'home', 'house', 'condo', 'apartment', 'balcony', 'kitchen', 'indoor', 'bedroom', 'dorm', /\broom\b/],
+        commercial: ['มูลค่าสูง', 'พืชเศรษฐกิจ', 'ราคาสูง', 'พรีเมียม', 'เมลอน', 'เมล่อน', 'เมล่อน', 'สตรอว์เบอร์รี', 'สตรอเบอร์รี', 'สตอเบอรี', 'สตอเบอร์รี่', 'วาซาบิ', 'หญ้าฝรั่น', 'ส่งออก', 'ห้องแล็บ', 'งานวิจัย', 'premium', 'high-value', 'high value', 'melon', 'strawberr', 'wasabi', 'saffron', 'export', 'precision', /\blab\b/, 'research', 'commercial'],
+        indoor: ['คอนโด', 'ห้อง', 'ในบ้าน', 'อพาร์ต', 'หอพัก', /อยู่หอ/, 'โต๊ะ', 'ออฟฟิศ', 'ที่ทำงาน', 'desk', 'office', 'condo', 'apartment', 'indoor', 'bedroom', 'dorm', /\broom\b/, 'inside'],
 
         veg: ['ผัก', 'สลัด', 'คะน้า', 'ผักบุ้ง', 'กวางตุ้ง', 'ไมโครกรีน', 'ต้นอ่อน', 'lettuce', 'salad', 'vegetable', 'veggie', 'kale', 'spinach', 'microgreen'],
         herb: ['สมุนไพร', 'กะเพรา', 'โหระพา', 'สะระแหน่', 'ตะไคร้', 'มิ้นต์', 'มินต์', 'ผักชี', 'herb', 'basil', 'mint', 'coriander', 'cilantro', 'parsley'],
         flower: ['ดอกไม้', 'ไม้ดอก', 'กุหลาบ', 'ดาวเรือง', 'ทานตะวัน', 'กล้วยไม้', 'flower', 'rose', 'sunflower', 'orchid'],
-        fruit: ['ผลไม้', 'มะเขือเทศ', 'พริก', 'เมลอน', 'สตรอ', 'สตอ', 'แตง', 'fruit', 'tomato', 'chili', 'chilli', 'pepper', 'melon', 'strawberr', 'cucumber'],
+        fruit: ['ผลไม้', 'มะเขือเทศ', 'พริก', 'เมลอน', 'เมล่อน', 'สตรอ', 'สตอ', 'แตง', 'fruit', 'tomato', 'chili', 'chilli', 'pepper', 'melon', 'strawberr', 'cucumber'],
         seedling: ['ต้นกล้า', 'เพาะกล้า', 'เพาะเมล็ด', 'ต้นยืด', 'seedling', 'sprout', 'germinat'],
 
-        lowlight: ['แดดน้อย', 'แสงน้อย', 'แดดไม่ถึง', 'แสงไม่ถึง', 'แสงไม่พอ', 'แดดไม่พอ', 'ไม่มีแดด', 'ไม่โดนแดด', 'ไม่ค่อยมีแดด', 'ไม่ค่อยโดนแดด', 'ในร่ม', 'มืด', 'ทึบ', 'ต้นยืด', 'ไฟปลูก', /\bled\b/, 'grow light', 'low light', 'little sun', 'no sun', 'not enough light', 'not much sun', 'shade', 'shady', 'dark'],
+        lowlight: [/(แดด|แสง).{0,6}(น้อย|ไม่ถึง|ไม่พอ|ไม่เข้า|ไม่ค่อย|เข้าน้อย)/, /ไม่มี.{0,4}(แดด|แสง|หน้าต่าง)/, /no window|windowless|without (a )?window/, 'แดดน้อย', 'แสงน้อย', 'แดดไม่ถึง', 'แสงไม่ถึง', 'แสงไม่พอ', 'แดดไม่พอ', 'ไม่มีแดด', 'ไม่โดนแดด', 'ไม่ค่อยมีแดด', 'ไม่ค่อยโดนแดด', 'ในร่ม', 'มืด', 'ทึบ', 'ต้นยืด', 'ไฟปลูก', /\bled\b/, 'grow light', 'low light', 'little sun', 'no sun', 'not enough light', 'not much sun', 'shade', 'shady', 'dark'],
         heat: ['ร้อน', 'อุณหภูมิสูง', 'แดดแรง', 'แดดจัด', 'เหี่ยว', /\bhot\b/, 'heat', 'overheat', 'too warm', 'wilt', 'scorch'],
         cold: ['หนาว', 'เย็นเกิน', 'อากาศเย็น', 'ฮีตเตอร์', 'ทำความร้อน', 'ให้ความอบอุ่น', 'ภาคเหนือ', 'บนดอย', 'cold', 'freez', 'frost', 'winter', 'heater', 'chilly'],
         cool: ['ทำความเย็น', 'พัดลม', 'ระบายอากาศ', 'อับ', 'ลมไม่ถ่าย', /\bfans?\b/, 'cooling', 'ventilat', 'airflow', 'stuffy'],
@@ -85,6 +86,20 @@
             if (UNIT[s]) v *= UNIT[s];
             if (v >= 50 && v <= 5000000) best = Math.max(best || 0, v);
         }
+        // no currency next to the number, but the text is about money: take the plain numbers (a range -> its top)
+        if (!best && /(งบ|บาท|ราคา|แพง|ถูก|ประหยัด|เงิน|จ่าย|budget|baht|price|cheap|afford|spend|money|฿)/.test(txt)) {
+            const re2 = /(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*(k\b|พัน|หมื่น)?/gi;
+            let m2;
+            while ((m2 = re2.exec(txt))) {
+                const after = txt.slice(re2.lastIndex, re2.lastIndex + 6), before = txt.slice(Math.max(0, m2.index - 2), m2.index);
+                if (/^\s*(คน|people|person|ต้น|กระถาง|pots?|plants?|%|ไร่|rai|ตร|m2|m²|ซม|cm|เซน|x|×|\*|วัน|days?|ชม|hours?|gb|นิ้ว|inch)/i.test(after) && !m2[2]) continue;
+                if (/[x×*]\s*$/.test(before) || /pi\s?$/i.test(txt.slice(Math.max(0, m2.index - 3), m2.index))) continue;
+                let v = parseFloat(m2[1].replace(/,/g, ''));
+                if (m2[2]) v *= UNIT[m2[2].toLowerCase()];
+                if (v >= 100 && v <= 5000000) best = Math.max(best || 0, v);
+            }
+        }
+        if (!best && /งบ\s*หลักร้อย/.test(txt)) best = 999;
         const tw = txt.match(/(หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ)?(ร้อย|พัน|หมื่น|แสน)(หนึ่ง|นึง|เดียว|ห้า)?/);
         if (!best && tw && /(งบ|ไม่เกิน|ราคา|บาท|ประมาณ|ราว)/.test(txt)) {
             let v = (THAI_NUM[tw[1]] || 1) * UNIT[tw[2]];
@@ -148,7 +163,16 @@
         if (s.board === 'pi4' && hit(txt, W.gb8)) s.boardDetail = s.boardDetail === 'pi5' ? 'pi5-8' : 'pi4-8';
         else if (s.board === 'pi4' && hit(txt, W.gb2) && s.boardDetail === 'pi4') s.boardDetail = 'pi4-2';
         if (s.disease && !hit(txt, ['ไม่มีโรค', 'no disease'])) { /* keep */ } else s.disease = false;
+        // a dorm room or a desk only has space for a small box
+        if (!s.large && hit(txt, [/อยู่หอ/, 'หอพัก', 'โต๊ะ', 'dorm', 'desk', 'windowsill'])) s.small = true;
+        s.source = 'keywords';
+        return finalize(s);
+    }
+
+    function finalize(s) {
         if (s.crop === 'seedling') s.lowlight = true;
+        if (s.cheap && !s.budget) s.budget = { amount: 1000, implied: true };
+        if (s.small && s.large) s.large = false;
         // What the customer is asking the box to do
         const n = new Set();
         if (s.lowlight || s.yield) n.add('light');
@@ -164,6 +188,42 @@
         if (s.fert || s.labour || s.yield) n.add('fert');
         s.needs = n;
         return s;
+    }
+
+    // The AI's facts (already checked by the Edge Function) in the shape read() makes.
+    // Numbers the AI missed are taken from the keyword reader only when they came with a currency.
+    function fromAI(d, text) {
+        const k = read(text);
+        const need = x => d.needs.includes(x), no = x => d.not_wanted.includes(x);
+        const BOARD = {
+            arduino_nano: ['nano'], arduino_uno: ['uno'], arduino_uno_official: ['uno', 'unoOfficial'], esp32: ['esp32'], esp32_cam: ['esp32', 'espcam'],
+            pi_pico: ['pi4', 'pico'], pi_zero: ['pi4', 'zero'], pi3: ['pi4', 'pi3'], pi4: ['pi4', 'pi4'], pi4_2gb: ['pi4', 'pi4-2'], pi4_8gb: ['pi4', 'pi4-8'], pi5: ['pi4', 'pi5'], pi5_8gb: ['pi4', 'pi5-8'],
+        };
+        const [board, boardDetail] = BOARD[d.board] || [null, null];
+        const dims = d.dims_cm.length >= 2 ? [d.dims_cm[0], d.dims_cm[1], d.dims_cm[2] || Math.max(d.dims_cm[0], d.dims_cm[1])] : null;
+        let budget = null;
+        if (d.budget_unlimited) budget = { unlimited: true };
+        else if (d.budget_max_thb) budget = { amount: d.budget_max_thb };
+        else if (k.budget && !k.budget.implied && !k.budget.unlimited) budget = k.budget;
+        const s = {
+            text, source: 'ai', summary: d.summary, aboutPlants: d.about_plants,
+            score: { disaster: 0, farmer: 0, household: 0, commercial: 0 },
+            indoor: d.indoor,
+            crop: ['veg', 'herb', 'flower', 'fruit', 'seedling'].includes(d.crop) ? d.crop : null,
+            lowlight: need('light') && !no('light'), heat: need('heat'), cold: need('cold'), cool: need('cool'),
+            dry: need('water'), humid: need('mist') && !no('mist'),
+            disease: need('disease') && !no('camera'), camera: need('camera') && !no('camera'), ai: need('ai') && !no('ai') && !no('camera'),
+            precise: d.ai_accuracy === 'high', aiBasic: d.ai_accuracy === 'basic',
+            phone: need('phone') && !no('phone'), hydro: need('hydro'), nutrients: need('nutrients'), fert: need('fert'),
+            labour: need('labour'), yield: need('yield'),
+            cheap: d.cheap, small: d.size === 'small', large: d.size === 'large',
+            wantsCustom: d.wants_custom,
+            material: no('box') ? 'none' : (d.material === 'unspecified' ? null : d.material),
+            light: d.light_type === 'unspecified' ? null : d.light_type, dim: d.dimmable,
+            board, boardDetail, budget, size: dims, people: d.people || null,
+        };
+        if (d.category !== 'none') s.score[d.category] = 5;
+        return finalize(s);
     }
 
     // ---------------------------------------------------------------- deciding
@@ -183,12 +243,12 @@
     const CROP_NAME = { veg: L('Vegetables', 'ผัก'), herb: L('Herbs', 'สมุนไพร'), flower: L('Flowers', 'ไม้ดอก'), fruit: L('Fruit', 'ผลไม้'), seedling: L('Seedlings', 'ต้นกล้า') };
     // What each ready-made box can do (matched against the needs above)
     const BOX = {
-        'relief-s': { cat: 'disaster', does: ['water'] },
-        'relief-l': { cat: 'disaster', does: ['mist', 'heat', 'phone'] },
-        'home-tent': { cat: 'household', does: ['light', 'mist', 'water', 'phone'] },
-        'farmer-vision': { cat: 'farmer', does: ['light', 'water', 'fert', 'mist', 'heat', 'camera', 'ai', 'phone'] },
-        'hydro-cube': { cat: 'commercial', does: ['hydro', 'light', 'heat', 'mist', 'water', 'phone'] },
-        'v4-pro': { cat: 'commercial', does: ['light', 'heat', 'mist', 'water', 'camera', 'ai', 'phone', 'hydro'] },
+        'relief-s': { cat: 'disaster', size: 's', does: ['water'] },
+        'relief-l': { cat: 'disaster', size: 'l', does: ['mist', 'heat', 'phone'] },
+        'home-tent': { cat: 'household', size: 'l', does: ['light', 'mist', 'water', 'phone'] },
+        'farmer-vision': { cat: 'farmer', size: 'l', does: ['light', 'water', 'fert', 'mist', 'heat', 'camera', 'ai', 'phone'] },
+        'hydro-cube': { cat: 'commercial', size: 'm', does: ['hydro', 'light', 'heat', 'mist', 'water', 'phone'] },
+        'v4-pro': { cat: 'commercial', size: 'm', does: ['light', 'heat', 'mist', 'water', 'camera', 'ai', 'phone', 'hydro'] },
     };
     const optionById = id => { for (const k of Object.keys(cat().UC)) { const o = cat().UC[k].options.find(x => x.id === id); if (o) return o; } return null; };
 
@@ -207,7 +267,7 @@
     function decide(s, force) {
         const c = force && force !== 'custom' ? force : pickCategory(s);
         if (force === 'custom') return { route: 'custom', cat: c, s, form: buildForm(s, c) };
-        if (!c && !s.needs.size && !s.crop && !s.budget) return { route: 'ask', s };
+        if (s.aboutPlants === false || (!c && !s.needs.size && !needsCustomForm(s))) return { route: 'ask', s };
         if (!force && (needsCustomForm(s) || !c)) return { route: 'custom', cat: c, s, form: buildForm(s, c) };
 
         const kit = buildKit(s, c);
@@ -222,9 +282,10 @@
             const o = optionById(id);
             const missing = wanted.filter(n => !BOX[id].does.includes(n));
             const tooDear = budget && o.price > budget;
-            const wrongSize = c === 'disaster' && s.people && ((s.people > 4) !== (id === 'relief-l'));
-            if (!missing.length && !tooDear && !wrongSize) { box = { id, o, covers: wanted.filter(n => BOX[id].does.includes(n)) }; break; }
-            if (!near) { near = o; nearWhy = tooDear ? L(`${o.name.en} is over your budget`, `${o.name.th} เกินงบของคุณ`) : missing.length ? L(`${o.name.en} doesn't have: ${missing.map(m => NEED_NAME[m].en.toLowerCase()).join(', ')}`, `${o.name.th} ยังไม่มี: ${missing.map(m => NEED_NAME[m].th).join(', ')}`) : null; }
+            const wrongPeople = c === 'disaster' && s.people && ((s.people > 4) !== (id === 'relief-l'));
+            const tooBig = s.small && BOX[id].size === 'l', tooSmall = s.large && BOX[id].size === 's';
+            if (!missing.length && !tooDear && !wrongPeople && !tooBig && !tooSmall) { box = { id, o, covers: wanted.filter(n => BOX[id].does.includes(n)) }; break; }
+            if (!near) { near = o; nearWhy = tooDear ? L(`${o.name.en} is over your budget`, `${o.name.th} เกินงบของคุณ`) : tooBig ? L(`${o.name.en} is bigger than you want`, `${o.name.th} ใหญ่เกินกว่าที่คุณต้องการ`) : tooSmall ? L(`${o.name.en} is smaller than you want`, `${o.name.th} เล็กเกินกว่าที่คุณต้องการ`) : missing.length ? L(`${o.name.en} doesn't have: ${missing.map(m => NEED_NAME[m].en.toLowerCase()).join(', ')}`, `${o.name.th} ยังไม่มี: ${missing.map(m => NEED_NAME[m].th).join(', ')}`) : null; }
         }
         if (box) return { route: 'box', cat: c, s, box, kit };
         return { route: 'kit', cat: c, s, kit, near, nearWhy };
@@ -237,7 +298,7 @@
         const add = (id, why, core = true) => { if (!parts.has(id)) parts.set(id, { why, core }); };
         const notes = [];
         if (s.lowlight) {
-            if (s.indoor || s.crop === 'seedling' || c === 'commercial') add('ledFull', L('Recommended because your plants don\'t get enough sun — a full-spectrum panel replaces it', 'แนะนำเพราะคุณบอกว่าแสงไม่พอ แผงไฟฟูลสเปกตรัมทดแทนแสงแดดได้'));
+            if (s.indoor || s.crop === 'seedling' || c === 'commercial' || s.light === 'panel') add('ledFull', L('Recommended because your plants don\'t get enough sun — a full-spectrum panel replaces it', 'แนะนำเพราะคุณบอกว่าแสงไม่พอ แผงไฟฟูลสเปกตรัมทดแทนแสงแดดได้'));
             else add('ledRB', L('Recommended because your plants don\'t get enough sun', 'แนะนำเพราะคุณบอกว่าแสงไม่พอ'));
             add('lux', L('Turns the light on only when it gets dim', 'เปิดไฟเฉพาะตอนแสงน้อย'), false);
         } else if (s.indoor) add('ledRB', L('Indoors there is rarely enough sun for plants', 'ปลูกในห้อง แสงธรรมชาติมักไม่พอสำหรับต้นไม้'));
@@ -268,7 +329,7 @@
         // camera + AI
         let ai = null;
         if (s.disease || s.ai) {
-            ai = s.precise || c === 'commercial' ? 'ai3' : (s.cheap || (s.budget && s.budget.amount < 900)) ? 'ai1' : 'ai2';
+            ai = s.precise || (c === 'commercial' && !s.aiBasic) ? 'ai3' : (s.aiBasic || s.cheap || (s.budget && s.budget.amount < 900)) ? 'ai1' : 'ai2';
             const usePi = (s.precise || c === 'commercial') && s.board !== 'nano' && s.board !== 'uno' && !(s.budget && s.budget.amount < 4000);
             add(usePi ? 'picam' : 'cam', L('Photographs the leaves every day', 'ถ่ายภาพใบทุกวัน'));
             add(ai, s.disease ? L('Recommended because you mentioned plant disease — flags it early', 'แนะนำเพราะคุณพูดถึงโรคพืช ช่วยแจ้งเตือนตั้งแต่ระยะแรก') : L('Checks the photos for leaf disease', 'ตรวจภาพถ่ายหาโรคที่ใบ'));
@@ -369,6 +430,7 @@
         if (s.light === 'rgbw') set('light', s.dim ? 5 : 4, L('The light you asked for', 'ไฟแบบที่คุณเลือกไว้'));
         else if (s.light === 'rgb') set('light', s.dim ? 3 : 2, L('The light you asked for', 'ไฟแบบที่คุณเลือกไว้'));
         else if (s.dim) set('light', 5, L('Dimmable, as you asked', 'ปรับความสว่างได้ตามที่คุณต้องการ'));
+        else if (s.light === 'panel') set('light', 9, L('The light you asked for', 'ไฟแบบที่คุณเลือกไว้'));
         else if (s.light === 'redblue') set('light', 6, L('Red + blue, the colours plants use most', 'แดง-น้ำเงิน สีที่พืชใช้มากที่สุด'));
         else if (s.lowlight || s.yield || s.crop === 'seedling') set('light', 9, L('Recommended because your plants need more light', 'แนะนำเพราะต้นไม้ของคุณต้องการแสงเพิ่ม'));
         else if (s.indoor) set('light', 6, L('Indoors there is rarely enough sun for plants', 'ปลูกในห้อง แสงธรรมชาติมักไม่พอ'));
@@ -389,7 +451,7 @@
         else set('camera', 1, L('Not needed — you didn\'t ask to see the plants', 'ไม่จำเป็น เพราะไม่ได้บอกว่าอยากดูต้นไม้'));
         // AI
         if (wantsAI) {
-            let m = s.precise || c === 'commercial' ? 3 : s.cheap ? 1 : 2;
+            let m = s.precise || (c === 'commercial' && !s.aiBasic) ? 3 : (s.aiBasic || s.cheap) ? 1 : 2;
             if (m === 3 && arduino) { m = 2; notes.push(L('Arduino can\'t run AI Model 3 — picked Model 2.', 'Arduino ใช้ AI Model 3 ไม่ได้ จึงเลือก Model 2 ให้')); }
             set('ai', m, s.disease ? L('Recommended because you mentioned plant disease', 'แนะนำเพราะคุณพูดถึงโรคพืช') : L('Checks the photos for leaf disease', 'ตรวจภาพถ่ายหาโรคที่ใบ'));
         } else set('ai', 0, L('Not needed — no disease problem mentioned', 'ไม่จำเป็น เพราะไม่ได้พูดถึงโรคพืช'));
@@ -418,7 +480,7 @@
         fab.type = 'button';
         fab.className = 'boxai-fab';
         fab.id = 'advisorFab';
-        fab.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i><span>${esc(t('Design my box', 'ผู้ช่วยออกแบบกล่อง'))}</span>`;
+        fab.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i><span>${esc(t('AI box designer', 'AI ออกแบบกล่อง'))}</span>`;
         fab.setAttribute('aria-haspopup', 'dialog');
         fab.addEventListener('click', open);
         document.body.appendChild(fab);
@@ -443,7 +505,7 @@
             <section class="boxai-panel" role="dialog" aria-modal="true" aria-labelledby="advisorTitle">
                 <header class="boxai-head">
                     <div>
-                        <span class="boxai-eyebrow"><i class="fas fa-wand-magic-sparkles"></i> ${esc(t('Box design assistant', 'ผู้ช่วยออกแบบกล่อง'))}</span>
+                        <span class="boxai-eyebrow"><i class="fas fa-wand-magic-sparkles"></i> ${esc(t('AI box designer', 'AI ออกแบบกล่อง'))}</span>
                         <h2 id="advisorTitle">${esc(t('Tell us what you want to grow', 'เล่าให้ฟังว่าอยากได้กล่องแบบไหน'))}</h2>
                         <p>${esc(t('Where, what you grow, what goes wrong, and your budget. We\'ll match a box — or design one part by part.', 'ปลูกที่ไหน ปลูกอะไร เจอปัญหาอะไร งบเท่าไร แล้วเราจะจับคู่กล่องให้ หรือออกแบบให้ทีละชิ้น'))}</p>
                     </div>
@@ -458,7 +520,7 @@
                     <button type="submit" class="boxai-go"><i class="fas fa-wand-magic-sparkles"></i> ${esc(t('Design my box', 'ออกแบบกล่องให้ฉัน'))}</button>
                 </form>
                 <div class="boxai-result" id="advisorResult" aria-live="polite"></div>
-                <p class="boxai-foot">${esc(t('The assistant reads keywords in what you type (it is not a chat bot). Prices come from our real price list.', 'ผู้ช่วยนี้อ่านจากคำสำคัญในข้อความ (ไม่ใช่แชตบอต) ราคาทั้งหมดมาจากรายการราคาจริงของเรา'))}</p>
+                <p class="boxai-foot">${esc(t('Your text is read by Google Gemini AI — please don\'t type your name, phone number or address. The AI only reads what you need; every part and price comes from our real price list. Free AI questions are limited per day; after that a simpler reader takes over.', 'ข้อความของคุณจะถูกส่งให้ AI ของ Google (Gemini) อ่าน กรุณาอย่าพิมพ์ชื่อ เบอร์โทร หรือที่อยู่ AI มีหน้าที่อ่านความต้องการเท่านั้น ส่วนชิ้นส่วนและราคาทั้งหมดมาจากรายการราคาจริงของเรา AI ฟรีใช้ได้จำนวนจำกัดต่อวัน หลังจากนั้นจะใช้ระบบอ่านแบบสำรองแทน'))}</p>
             </section>`;
         document.body.appendChild(el);
         el.addEventListener('click', onClick);
@@ -481,14 +543,55 @@
         if (fab) fab.focus({ preventScroll: true });
     }
 
-    function run(force) {
-        const text = el.querySelector('#advisorText').value.trim();
+    const AI_URL = 'https://gjsfhgsbrdfftytdfkyt.supabase.co/functions/v1/box-advisor';
+    const aiCache = new Map(); // same sentence again -> same answer, no extra quota
+    async function askAI(text) {
+        if (aiCache.has(text)) return aiCache.get(text);
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), 25000);
+        try {
+            const r = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), signal: ctl.signal });
+            const j = await r.json();
+            if (j && j.ok && j.data) aiCache.set(text, j);
+            return j;
+        } catch (e) {
+            return { ok: false, fallback: 'network' };
+        } finally { clearTimeout(timer); }
+    }
+
+    let busy = false;
+    async function run() {
+        if (busy) return;
+        const text = el.querySelector('#advisorText').value.trim().slice(0, 600);
         const box = el.querySelector('#advisorResult');
-        if (!text && !force) { box.innerHTML = `<p class="boxai-hint">${esc(t('Type a sentence or two first — or tap an example.', 'พิมพ์เล่ามาสักประโยคก่อน หรือกดตัวอย่างด้านบนก็ได้'))}</p>`; return; }
-        const s = read(text);
-        last = decide(s, force);
+        if (!text) { box.innerHTML = `<p class="boxai-hint">${esc(t('Type a sentence or two first — or tap an example.', 'พิมพ์เล่ามาสักประโยคก่อน หรือกดตัวอย่างด้านบนก็ได้'))}</p>`; return; }
+        busy = true;
+        const btn = el.querySelector('.boxai-go');
+        btn.disabled = true;
+        box.innerHTML = `<p class="boxai-thinking"><i class="fas fa-spinner fa-spin"></i> ${esc(t('The AI is reading what you wrote…', 'AI กำลังอ่านสิ่งที่คุณพิมพ์…'))}</p>`;
+        const res = text.length >= 2 ? await askAI(text) : { ok: false, fallback: 'bad-input' };
+        let s;
+        if (res && res.ok) s = fromAI(res.data, text);
+        else { s = read(text); s.fallback = (res && res.fallback) || 'error'; }
+        last = decide(s);
         box.innerHTML = render(last);
+        btn.disabled = false;
+        busy = false;
         box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // where the reading came from: the AI (with its one-line summary) or the keyword back-up
+    function sourceNote(s) {
+        if (s.source === 'ai') {
+            return `<p class="boxai-source ai"><i class="fas fa-wand-magic-sparkles"></i> <span><b>${esc(t('Read by AI', 'AI อ่านแล้ว'))}</b>${s.summary ? ` — “${esc(s.summary)}”` : ''}</span></p>`;
+        }
+        const why = {
+            visitor: L('you\'ve used today\'s AI questions', 'คุณใช้ AI ครบโควตาของวันนี้แล้ว'),
+            site: L('today\'s free AI quota is used up', 'โควตา AI ฟรีของวันนี้หมดแล้ว'),
+            quota: L('today\'s free AI quota is used up', 'โควตา AI ฟรีของวันนี้หมดแล้ว'),
+            'not-configured': L('the AI isn\'t switched on yet', 'ยังไม่ได้เปิดใช้ AI'),
+        }[s.fallback] || L('the AI didn\'t answer', 'AI ไม่ตอบในตอนนี้');
+        return `<p class="boxai-source"><i class="fas fa-circle-info"></i> <span>${esc(t(`Quick read (${why.en}) — results may be less precise.`, `อ่านแบบสำรอง (${why.th}) ผลอาจแม่นน้อยกว่า`))}</span></p>`;
     }
 
     function understood(s, c) {
@@ -500,7 +603,9 @@
         if (s.board) pills.push({ nano: 'Arduino Nano', uno: 'Arduino Uno', esp32: 'ESP32', pi4: 'Raspberry Pi' }[s.board]);
         if (s.material) pills.push(t(`Box: ${s.material}`, `กล่อง: ${{ none: 'ไม่มี', glass: 'กระจก', acrylic: 'อะคริลิก', plastic: 'พลาสติก' }[s.material]}`));
         if (s.size) pills.push(`${s.size.join('×')} ${t('cm', 'ซม.')}`);
-        if (s.budget) pills.push(s.budget.unlimited ? t('No budget limit', 'ไม่จำกัดงบ') : t(`Budget ${baht(s.budget.amount)}`, `งบ ${baht(s.budget.amount)}`));
+        else if (s.small) pills.push(t('Small box', 'กล่องเล็ก'));
+        else if (s.large) pills.push(t('Large box', 'กล่องใหญ่'));
+        if (s.budget) pills.push(s.budget.unlimited ? t('No budget limit', 'ไม่จำกัดงบ') : s.budget.implied ? t(`Low budget (about ${baht(s.budget.amount)})`, `งบประหยัด (ราว ${baht(s.budget.amount)})`) : t(`Budget up to ${baht(s.budget.amount)}`, `งบไม่เกิน ${baht(s.budget.amount)}`));
         return pills.length ? `<div class="boxai-understood"><span>${esc(t('What we understood:', 'สิ่งที่ผู้ช่วยเข้าใจ:'))}</span>${pills.map(p => `<b>${esc(p)}</b>`).join('')}</div>` : '';
     }
 
@@ -515,8 +620,12 @@
     const notesHtml = ns => ns.length ? `<div class="boxai-notes">${ns.map(n => `<p><i class="fas fa-circle-info"></i> ${esc(T(n))}</p>`).join('')}</div>` : '';
 
     function render(r) {
+        return sourceNote(r.s) + renderBody(r);
+    }
+    function renderBody(r) {
         if (r.route === 'ask') {
-            return `<div class="boxai-card"><h3>${esc(t('Tell us a little more', 'ขอรายละเอียดอีกนิด'))}</h3>
+            const off = r.s.aboutPlants === false;
+            return `${understood(r.s, null)}<div class="boxai-card">${off ? `<p>${esc(t('That doesn\'t look like it\'s about growing plants. Tell us what you want to grow, where, and your budget.', 'ข้อความนี้ดูไม่เกี่ยวกับการปลูกต้นไม้ ลองเล่าว่าอยากปลูกอะไร ที่ไหน งบเท่าไร'))}</p>` : ''}<h3>${esc(t('Tell us a little more', 'ขอรายละเอียดอีกนิด'))}</h3>
                 <p>${esc(t('Where will the plants grow? Tap one — it gets added to your text.', 'จะปลูกที่ไหน? กดเลือกได้เลย ระบบจะเติมลงในข้อความให้'))}</p>
                 <div class="boxai-switch">${[
                     [L('Condo / room', 'คอนโด/ในห้อง'), 'คอนโด'], [L('Home / balcony', 'บ้าน/ระเบียง'), 'ระเบียงบ้าน'],
@@ -639,7 +748,7 @@
         else if (a === 'append') { const ta = el.querySelector('#advisorText'); ta.value = (ta.value + ' ' + b.dataset.add).trim(); run(); }
         else if (a === 'force') {
             const c = b.dataset.cat;
-            const s = read(el.querySelector('#advisorText').value);
+            const s = last && last.s ? last.s : read(el.querySelector('#advisorText').value);
             last = decide(s, c);
             el.querySelector('#advisorResult').innerHTML = render(last);
         }
