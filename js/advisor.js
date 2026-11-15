@@ -17,8 +17,8 @@
     const W = {
         disaster: ['น้ำท่วม', 'ภัยพิบัติ', 'ประสบภัย', 'พักพิง', 'อพยพ', 'พายุ', 'น้ำป่า', 'ดินถล่ม', 'บริจาค', 'flood', 'disaster', 'shelter', 'relief', 'evacu', 'storm', 'refugee', 'donat'],
         farmer: ['ฟาร์ม', 'ไร่', 'เกษตรกร', 'แปลง', 'โรงเรือน', 'กรีนเฮาส์', 'ปลูกขาย', 'ทำเกษตร', 'สวนผัก', 'ชาวสวน', 'ชาวไร่', 'farm', 'greenhouse', 'field', /\bplots?\b/, 'grower', 'acre'],
-        household: ['บ้าน', 'ครัวเรือน', 'คอนโด', 'ห้อง', 'ระเบียง', 'ในครัว', 'อพาร์ต', 'หอพัก', /อยู่หอ/, 'โต๊ะ', 'ออฟฟิศ', 'ที่ทำงาน', 'desk', 'office', /\btable\b/, 'windowsill', 'กินเอง', 'home', 'house', 'condo', 'apartment', 'balcony', 'kitchen', 'indoor', 'bedroom', 'dorm', /\broom\b/],
-        commercial: ['มูลค่าสูง', 'พืชเศรษฐกิจ', 'ราคาสูง', 'พรีเมียม', 'เมลอน', 'เมล่อน', 'เมล่อน', 'สตรอว์เบอร์รี', 'สตรอเบอร์รี', 'สตอเบอรี', 'สตอเบอร์รี่', 'วาซาบิ', 'หญ้าฝรั่น', 'ส่งออก', 'ห้องแล็บ', 'งานวิจัย', 'premium', 'high-value', 'high value', 'melon', 'strawberr', 'wasabi', 'saffron', 'export', 'precision', /\blab\b/, 'research', 'commercial'],
+        household: ['บ้าน', 'ครัวเรือน', 'ครอบครัว', 'family', 'คอนโด', 'ห้อง', 'ระเบียง', 'ในครัว', 'อพาร์ต', 'หอพัก', /อยู่หอ/, 'โต๊ะ', 'ออฟฟิศ', 'ที่ทำงาน', 'desk', 'office', /\btable\b/, 'windowsill', 'กินเอง', 'home', 'house', 'condo', 'apartment', 'balcony', 'kitchen', 'indoor', 'bedroom', 'dorm', /\broom\b/],
+        commercial: ['มูลค่าสูง', 'พืชเศรษฐกิจ', 'ราคาสูง', 'พรีเมียม', 'เมลอน', 'เมล่อน', 'เมล่อน', 'สตรอว์เบอร์รี', 'สตรอเบอร์รี', 'สตอเบอรี', 'สตอเบอร์รี่', 'วาซาบิ', 'หญ้าฝรั่น', 'ส่งออก', 'ห้องแล็บ', 'งานวิจัย', 'premium', 'high-value', 'high value', 'melon', 'strawberr', 'wasabi', 'saffron', 'export', 'precision', /\blab\b/, 'research', 'commercial', 'ร้านอาหาร', 'ร้านกาแฟ', 'คาเฟ่', 'โรงแรม', 'รีสอร์ท', 'ธุรกิจ', 'ขายส่ง', 'restaurant', 'cafe', 'café', 'hotel', 'resort', 'business', 'wholesale'],
         outdoor: ['ระเบียง', 'หน้าบ้าน', 'หลังบ้าน', 'สวน', 'ลานบ้าน', 'ดาดฟ้า', 'นอกบ้าน', 'กลางแจ้ง', 'balcony', 'porch', 'garden', 'yard', 'patio', 'terrace', 'rooftop', 'outdoor', 'outside'],
         indoor: ['คอนโด', 'ห้อง', 'ในบ้าน', 'อพาร์ต', 'หอพัก', /อยู่หอ/, 'โต๊ะ', 'ออฟฟิศ', 'ที่ทำงาน', 'desk', 'office', 'condo', 'apartment', 'indoor', 'bedroom', 'dorm', /\broom\b/, 'inside'],
 
@@ -125,7 +125,7 @@
         const heatTxt = txt.replace(/ทำความร้อน|ฮีตเตอร์|heater/g, ' ');
         const s = {
             text: raw,
-            score: { disaster: count(txt, W.disaster), farmer: count(txt, W.farmer), household: count(txt, W.household), commercial: count(txt, W.commercial) },
+            score: { disaster: count(txt, W.disaster) * 2, farmer: count(txt, W.farmer), household: count(txt, W.household), commercial: count(txt, W.commercial) },
             indoor: hit(txt, W.indoor),
             outdoor: hit(txt, W.outdoor),
             crop: ['seedling', 'herb', 'flower', 'fruit', 'veg'].find(k => hit(txt, W[k])) || null,
@@ -928,11 +928,21 @@
     // ---- a kit you can change right here
     // − n + : every piece is charged; misting comes in sets of 2 nozzles; AI is one per box
     function qtyStepper(id, q) {
-        if (/^ai\d$/.test(id)) return `<span class="boxai-qty fixed">${esc(t('1 per box', '1 ตัวต่อกล่อง'))}</span>`;
+        if (/^ai\d$/.test(id)) return `<span class="boxai-qty is-one">${esc(t('1 per box', '1 ตัวต่อกล่อง'))}</span>`;
         const max = id === '__ctrl' || id === 'cf:microcontroller' ? 10 : 50;
         if (id === 'cf:mist') { const lab = t(`${q} set${q > 1 ? 's' : ''}`, `${q} ชุด`); return `<span class="boxai-qty"><button type="button" data-adv="qty" data-id="${id}" data-d="-1"${q <= 1 ? ' disabled' : ''}>−</button><b>${esc(lab)}</b><button type="button" data-adv="qty" data-id="${id}" data-d="1"${q >= max ? ' disabled' : ''}>+</button></span>`; }
         const label = id === 'mist' ? t(`${q} set${q > 1 ? 's' : ''} · ${q * 2} nozzles`, `${q} ชุด · ${q * 2} หัว`) : t(`${q} pc${q > 1 ? 's' : ''}`, `${q} ชิ้น`);
         return `<span class="boxai-qty"><button type="button" data-adv="qty" data-id="${id}" data-d="-1"${q <= 1 ? ' disabled' : ''} aria-label="${esc(t('Fewer', 'ลดจำนวน'))}">−</button><b>${esc(label)}</b><button type="button" data-adv="qty" data-id="${id}" data-d="1"${q >= max ? ' disabled' : ''} aria-label="${esc(t('More', 'เพิ่มจำนวน'))}">+</button></span>`;
+    }
+    // a name with its ⓘ glued to the last word, so the ⓘ never sits alone on a new line
+    // (Thai has no spaces, so the last word is found with Intl.Segmenter)
+    const segmenter = (() => { try { return new Intl.Segmenter('th', { granularity: 'word' }); } catch (err) { return null; } })();
+    function withInfo(name, btn) {
+        const s = String(name);
+        let cut = s.lastIndexOf(' ') + 1;
+        if (segmenter) for (const seg of segmenter.segment(s)) if (seg.isWordLike && seg.index > cut) cut = seg.index;
+        const head = s.slice(0, cut), tail = s.slice(cut);
+        return `${head ? `<b>${esc(head)}</b>` : ''}<span class="boxai-nowrap"><b>${esc(tail)}</b>${btn}</span>`;
     }
 
     function kitEditor(turn) {
@@ -956,8 +966,8 @@
                 <div class="boxai-ctrlqty"><span>${esc(t('Boards', 'จำนวนบอร์ด'))}</span>${qtyStepper('__ctrl', e.cqty || 1)}<span>${baht(priceOf(e.controller) * (e.cqty || 1))}</span></div>
             </div>
             <ul class="boxai-lines">
-                ${[...e.parts].map(id => { const q = (e.qty && e.qty[id]) || 1; return `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><span class="boxai-name"><b>${esc(partName(id))}</b><button type="button" class="boxai-info-btn" data-adv="explain" data-id="${id}" aria-label="${esc(t('What is this?', 'คืออะไร'))}">i</button></span>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span class="boxai-pricecol">${baht(priceOf(id) * q)}${qtyStepper(id, q)}</span></li>`; }).join('')}
-                ${(e.off || []).filter(id => !e.parts.has(id)).map(id => `<li class="is-off"><label><input type="checkbox" data-ed="part" value="${id}"><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b><small>${esc(t('Removed — tick to put it back', 'เอาออกแล้ว — ติ๊กเพื่อใส่กลับ'))}</small></span></label><span class="boxai-pricecol">${baht(priceOf(id))}</span></li>`).join('')}
+                ${[...e.parts].map(id => { const q = (e.qty && e.qty[id]) || 1; return `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><span class="boxai-name">${withInfo(partName(id), `<button type="button" class="boxai-info-btn" data-adv="explain" data-id="${id}" aria-label="${esc(t('What is this?', 'คืออะไร'))}">i</button>`)}</span>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span class="boxai-pricecol"><span class="boxai-amt">${baht(priceOf(id) * q)}</span>${qtyStepper(id, q)}</span></li>`; }).join('')}
+                ${(e.off || []).filter(id => !e.parts.has(id)).map(id => `<li class="is-off"><label><input type="checkbox" data-ed="part" value="${id}"><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b><small>${esc(t('Removed — tick to put it back', 'เอาออกแล้ว — ติ๊กเพื่อใส่กลับ'))}</small></span></label><span class="boxai-pricecol"><span class="boxai-amt">${baht(priceOf(id))}</span></span></li>`).join('')}
             </ul>
             <label class="boxai-field">${esc(t('Add a part', 'เพิ่มชิ้นส่วน'))}
                 <select data-ed="add"><option value="">${esc(t('+ choose a part…', '+ เลือกชิ้นส่วน…'))}</option>
