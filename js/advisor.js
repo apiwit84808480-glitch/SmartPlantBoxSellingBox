@@ -134,6 +134,7 @@
             humid: hit(txt, W.humid) && !negated(txt, ['พ่นหมอก', 'หมอก', 'mist']),
             disease: hit(txt, W.disease),
             camera: hit(txt, W.camera) && !negated(txt, ['กล้อง', 'camera']),
+            noCamera: negated(txt, ['กล้อง', 'camera', 'ai', 'เอไอ']),
             ai: hit(txt, W.ai) && !negated(txt, ['ai', 'เอไอ']),
             precise: hit(txt, W.precise),
             phone: hit(txt, W.phone) && !negated(txt, ['มือถือ', 'แอป', 'wifi', 'app', 'phone']),
@@ -213,7 +214,7 @@
             lowlight: need('light') && !no('light'), heat: need('heat'), cold: need('cold'), cool: need('cool'),
             dry: need('water'), humid: need('mist') && !no('mist'),
             disease: need('disease') && !no('camera'), camera: need('camera') && !no('camera'), ai: need('ai') && !no('ai') && !no('camera'),
-            precise: d.ai_accuracy === 'high', aiBasic: d.ai_accuracy === 'basic',
+            precise: d.ai_accuracy === 'high', aiBasic: d.ai_accuracy === 'basic', noCamera: no('camera') || no('ai'),
             phone: need('phone') && !no('phone'), hydro: need('hydro'), nutrients: need('nutrients'), fert: need('fert'),
             labour: need('labour'), yield: need('yield'),
             cheap: d.cheap, small: d.size === 'small', large: d.size === 'large',
@@ -250,6 +251,15 @@
         'hydro-cube': { cat: 'commercial', size: 'm', does: ['hydro', 'light', 'heat', 'mist', 'water', 'phone'] },
         'v4-pro': { cat: 'commercial', size: 'm', does: ['light', 'heat', 'mist', 'water', 'camera', 'ai', 'phone', 'hydro'] },
     };
+    // The parts inside each ready-made box (what "adjust part by part" starts from)
+    const BOX_PARTS = {
+        'relief-s': { controller: 'nano', parts: ['pump', 'soil'], material: 'plastic', size: [45, 32, 30] },
+        'relief-l': { controller: 'esp32', parts: ['mist', 'dht', 'pump', 'soil'], material: 'plastic', size: [60, 40, 40] },
+        'home-tent': { controller: 'esp32', parts: ['ledRB', 'mist', 'pump', 'soil', 'dht'], material: 'plastic', size: [60, 60, 60] },
+        'farmer-vision': { controller: 'esp32', parts: ['ledFull', 'pump', 'fert', 'soil', 'dht', 'mist', 'cam', 'ai2'], material: 'none', size: [100, 100, 60] },
+        'hydro-cube': { controller: 'esp32', parts: ['hydro', 'ledRB', 'cooler', 'mist', 'ph', 'level', 'dht'], material: 'acrylic', size: [40, 32, 56] },
+        'v4-pro': { controller: 'pi4', parts: ['ledRB', 'hydro', 'ph', 'level', 'dht', 'cooler', 'mist', 'fan', 'picam', 'ai3'], material: 'acrylic', size: [40, 32, 56] },
+    };
     const optionById = id => { for (const k of Object.keys(cat().UC)) { const o = cat().UC[k].options.find(x => x.id === id); if (o) return o; } return null; };
 
     function pickCategory(s) {
@@ -277,6 +287,7 @@
         const candidates = cat().UC[c].options.map(o => o.id).filter(id => BOX[id]);
         // relief boxes are chosen by household size first
         if (c === 'disaster' && s.people) candidates.sort((a, b) => (a === (s.people > 4 ? 'relief-l' : 'relief-s') ? -1 : b === (s.people > 4 ? 'relief-l' : 'relief-s') ? 1 : 0));
+        else if (budget && !s.cheap && !s.budget.implied && !s.budget.fromCheaper) candidates.sort((a, b) => optionById(b).price - optionById(a).price); // best box within budget
         else candidates.sort((a, b) => optionById(a).price - optionById(b).price);
         for (const id of candidates) {
             const o = optionById(id);
@@ -340,12 +351,21 @@
             add('soil', L('Waters only when the soil is dry', 'รดเฉพาะตอนดินแห้ง'));
         }
         add('dht', L('Reads heat and humidity so everything runs at the right time', 'วัดอุณหภูมิและความชื้น ให้ทุกอย่างทำงานถูกเวลา'), false);
+        // You told us little beyond where and what: give the full standard set for this kind of grower
+        // (it's trimmed to the budget below; "cheap" keeps it lean)
+        if (s.needs.size <= 1 && !s.cheap && !(s.budget && (s.budget.implied || s.budget.fromCheaper))) {
+            const std = C.UC[c].preset.parts.filter(id => !(s.noCamera && /^(cam|picam|ai\d)$/.test(id)));
+            std.forEach(id => {
+                if (/^ai\d$/.test(id) && [...parts.keys()].some(x => /^ai\d$/.test(x))) return;
+                add(id, L(`Part of our standard ${C.UC[c].shortName.en} set`, `อยู่ในชุดมาตรฐานสำหรับ${C.UC[c].shortName.th}`), false);
+            });
+        }
 
         // controller
         let controller, cWhy;
         const wantsArduino = s.board === 'nano' || s.board === 'uno';
         if (s.board) { controller = s.board; cWhy = L('The board you asked for', 'บอร์ดที่คุณเลือกไว้'); }
-        else if (parts.has('picam')) { controller = 'pi4'; cWhy = L('Needed for the Pi camera and the most accurate AI', 'จำเป็นสำหรับกล้อง Pi และ AI ที่แม่นยำที่สุด'); }
+        else if (parts.has('picam') || parts.has('ai3') && c === 'commercial') { controller = 'pi4'; cWhy = L('Needed for the Pi camera and the most accurate AI', 'จำเป็นสำหรับกล้อง Pi และ AI ที่แม่นยำที่สุด'); }
         else if (s.phone || parts.has('cam') || ai) { controller = 'esp32'; cWhy = s.phone ? L('Recommended because you want to check it from your phone (Wi-Fi)', 'แนะนำเพราะคุณอยากดูผ่านมือถือ (มี Wi-Fi)') : L('Runs the camera and sends alerts over Wi-Fi', 'ควบคุมกล้องและส่งแจ้งเตือนผ่าน Wi-Fi'); }
         else if (s.cheap || (s.budget && s.budget.amount < 600)) { controller = 'nano'; cWhy = L('The lowest-cost board that runs the basics', 'บอร์ดราคาประหยัดที่สุด ทำงานพื้นฐานได้ครบ'); }
         else { controller = 'esp32'; cWhy = L('Lets you check and control it from your phone', 'ดูสถานะและสั่งงานผ่านมือถือได้'); }
@@ -363,6 +383,11 @@
         if (!s.size && material !== 'none') { const k = s.small ? 0.75 : s.large ? 1.4 : 1; size = size.map(v => Math.round(v * k)); }
         let cfg = { controller, parts, material, size, cWhy, mWhy };
         cfg = fitBudget(cfg, s, notes);
+        // a Raspberry Pi is only worth it for the Pi camera / AI Model 3; without them an ESP32 does the job
+        if (cfg.controller === 'pi4' && !cfg.parts.has('picam') && !cfg.parts.has('ai3') && s.board !== 'pi4') {
+            cfg.controller = 'esp32';
+            cfg.cWhy = L('Wi-Fi and app control — a Raspberry Pi isn\'t needed for these parts', 'ควบคุมผ่านแอปด้วย Wi-Fi ชิ้นส่วนชุดนี้ไม่จำเป็นต้องใช้ Raspberry Pi');
+        }
         const why = { [cfg.controller]: cfg.cWhy };
         cfg.parts.forEach((v, id) => { why[id] = v.why; });
         if (cfg.mWhy) why.material = cfg.mWhy;
@@ -390,7 +415,18 @@
         const origMaterial = c.material, origWhy = c.mWhy;
         if (c.material !== 'none' && !s.material) { c.material = 'none'; c.mWhy = L('No enclosure keeps it within budget', 'ไม่ใส่กล่องเพื่อให้อยู่ในงบ'); }
         const extras = [...c.parts.entries()].filter(([, v]) => !v.core).map(([id]) => id).sort((a, b) => priceOf(b) - priceOf(a));
-        for (const id of extras) { if (kitTotal(c) <= budget) break; if (id === 'dht' && ['fan', 'cooler', 'mist', 'heater'].some(x => c.parts.has(x))) continue; c.parts.delete(id); }
+        const piNoLongerNeeded = () => {
+            if (c.controller === 'pi4' && !c.parts.has('picam') && !c.parts.has('ai3') && s.board !== 'pi4') {
+                c.controller = 'esp32';
+                c.cWhy = L('Wi-Fi and app control — a Raspberry Pi isn\'t needed for these parts', 'ควบคุมผ่านแอปด้วย Wi-Fi ชิ้นส่วนชุดนี้ไม่จำเป็นต้องใช้ Raspberry Pi');
+            }
+        };
+        for (const id of extras) {
+            if (kitTotal(c) <= budget) break;
+            if (id === 'dht' && ['fan', 'cooler', 'mist', 'heater'].some(x => c.parts.has(x))) continue;
+            c.parts.delete(id);
+            piNoLongerNeeded(); // dropping the Pi camera / Model 3 frees the ฿1,500 board for other parts
+        }
         const swap = (from, to, why) => { if (kitTotal(c) > budget && c.parts.has(from)) { const v = c.parts.get(from); c.parts.delete(from); c.parts.set(to, { why: why || v.why, core: v.core }); } };
         swap('ledFull', 'ledRB'); swap('cooler', 'fan'); swap('picam', 'cam');
         swap('ai3', 'ai2', L('Model 2 keeps it within budget', 'Model 2 ทำให้อยู่ในงบ')); swap('ai2', 'ai1', L('Model 1 keeps it within budget', 'Model 1 ทำให้อยู่ในงบ'));
@@ -669,7 +705,10 @@
     function setupEdit(turn) {
         const r = turn.r;
         turn.mode = r.route;
-        if (r.route === 'kit' || r.route === 'box') {
+        if (r.route === 'box' && BOX_PARTS[r.box.id]) {
+            const b = BOX_PARTS[r.box.id];
+            turn.edit = { cat: r.cat, controller: b.controller, parts: new Set(b.parts), material: b.material, size: [...b.size], why: {}, fromBox: r.box.o };
+        } else if (r.route === 'kit' || r.route === 'box') {
             const k = r.kit;
             turn.edit = { cat: r.cat, controller: k.controller, parts: new Set(k.parts), material: k.material, size: [...k.size], why: Object.assign({}, k.why) };
         } else if (r.route === 'custom') {
@@ -798,6 +837,7 @@
         return `<div class="boxai-card">
             <span class="boxai-tag"><i class="fas fa-layer-group"></i> ${esc(r.route === 'box' ? t('Built from the matched box', 'ปรับจากกล่องที่จับคู่ไว้') : t('Matched category', 'จับคู่กับหมวด'))}: ${esc(T(CAT_NAME[e.cat]))}</span>
             <h3>${esc(t('Your kit — change anything', 'ชุดของคุณ — ปรับได้ทุกชิ้น'))} <span>${baht(total)}</span></h3>
+            ${e.fromBox ? `<p class="boxai-sub">${esc(t(`Starts from the parts inside ${T(e.fromBox.name)} (${baht(e.fromBox.price)}). Built part by part it costs the parts only; the ready-made box also includes assembly and fittings.`, `เริ่มจากชิ้นส่วนใน ${T(e.fromBox.name)} (${baht(e.fromBox.price)}) ราคาแบบปรับแต่งคิดเฉพาะชิ้นส่วน ส่วนกล่องสำเร็จรวมค่าประกอบและอุปกรณ์ติดตั้งแล้ว`))}</p>` : ''}
             ${r.nearWhy && r.route === 'kit' ? `<p class="boxai-sub">${esc(t('No ready-made box fits exactly', 'ยังไม่มีกล่องสำเร็จที่ตรงทุกข้อ'))}: ${esc(T(r.nearWhy))}</p>` : ''}
             <div class="boxai-row">
                 <label class="boxai-field">${esc(t('Controller', 'บอร์ดควบคุม'))}
