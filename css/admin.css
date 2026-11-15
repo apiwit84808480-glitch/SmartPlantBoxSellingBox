@@ -115,3 +115,44 @@ body.admin { min-height: 100vh; background: radial-gradient(60% 40% at 50% 0%, r
     .adm-chev { display: none; }
     .adm-search { width: 100%; }
 }
+
+/* ---------- sections: Orders · Sales summary · Prices ---------- */
+.adm-views { width: fit-content; margin-bottom: 1.5rem; }
+.adm-views button i { margin-right: 0.35rem; font-size: 0.8rem; }
+.adm-hint { color: var(--faint); font-size: 0.78rem; }
+.adm-hint i { margin-right: 0.3rem; }
+.adm-downloads { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 0.8rem; margin: 0 0 1.5rem; }
+.adm-downloads small { color: var(--muted); font-size: 0.8rem; }
+.adm-sales-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.adm-panel { padding: 1.1rem 1.2rem; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); margin-bottom: 14px; }
+.adm-sales-grid .adm-panel { margin-bottom: 0; }
+.adm-panel.wide { grid-column: 1 / -1; }
+.adm-panel h2 { font: 600 1rem var(--sans); margin: 0 0 0.8rem; }
+.adm-panel h2 small { font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-left: 0.4rem; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+.adm-table th { text-align: left; font-weight: 500; color: var(--muted); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.3rem; border-bottom: 1px solid var(--line-2); }
+.adm-table td { padding: 0.5rem 0.3rem; border-bottom: 1px solid var(--line); }
+.adm-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.adm-empty.small { padding: 1.2rem 1rem; font-size: 0.85rem; }
+.adm-note { display: flex; gap: 0.55rem; padding: 0.8rem 1rem; margin: 0 0 1rem; border-radius: 12px; background: rgba(246, 194, 91, 0.1); color: var(--text); font-size: 0.86rem; line-height: 1.55; }
+.adm-note i { color: var(--amber); margin-top: 0.25rem; }
+.adm-prices { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px; }
+.adm-price { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; padding: 0.6rem 0.75rem; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-2); }
+.adm-price.dirty { border-color: var(--amber); }
+.adm-price > div { min-width: 0; }
+.adm-price b { display: block; font-weight: 500; font-size: 0.88rem; }
+.adm-price small { display: block; color: var(--faint); font-size: 0.72rem; overflow-wrap: anywhere; }
+.adm-price label { display: inline-flex; align-items: center; gap: 0.3rem; flex: none; color: var(--muted); }
+.adm-price input { width: 104px; padding: 0.45rem 0.55rem; border-radius: 9px; border: 1px solid var(--line-2); background: var(--surface); color: var(--text); font: 500 0.9rem var(--sans); text-align: right; }
+.adm-price input:focus { outline: 2px solid var(--pink); outline-offset: 1px; }
+.adm-price input.bad { border-color: #ff6b6b; background: rgba(255, 107, 107, 0.12); }
+.adm-savebar { position: sticky; bottom: 16px; z-index: 20; display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 14px; border: 1px solid var(--amber); background: rgba(22, 19, 27, 0.95); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4); }
+.adm-savebar[hidden] { display: none; }
+.adm-savebar span { margin-right: auto; color: var(--amber); font-size: 0.88rem; }
+@media (max-width: 760px) {
+    .adm-sales-grid { grid-template-columns: 1fr; }
+    .adm-prices { grid-template-columns: 1fr; }
+    .adm-views { width: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .adm-views button { padding-left: 0.4rem; padding-right: 0.4rem; white-space: nowrap; font-size: 0.8rem; text-align: center; }
+}
+@media (max-width: 400px) { .adm-views button i, .adm-views .adm-long { display: none; } }

@@ -5,7 +5,9 @@
 // offer an Essential kit (only what fixes their problems) next to the Full kit.
 //
 // Text is bilingual: { en, th }. T(x) picks the current language (js/i18n.js).
-// Prices are in Thai baht and must match public.price_list (the server re-prices every order).
+// Prices are in Thai baht. The real ones live in public.price_list (change them on /admin → Prices):
+// js/prices.js loads them over these when the page opens, and the server prices every order from that table.
+// The numbers below are only a fallback for when the database can't be reached.
 // NOTE: product specs, prices and the field-case texts are drafts — the team should check them.
 
 (function () {

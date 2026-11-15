@@ -511,3 +511,17 @@ window.addEventListener('scroll', function() {
         if (t < window.innerHeight - 120) el.classList.add('active');
     });
 });
+
+// links from other pages: /?page=contact or /?page=about open that section
+(function () {
+    let p;
+    try { p = new URLSearchParams(location.search).get('page'); } catch (e) { return; }
+    const go = { contact: 'showContactPage', about: 'showAboutPage' }[p];
+    if (!go) return;
+    const run = () => {
+        if (typeof window[go] === 'function') window[go]();
+        try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* old browser */ }
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+    else run();
+})();

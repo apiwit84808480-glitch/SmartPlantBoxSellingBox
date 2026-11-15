@@ -23,17 +23,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="/css/style.css?v=20261116g">
+    <link rel="stylesheet" href="/css/style.css?v=20261116h">
 </head>
 <body class="pv-page">
     <header class="pv-bar">
-        <a class="pv-brand" href="/"><span class="pv-mark"><i class="fas fa-seedling"></i></span>Smart Plant Box</a>
-        <div class="pv-bar-actions">
-            <div class="pv-lang" role="group" aria-label="Language">
-                <button type="button" data-lang-btn="th" onclick="setLang('th')" lang="th">ไทย</button>
-                <button type="button" data-lang-btn="en" onclick="setLang('en')" lang="en">EN</button>
-            </div>
-            <a class="pv-home" href="/"><i class="fas fa-arrow-left"></i> <span class="pv-th">หน้าแรก</span><span class="pv-en">Home</span></a>
+        <a class="pv-back" href="/"><i class="fas fa-arrow-left" aria-hidden="true"></i> <span class="pv-th">กลับหน้าแรก</span><span class="pv-en">Back to home</span></a>
+        <a class="pv-brand" href="/" aria-label="Smart Plant Box"><span class="pv-mark"><i class="fas fa-seedling"></i></span><span class="pv-brand-name">Smart Plant Box</span></a>
+        <div class="pv-lang" role="group" aria-label="Language">
+            <button type="button" data-lang-btn="th" onclick="setLang('th')" lang="th">ไทย</button>
+            <button type="button" data-lang-btn="en" onclick="setLang('en')" lang="en">EN</button>
         </div>
     </header>
 
@@ -74,6 +72,7 @@
                 <ul>
                     <li>ติดต่อยืนยันยอด และจัดส่งสินค้าตามคำสั่งซื้อ</li>
                     <li>แจ้งทีมงานทางอีเมลเมื่อมีคำสั่งซื้อใหม่</li>
+                    <li>ส่งอีเมลแจ้งคุณเมื่อสถานะคำสั่งซื้อเปลี่ยน (ยืนยันแล้ว จัดส่งแล้ว หรือยกเลิก) โดยในอีเมลมีเฉพาะเลขคำสั่งซื้อ รายการสินค้า และยอดรวม</li>
                     <li>ให้คุณดูประวัติและสถานะคำสั่งซื้อของตัวเอง</li>
                     <li>จำกัดจำนวนคำถามที่ส่งให้ AI และป้องกันการใช้งานผิดปกติ</li>
                 </ul>
@@ -89,7 +88,7 @@
                         <tbody>
                             <tr><td>Supabase</td><td>ฐานข้อมูลคำสั่งซื้อและระบบเข้าสู่ระบบ (เซิร์ฟเวอร์ที่สิงคโปร์)</td></tr>
                             <tr><td>Cloudflare</td><td>โฮสต์และส่งหน้าเว็บไซต์</td></tr>
-                            <tr><td>Resend</td><td>ส่งอีเมลแจ้งคำสั่งซื้อใหม่ถึงทีมงาน (มีชื่อ เบอร์โทร อีเมล และที่อยู่)</td></tr>
+                            <tr><td>Resend</td><td>ส่งอีเมลแจ้งคำสั่งซื้อใหม่ถึงทีมงาน (มีชื่อ เบอร์โทร อีเมล และที่อยู่) และอีเมลแจ้งสถานะคำสั่งซื้อถึงคุณ</td></tr>
                             <tr><td>Google</td><td>เข้าสู่ระบบด้วย Google และ AI Gemini ที่อ่านข้อความในแชทออกแบบกล่อง</td></tr>
                         </tbody>
                     </table>
@@ -139,7 +138,7 @@
 
             <section>
                 <h2>9. ติดต่อเรื่องข้อมูลส่วนบุคคล</h2>
-                <p>ส่งอีเมลถึงหัวหน้าโครงงานที่ <a href="mailto:natapat.pooh@gmail.com">natapat.pooh@gmail.com</a> หรือดูช่องทางอื่นที่หน้า <a href="/">ติดต่อ</a> ของเว็บไซต์ เราจะตอบกลับโดยเร็ว</p>
+                <p>ส่งอีเมลถึงหัวหน้าโครงงานที่ <a href="mailto:natapat.pooh@gmail.com">natapat.pooh@gmail.com</a> หรือดูช่องทางอื่นที่หน้า <a href="/?page=contact">ติดต่อ</a> ของเว็บไซต์ เราจะตอบกลับโดยเร็ว</p>
             </section>
 
             <section>
@@ -184,6 +183,7 @@
                 <ul>
                     <li>To confirm the total with you and deliver your order.</li>
                     <li>To email our team when a new order arrives.</li>
+                    <li>To email you when your order status changes (confirmed, shipped or cancelled) — with only the order number, items and total.</li>
                     <li>To let you see your own order history and status.</li>
                     <li>To limit AI questions and prevent abuse.</li>
                 </ul>
@@ -199,7 +199,7 @@
                         <tbody>
                             <tr><td>Supabase</td><td>Order database and sign-in (servers in Singapore)</td></tr>
                             <tr><td>Cloudflare</td><td>Hosting and serving the website</td></tr>
-                            <tr><td>Resend</td><td>Emailing new-order alerts to our team (name, phone, email and address)</td></tr>
+                            <tr><td>Resend</td><td>Emailing new-order alerts to our team (name, phone, email and address), and order-status emails to you</td></tr>
                             <tr><td>Google</td><td>Sign in with Google, and the Gemini AI that reads the box-designer chat</td></tr>
                         </tbody>
                     </table>
@@ -249,7 +249,7 @@
 
             <section>
                 <h2>9. Contact about your data</h2>
-                <p>Email our project leader at <a href="mailto:natapat.pooh@gmail.com">natapat.pooh@gmail.com</a>, or see the other channels on our <a href="/">Contact</a> page. We'll reply as soon as we can.</p>
+                <p>Email our project leader at <a href="mailto:natapat.pooh@gmail.com">natapat.pooh@gmail.com</a>, or see the other channels on our <a href="/?page=contact">Contact</a> page. We'll reply as soon as we can.</p>
             </section>
 
             <section>
@@ -261,10 +261,10 @@
 
     <footer class="pv-foot">
         <p><span class="pv-th">&copy; 2026 Smart Plant Box V4 · เว็บไซต์จำหน่ายนวัตกรรม</span><span class="pv-en">&copy; 2026 Smart Plant Box V4 · Innovations Selling Website</span></p>
-        <a href="/"><span class="pv-th">กลับหน้าแรก</span><span class="pv-en">Back to home</span></a>
+        <span class="pv-foot-links"><a href="/faq/"><span class="pv-th">คำถามที่พบบ่อย</span><span class="pv-en">FAQ</span></a><a href="/"><span class="pv-th">กลับหน้าแรก</span><span class="pv-en">Back to home</span></a></span>
     </footer>
 
-    <script src="/js/i18n.js?v=20261116g"></script>
-    <script src="/js/consent.js?v=20261116g"></script>
+    <script src="/js/i18n.js?v=20261116h"></script>
+    <script src="/js/consent.js?v=20261116h"></script>
 </body>
 </html>

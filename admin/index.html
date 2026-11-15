@@ -13,8 +13,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@200;300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="../css/style.css?v=20261116g">
-    <link rel="stylesheet" href="../css/admin.css?v=20261116g">
+    <link rel="stylesheet" href="../css/style.css?v=20261116h">
+    <link rel="stylesheet" href="../css/admin.css?v=20261116h">
 </head>
 <body class="admin">
     <header class="adm-top">
@@ -48,8 +48,8 @@
         <section class="adm-dash" id="dash" hidden>
             <div class="adm-head">
                 <div>
-                    <span class="eyebrow">Orders</span>
-                    <h1>Who ordered what</h1>
+                    <span class="eyebrow" id="viewEyebrow">Orders</span>
+                    <h1 id="viewTitle">Who ordered what</h1>
                 </div>
                 <div class="adm-head-actions">
                     <button class="btn btn-ghost adm-small adm-toggle" id="emailBtn" type="button" aria-pressed="false" title="Get an email for every new order (just for you)"><i class="fas fa-envelope"></i> <span id="emailLabel">Email alerts: Off</span></button>
@@ -57,6 +57,18 @@
                 </div>
             </div>
 
+            <div class="adm-tabs adm-views" role="tablist" id="views" aria-label="Admin sections">
+                <button class="active" data-view="orders" type="button" role="tab" aria-selected="true"><i class="fas fa-receipt"></i> Orders</button>
+                <button data-view="sales" type="button" role="tab" aria-selected="false"><i class="fas fa-chart-column"></i> Sales<span class="adm-long"> summary</span></button>
+                <button data-view="prices" type="button" role="tab" aria-selected="false"><i class="fas fa-tags"></i> Prices</button>
+            </div>
+
+            <!-- Sales summary: built from the orders below, with Excel (CSV) downloads -->
+            <div id="viewSales" hidden></div>
+            <!-- Prices: the one place to change prices (the shop and the server both use public.price_list) -->
+            <div id="viewPrices" hidden></div>
+
+            <div id="viewOrders">
             <div class="adm-stats">
                 <div class="adm-stat"><span>New</span><strong id="stNew">0</strong></div>
                 <div class="adm-stat"><span>Confirmed</span><strong id="stConfirmed">0</strong></div>
@@ -78,12 +90,13 @@
             </div>
 
             <div class="adm-list" id="list"></div>
+            </div>
         </section>
     </main>
 
     <div class="toast" id="toast"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
-    <script src="../js/admin.js?v=20261116g"></script>
+    <script src="../js/admin.js?v=20261116h"></script>
 </body>
 </html>

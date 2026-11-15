@@ -1416,6 +1416,22 @@
     else init();
 
     window.openAdvisor = open;
+    // links from the FAQ page: /?ask=npk opens the designer on that topic (our own answer + live prices,
+    // no AI question spent); /?ai=1 just opens it
+    (function fromLink() {
+        let q;
+        try { q = new URLSearchParams(location.search); } catch (err) { return; }
+        const topic = q.get('ask'), wantAI = q.get('ai');
+        if (!topic && !wantAI) return;
+        const go = () => {
+            open();
+            const k = topic && window.__kb && Object.prototype.hasOwnProperty.call(window.__kb.TOPICS, topic) ? window.__kb.TOPICS[topic] : null;
+            if (k) send(T(k.title));
+            try { q.delete('ask'); q.delete('ai'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } catch (err) { /* old browser */ }
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(go, 200));
+        else setTimeout(go, 200);
+    })();
     // the Custom form (05) shows the same explanations behind its ⓘ buttons
     window.kbCardsHtml = (topics, opts) => (window.__kb && window.__catalog ? kbCards(topics, Object.assign({ buttons: false, price: false }, opts || {})) : '');
     window.__advisor = { read, decide }; // for testing
