@@ -3,14 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPR Selling Website</title>
+    <title>Smart Plant Box Selling Website</title>
     <meta name="description" content="Smart Plant Box V4 — an automated plant growing box with grow lights, sensors, misting, watering and air-flow. Ready-made kits or build your own. กล่องปลูกพืชอัตโนมัติ เปิดไฟ รดน้ำ พ่นหมอกเอง">
     <meta name="theme-color" content="#0b090e">
     <link rel="canonical" href="https://www.smartplantbox.com/">
+    <!-- Tells Google the site's name (shown above the link in search results) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Smart Plant Box",
+        "alternateName": ["Smart Plant Box Selling Website", "smartplantbox.com"],
+        "url": "https://www.smartplantbox.com/"
+    }
+    </script>
     <!-- Preview shown when the link is shared on LINE, Facebook, X, etc. -->
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="SPR Selling Website">
-    <meta property="og:title" content="SPR Selling Website">
+    <meta property="og:site_name" content="Smart Plant Box">
+    <meta property="og:title" content="Smart Plant Box Selling Website">
     <meta property="og:description" content="A grow box that lights, waters and mists your plants by itself. Kits for homes, farms, condos and disaster relief — or build your own.">
     <meta property="og:url" content="https://www.smartplantbox.com/">
     <meta property="og:image" content="https://www.smartplantbox.com/images/og-image.jpg">
@@ -36,7 +46,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@200;300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="css/style.css?v=20261116f">
+    <link rel="stylesheet" href="css/style.css?v=20261116g">
     <script>
         // If the 3D scene can't load (old browser / blocked CDN), show the photo version of the hero.
         setTimeout(function () { if (!window.__boxSceneReady) document.documentElement.classList.add('no-webgl'); }, 8000);
@@ -466,6 +476,7 @@
                     </div>
                     <div class="summary-box" id="orderSummary"></div>
                     <p class="order-note" data-th="ราคาทั้งหมดเป็นเงินบาท (฿) ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมงเพื่อยืนยันยอดและการจัดส่งก่อนชำระเงิน">All prices are in Thai baht (฿). We'll contact you within 24 hours to confirm the total and delivery before you pay.</p>
+                    <p class="order-note" data-th="การกดยืนยันการสั่งซื้อ หมายความว่าคุณรับทราบ<a href=&quot;/privacy/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>นโยบายความเป็นส่วนตัว</a>ของเรา">By confirming, you acknowledge our <a href="/privacy/" target="_blank" rel="noopener">privacy policy</a>.</p>
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="backToProducts()">
                             <i class="fas fa-arrow-left"></i> <span data-th="กลับ">Back</span>
@@ -877,21 +888,23 @@
                     <a href="#" onclick="showProductsSection(); return false;" data-th="สินค้า">Products</a>
                     <a href="#" onclick="showAboutPage(); return false;" data-th="เกี่ยวกับเรา">About Us</a>
                     <a href="#" onclick="showContactPage(); return false;" data-th="ติดต่อ">Contact</a>
+                    <a href="/privacy/" data-th="ความเป็นส่วนตัว">Privacy</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- Browsers keep JS/CSS for 4 hours: change ?v= (here, on style.css, and in admin/) whenever those files change -->
-    <script src="js/i18n.js?v=20261116f"></script>
-    <script src="js/main.js?v=20261116f"></script>
-    <script src="js/cart.js?v=20261116f"></script>
-    <script src="js/usecases.js?v=20261116f"></script>
-    <script src="js/advisor-kb.js?v=20261116f"></script>
-    <script src="js/advisor.js?v=20261116f"></script>
+    <script src="js/i18n.js?v=20261116g"></script>
+    <script src="js/main.js?v=20261116g"></script>
+    <script src="js/cart.js?v=20261116g"></script>
+    <script src="js/usecases.js?v=20261116g"></script>
+    <script src="js/advisor-kb.js?v=20261116g"></script>
+    <script src="js/advisor.js?v=20261116g"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
-    <script src="js/auth.js?v=20261116f"></script>
-    <script src="js/ui.js?v=20261116f"></script>
-    <script type="module" src="js/scene.js?v=20261116f"></script>
+    <script src="js/auth.js?v=20261116g"></script>
+    <script src="js/ui.js?v=20261116g"></script>
+    <script src="js/consent.js?v=20261116g"></script>
+    <script type="module" src="js/scene.js?v=20261116g"></script>
 </body>
 </html>
