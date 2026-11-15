@@ -950,13 +950,13 @@
             ${e.fromBox ? `<p class="boxai-sub">${esc(t(`Starts from the parts inside ${T(e.fromBox.name)} (${baht(e.fromBox.price)}). Built part by part it costs the parts only; the ready-made box also includes assembly and fittings.`, `เริ่มจากชิ้นส่วนใน ${T(e.fromBox.name)} (${baht(e.fromBox.price)}) ราคาแบบปรับแต่งคิดเฉพาะชิ้นส่วน ส่วนกล่องสำเร็จรวมค่าประกอบและอุปกรณ์ติดตั้งแล้ว`))}</p>` : ''}
             ${r.nearWhy && r.route === 'kit' ? `<p class="boxai-sub">${esc(t('No ready-made box fits exactly', 'ยังไม่มีกล่องสำเร็จที่ตรงทุกข้อ'))}: ${esc(T(r.nearWhy))}</p>` : ''}
             <div class="boxai-row">
-                <label class="boxai-field">${esc(t('Controller', 'บอร์ดควบคุม'))} <button type="button" class="boxai-info-btn" data-adv="explain" data-id="${e.controller}" aria-label="${esc(t('Which board?', 'บอร์ดต่างกันยังไง'))}">i</button>
+                <label class="boxai-field"><span class="boxai-name">${esc(t('Controller', 'บอร์ดควบคุม'))}<button type="button" class="boxai-info-btn" data-adv="explain" data-id="${e.controller}" aria-label="${esc(t('Which board?', 'บอร์ดต่างกันยังไง'))}">i</button></span>
                     <select data-ed="controller">${C.CONTROLLERS.map(c => opt(c.id, `${T(c.name)} (${baht(c.price)})`, c.id === e.controller)).join('')}</select></label>
                 ${reason(e.controller) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(e.controller))}</em>` : ''}
                 <div class="boxai-ctrlqty"><span>${esc(t('Boards', 'จำนวนบอร์ด'))}</span>${qtyStepper('__ctrl', e.cqty || 1)}<span>${baht(priceOf(e.controller) * (e.cqty || 1))}</span></div>
             </div>
             <ul class="boxai-lines">
-                ${[...e.parts].map(id => { const q = (e.qty && e.qty[id]) || 1; return `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b> <button type="button" class="boxai-info-btn" data-adv="explain" data-id="${id}" aria-label="${esc(t('What is this?', 'คืออะไร'))}">i</button>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span class="boxai-pricecol">${baht(priceOf(id) * q)}${qtyStepper(id, q)}</span></li>`; }).join('')}
+                ${[...e.parts].map(id => { const q = (e.qty && e.qty[id]) || 1; return `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><span class="boxai-name"><b>${esc(partName(id))}</b><button type="button" class="boxai-info-btn" data-adv="explain" data-id="${id}" aria-label="${esc(t('What is this?', 'คืออะไร'))}">i</button></span>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span class="boxai-pricecol">${baht(priceOf(id) * q)}${qtyStepper(id, q)}</span></li>`; }).join('')}
                 ${(e.off || []).filter(id => !e.parts.has(id)).map(id => `<li class="is-off"><label><input type="checkbox" data-ed="part" value="${id}"><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b><small>${esc(t('Removed — tick to put it back', 'เอาออกแล้ว — ติ๊กเพื่อใส่กลับ'))}</small></span></label><span class="boxai-pricecol">${baht(priceOf(id))}</span></li>`).join('')}
             </ul>
             <label class="boxai-field">${esc(t('Add a part', 'เพิ่มชิ้นส่วน'))}
@@ -964,7 +964,7 @@
                 ${groups.map(g => `<optgroup label="${esc(T(GROUP_NAME[g] || L(g, g)))}">${others.filter(p => p.group === g).map(p => opt(p.id, `${T(p.name)} (${baht(p.price)})`, false, p.id === 'ai3' && arduino)).join('')}</optgroup>`).join('')}
                 </select></label>
             <div class="boxai-row">
-                <label class="boxai-field">${esc(t('Enclosure', 'กล่อง'))}
+                <label class="boxai-field"><span class="boxai-name">${esc(t('Enclosure', 'กล่อง'))}<button type="button" class="boxai-info-btn" data-adv="explain" data-id="materials" aria-label="${esc(t('Which material?', 'วัสดุต่างกันยังไง'))}">i</button></span>
                     <select data-ed="material">${C.MATERIALS.map(m => opt(m.id, `${T(m.name)}${m.rate ? ` (${baht(m.rate)}/${t('cm²', 'ตร.ซม.')})` : ''}`, m.id === e.material)).join('')}</select></label>
                 ${e.material !== 'none' ? `<span class="boxai-price">${baht(boxCost(e.material, e.size))}</span>` : ''}
             </div>
@@ -1093,13 +1093,13 @@
         return '';
     }
     // ---- answers about parts (texts from js/advisor-kb.js, prices from the live catalogue)
-    const topicOf = id => (/^ai\d$/.test(id) ? 'ai' : id === 'ledRB' || id === 'ledFull' ? 'lights' : id === 'cam' || id === 'picam' ? 'cameras' : cat().CONTROLLERS.some(c => c.id === id) ? 'boards' : id);
+    const topicOf = id => (id === 'materials' ? 'materials' : /^ai\d$/.test(id) ? 'ai' : id === 'ledRB' || id === 'ledFull' ? 'lights' : id === 'cam' || id === 'picam' ? 'cameras' : cat().CONTROLLERS.some(c => c.id === id) ? 'boards' : id);
     const nameOf = id => { const C = cat(); const p = C.PARTS.find(x => x.id === id) || C.CONTROLLERS.find(x => x.id === id); return p ? T(p.name) : id; };
     const latestKit = () => [...turns].reverse().find(x => x.mode === 'kit' && x.edit);
     const yes = v => `<span class="boxai-yes">${v ? '✓' : '—'}</span>`;
-    function compareTable(kind) {
+    function compareTable(kind, withButtons = true) {
         const C = cat();
-        const btn = (act, id, label) => `<button type="button" class="boxai-chip boxai-add" data-adv="${act}" data-id="${id}">${esc(label)}</button>`;
+        const btn = (act, id, label) => !withButtons ? '' : `<button type="button" class="boxai-chip boxai-add" data-adv="${act}" data-id="${id}">${esc(label)}</button>`;
         const addLabel = latestKit() ? t('Add', 'เพิ่ม') : t('Use', 'ใช้');
         if (kind === 'boards') {
             const rows = [['nano', 0, 0, 0], ['uno', 0, 0, 0], ['esp32', 1, 0, 1], ['pi0', 1, 1, 1], ['pi4', 1, 1, 1]];
@@ -1141,10 +1141,16 @@
                 <p>${esc(t('For example what a sensor measures, which board or AI model to pick, or how the box works. Tap a topic, or tell us what you want to grow and we\'ll build a set.', 'เช่น เซนเซอร์แต่ละตัววัดอะไร ควรเลือกบอร์ดหรือ AI รุ่นไหน หรือกล่องทำงานยังไง กดหัวข้อด้านล่าง หรือเล่าว่าอยากปลูกอะไรแล้วเราจะจัดชุดให้'))}</p>
                 <div class="boxai-switch">${Object.keys(KB.TOPICS).slice(0, 12).map(x => `<button type="button" class="boxai-chip" data-adv="topic" data-topic="${x}">${esc(T(KB.TOPICS[x].title))}</button>`).join('')}</div></div>`;
         }
-        return turn.r.topics.map(x => {
+        return kbCards(turn.r.topics, { kit }) + `<p class="boxai-sub">${esc(t('Written by our team — prices are from our live price list.', 'คำอธิบายนี้เขียนโดยทีมของเรา ราคามาจากรายการราคาจริง'))}</p>`;
+    }
+    // opts: kit (latest kit in the chat, for "add"), buttons (false outside the chat), price, tables (which comparison tables)
+    function kbCards(topics, opts = {}) {
+        const KB = window.__kb, kit = opts.kit, buttons = opts.buttons !== false, showPrice = opts.price !== false;
+        return topics.map(x => {
             const k = KB.TOPICS[x];
+            if (!k) return '';
             const single = !k.compare && k.parts.length === 1 ? k.parts[0] : null;
-            const action = single ? (kit
+            const action = !buttons ? '' : single ? (kit
                 ? `<button type="button" class="boxai-btn" data-adv="kb-add" data-id="${single}"><i class="fas fa-plus"></i> ${esc(t(`Add to my kit · ${baht(priceOf(single))} each`, `เพิ่มเข้าชุดของฉัน · ชิ้นละ ${baht(priceOf(single))}`))}</button>`
                 : `<button type="button" class="boxai-btn" data-adv="kb-design" data-id="${single}"><i class="fas fa-wand-magic-sparkles"></i> ${esc(t(`Build me a set with it`, `จัดชุดที่มีชิ้นนี้ให้`))}</button>`) : '';
             return `<div class="boxai-card boxai-info">
@@ -1153,12 +1159,12 @@
                     <dt>${esc(t('What it is', 'คืออะไร'))}</dt><dd>${esc(T(k.what))}</dd>
                     <dt>${esc(t('What it does for you', 'ช่วยอะไร'))}</dt><dd>${esc(T(k.why))}</dd>
                     <dt>${esc(t('Who needs it', 'เหมาะกับใคร'))}</dt><dd>${esc(T(k.fit))}</dd>
-                    ${single ? `<dt>${esc(t('Price', 'ราคา'))}</dt><dd><b>${baht(priceOf(single))}</b> ${esc(t('per piece', 'ต่อชิ้น'))}</dd>` : ''}
+                    ${single && showPrice ? `<dt>${esc(t('Price', 'ราคา'))}</dt><dd><b>${baht(priceOf(single))}</b> ${esc(t('per piece', 'ต่อชิ้น'))}</dd>` : ''}
                 </dl>
-                ${k.compare ? compareTable(k.compare) : ''}
+                ${k.compare && (!opts.tables || opts.tables.includes(k.compare)) ? compareTable(k.compare, buttons) : ''}
                 ${action ? `<div class="boxai-actions">${action}</div>` : ''}
             </div>`;
-        }).join('') + `<p class="boxai-sub">${esc(t('Written by our team — prices are from our live price list.', 'คำอธิบายนี้เขียนโดยทีมของเรา ราคามาจากรายการราคาจริง'))}</p>`;
+        }).join('');
     }
     // "add this part" from an answer: goes into the latest kit in the chat
     function addFromKb(id) {
@@ -1340,7 +1346,7 @@
             if (open) { open.remove(); return; }
             const box = document.createElement('div');
             box.className = 'boxai-explain';
-            box.innerHTML = `<p><b>${esc(t('What it is:', 'คืออะไร:'))}</b> ${esc(T(k.what))}</p><p><b>${esc(t('What it does for you:', 'ช่วยอะไร:'))}</b> ${esc(T(k.why))}</p>`;
+            box.innerHTML = `<p><b>${esc(t('What it is:', 'คืออะไร:'))}</b> ${esc(T(k.what))}</p><p><b>${esc(t('What it does for you:', 'ช่วยอะไร:'))}</b> ${esc(T(k.why))}</p>${k.compare === 'materials' ? compareTable('materials', false) : ''}`;
             holder.appendChild(box);
         }
         else if (a === 'follow') send(T(FOLLOW_UPS[+b.dataset.i]));
@@ -1400,5 +1406,7 @@
     else init();
 
     window.openAdvisor = open;
+    // the Custom form (05) shows the same explanations behind its ⓘ buttons
+    window.kbCardsHtml = (topics, opts) => (window.__kb && window.__catalog ? kbCards(topics, Object.assign({ buttons: false, price: false }, opts || {})) : '');
     window.__advisor = { read, decide }; // for testing
 })();

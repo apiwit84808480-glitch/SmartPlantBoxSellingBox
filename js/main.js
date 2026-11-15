@@ -240,9 +240,66 @@ function initCustomQty() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCustomQty);
 else initCustomQty();
 
+// ⓘ in the Custom form: explains what was chosen in that list (texts from js/advisor-kb.js)
+const INFO_KEYS = ['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'ai', 'boxMaterial'];
+function infoTopicsFor(id) {
+    const i = document.getElementById(id)?.selectedIndex || 0;
+    switch (id) {
+        case 'microcontroller': return i ? ['boards'] : [];
+        case 'watering': return i === 3 || i === 5 ? ['mist'] : i === 4 ? ['pump'] : i >= 6 && i <= 9 ? ['fert'] : i === 10 ? ['hydro'] : [];
+        case 'light': return i >= 2 ? ['lights'] : [];
+        case 'temperature': return i === 2 ? ['cooler', 'heater', 'fan'] : i === 3 ? ['cooler'] : i === 4 ? ['heater'] : i === 5 ? ['fan'] : [];
+        case 'mist': return i >= 2 ? ['mist'] : [];
+        case 'camera': return i >= 2 ? ['cameras'] : [];
+        case 'ai': return i >= 1 ? ['ai'] : [];
+        case 'boxMaterial': return ['materials'];
+        default: return [];
+    }
+}
+function renderCustomInfo() {
+    INFO_KEYS.forEach(id => {
+        const btn = document.getElementById(id + 'Info'), panel = document.getElementById(id + 'Explain');
+        if (!btn) return;
+        const topics = infoTopicsFor(id);
+        btn.hidden = !topics.length;
+        if (panel && !panel.hidden) {
+            if (!topics.length || typeof window.kbCardsHtml !== 'function') panel.hidden = true;
+            else panel.innerHTML = window.kbCardsHtml(topics, { tables: ['boards', 'ai', 'cameras', 'materials'] });
+        }
+    });
+}
+function initCustomInfo() {
+    INFO_KEYS.forEach(id => {
+        const sel = document.getElementById(id);
+        const label = sel && sel.closest('.form-group') && sel.closest('.form-group').querySelector('label');
+        if (!label || document.getElementById(id + 'Info')) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = id + 'Info';
+        btn.className = 'cf-info-btn';
+        btn.textContent = 'i';
+        btn.setAttribute('aria-label', id === 'boxMaterial' ? t('Compare the materials', 'วัสดุต่างกันยังไง') : t('What is this?', 'คืออะไร'));
+        btn.hidden = true;
+        label.appendChild(btn);
+        const panel = document.createElement('div');
+        panel.id = id + 'Explain';
+        panel.className = 'cf-explain';
+        panel.hidden = true;
+        sel.closest('.form-group').appendChild(panel);
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            if (panel.hidden) { panel.hidden = false; renderCustomInfo(); } else panel.hidden = true;
+        });
+    });
+    renderCustomInfo();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCustomInfo);
+else initCustomInfo();
+
 function calculateCustomPrice() {
     applyAiRules();
     renderCustomQty();
+    if (typeof renderCustomInfo === 'function') renderCustomInfo();
     const num = id => (parseFloat(document.getElementById(id)?.value) || 0) * (QTY_KEYS.includes(id) ? qtyOf(id) : 1);
     const microcontroller = num('microcontroller');
     const watering = num('watering');
