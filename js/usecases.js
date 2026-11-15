@@ -883,6 +883,20 @@
     else init();
 
     window.openUseCase = openUseCase;
+    // The AI box designer (js/advisor.js) adds kits and boxes to the cart without opening the page
+    window.__ucCart = {
+        addPreset(key, preset, why, label) {
+            if (!UC[key]) return;
+            current = key; survey = null; kitLabel = label || UC[key].short;
+            setPreset(preset, why);
+            addCustom(false);
+        },
+        addOption(key, id) {
+            if (!UC[key]) return;
+            current = key; survey = null;
+            addOption(id, false);
+        },
+    };
     // Read-only view of the catalogue, used to check that site prices match the server's price list
     window.__catalog = { CONTROLLERS, PARTS, MATERIALS, UC, KITS };
 })();

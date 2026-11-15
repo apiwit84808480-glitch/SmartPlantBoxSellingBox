@@ -43,7 +43,7 @@
         fert: ['ปุ๋ย', 'fertili', /\bfeed/],
         labour: ['แรงงาน', 'คนงาน', 'ไม่มีคนดูแล', 'ประหยัดแรง', 'labour', 'labor', 'worker', 'manpower'],
         yield: ['ผลผลิต', 'yield', 'harvest'],
-        cheap: ['ราคาถูก', 'ถูกที่สุด', 'ถูกๆ', 'ถูก ๆ', 'ประหยัด', 'ไม่แพง', 'งบน้อย', 'งบจำกัด', 'cheap', 'affordable', 'low cost', 'low-cost', 'inexpensive'],
+        cheap: ['ราคาถูก', 'ถูกที่สุด', 'ถูกกว่า', 'ถูกลง', 'cheaper', 'ถูกๆ', 'ถูก ๆ', 'ประหยัด', 'ไม่แพง', 'งบน้อย', 'งบจำกัด', 'cheap', 'affordable', 'low cost', 'low-cost', 'inexpensive'],
         unlimited: ['ไม่จำกัดงบ', 'งบไม่จำกัด', 'ไม่อั้น', 'no budget limit', 'unlimited', 'money is no'],
         small: ['เล็ก', 'กะทัดรัด', 'small', 'compact', 'mini', 'tiny'],
         large: ['ใหญ่', 'large', /\bbig\b/],
@@ -462,17 +462,44 @@
         else if (s.indoor || c === 'commercial') set('boxMaterial', 2, L('A clear box keeps light and humidity where the plants are', 'กล่องใสช่วยเก็บแสงและความชื้นไว้ที่ต้นไม้'));
         else set('boxMaterial', 0, L('No enclosure — cheapest and fine outdoors', 'ไม่ใส่กล่อง ประหยัดที่สุดและเหมาะกับกลางแจ้ง'));
         f.size = f.boxMaterial ? (s.size || (s.small ? [40, 30, 40] : s.large ? [90, 60, 90] : [60, 40, 50])) : null;
+        const budget = s.budget && s.budget.amount;
+        const cost = () => customTotal({ f, size: f.size || [60, 40, 50] });
+        if (budget && document.getElementById('customConfigForm') && cost() > budget) {
+            const start = cost();
+            const steps = [
+                () => { if (f.boxMaterial && !s.material && !s.size) { set('boxMaterial', 0, L('No enclosure keeps it within budget', 'ไม่ใส่กล่องเพื่อให้อยู่ในงบ')); f.size = null; if (f.temperature === 5 && !s.cool) set('temperature', 1, L('Not needed without a box', 'ไม่จำเป็นเมื่อไม่มีกล่อง')); } },
+                () => { if ([3, 4, 5, 9].includes(f.light) && !s.light && !s.dim) set('light', 6, L('A red + blue strip keeps it within budget', 'ไฟแดง-น้ำเงินทำให้อยู่ในงบ')); },
+                () => { if (f.temperature === 2) set('temperature', 3, L('Cooling only keeps it within budget', 'ใช้แค่ระบบทำความเย็นเพื่อให้อยู่ในงบ')); },
+                () => { if (f.mist === 5) set('mist', 4, L('One nozzle keeps it within budget', 'หัวพ่นหมอกหัวเดียวทำให้อยู่ในงบ')); },
+                () => { if (f.ai === 3) set('ai', 2, L('Model 2 keeps it within budget', 'Model 2 ทำให้อยู่ในงบ')); else if (f.ai === 2) set('ai', 1, L('Model 1 keeps it within budget', 'Model 1 ทำให้อยู่ในงบ')); },
+                () => { if (f.microcontroller >= 7 && !s.board) { set('microcontroller', 4, L('ESP32 keeps it within budget and still has Wi-Fi', 'ESP32 ทำให้อยู่ในงบ และยังมี Wi-Fi')); if (f.camera === 4) set('camera', 3, L('Photographs the leaves every day', 'ถ่ายภาพใบทุกวัน')); } },
+                () => { if (f.camera === 4) set('camera', f.microcontroller >= 7 ? 2 : 3, L('A cheaper camera keeps it within budget', 'กล้องที่ถูกกว่าทำให้อยู่ในงบ')); },
+            ];
+            for (const step of steps) { if (cost() <= budget) break; step(); }
+            const end = cost();
+            if (end < start) notes.push(L(`Trimmed to fit your ${baht(budget)} budget (saved ${baht(start - end)}).`, `ปรับให้เข้างบ ${baht(budget)} แล้ว (ลดไป ${baht(start - end)})`));
+        }
         return { f, why, notes };
     }
 
-    // ---------------------------------------------------------------- panel
-    let el = null, last = null;
+    // ---------------------------------------------------------------- panel (a chat)
+    // Each question is a "turn": the customer's words, then our answer, which they can edit in place
+    // (tick parts on/off, change board, material, size) and add to the cart. Follow-up questions
+    // ("cheaper please", "add a camera") are read together with the earlier ones.
+    let el = null, last = null, thread = null;
+    const turns = [];
+    let turnSeq = 0;
     const EXAMPLES = [
         L('I live in a condo with little sun, often away from home, want to check from my phone, budget ฿1,000', 'อยู่คอนโด แดดน้อย ไม่ค่อยอยู่บ้าน อยากดูผ่านมือถือ งบ 1,000 บาท'),
         L('Growing melons in a greenhouse, it gets very hot and leaves get spots', 'ปลูกเมลอนในโรงเรือน ร้อนมาก ใบเป็นจุด'),
         L('After the flood, family of 6, need fresh vegetables fast', 'หลังน้ำท่วม ครอบครัว 6 คน อยากได้ผักกินเร็ว ๆ'),
         L('Custom glass box 80x40x60 with Raspberry Pi 5, RGBW dimmable light and 90% AI', 'กล่องกระจก 80x40x60 ใช้ Raspberry Pi 5 ไฟ RGBW หรี่ได้ AI แม่นยำสูง'),
     ];
+    const FOLLOW_UPS = [
+        L('Cheaper please', 'ขอถูกกว่านี้'), L('Add a camera with AI', 'เพิ่มกล้องกับ AI'),
+        L('No box needed', 'ไม่เอากล่อง'), L('I want to check it from my phone', 'อยากดูผ่านมือถือ'),
+    ];
+    const GROUP_NAME = { Light: L('Light', 'ไฟ'), Water: L('Water', 'น้ำ'), Climate: L('Climate', 'อากาศ'), Sensors: L('Sensors', 'เซนเซอร์'), Camera: L('Camera', 'กล้อง'), AI: L('AI', 'AI') };
 
     function mount() {
         if (el) return;
@@ -507,26 +534,43 @@
                     <div>
                         <span class="boxai-eyebrow"><i class="fas fa-wand-magic-sparkles"></i> ${esc(t('AI box designer', 'AI ออกแบบกล่อง'))}</span>
                         <h2 id="advisorTitle">${esc(t('Tell us what you want to grow', 'เล่าให้ฟังว่าอยากได้กล่องแบบไหน'))}</h2>
-                        <p>${esc(t('Where, what you grow, what goes wrong, and your budget. We\'ll match a box — or design one part by part.', 'ปลูกที่ไหน ปลูกอะไร เจอปัญหาอะไร งบเท่าไร แล้วเราจะจับคู่กล่องให้ หรือออกแบบให้ทีละชิ้น'))}</p>
                     </div>
-                    <button type="button" class="boxai-x" data-adv="close" aria-label="${esc(t('Close', 'ปิด'))}"><i class="fas fa-xmark"></i></button>
+                    <div class="boxai-head-actions">
+                        <button type="button" class="boxai-reset" data-adv="reset" hidden><i class="fas fa-rotate-left"></i> ${esc(t('Start over', 'เริ่มใหม่'))}</button>
+                        <button type="button" class="boxai-x" data-adv="close" aria-label="${esc(t('Close', 'ปิด'))}"><i class="fas fa-xmark"></i></button>
+                    </div>
                 </header>
-                <form class="boxai-form" id="advisorForm">
-                    <textarea id="advisorText" rows="3" maxlength="600" placeholder="${esc(t('e.g. ' + EXAMPLES[0].en, 'เช่น ' + EXAMPLES[0].th))}"></textarea>
-                    <div class="boxai-examples">
-                        <span>${esc(t('Try:', 'ลองตัวอย่าง:'))}</span>
-                        ${EXAMPLES.map((e, i) => `<button type="button" class="boxai-chip" data-adv="example" data-i="${i}">${esc(T(e))}</button>`).join('')}
+                <div class="boxai-thread" id="advisorThread" aria-live="polite"></div>
+                <form class="boxai-composer" id="advisorForm">
+                    <div class="boxai-quick" id="advisorQuick"></div>
+                    <div class="boxai-inputrow">
+                        <textarea id="advisorText" rows="2" maxlength="600"></textarea>
+                        <button type="submit" class="boxai-send" aria-label="${esc(t('Send', 'ส่ง'))}"><i class="fas fa-paper-plane"></i></button>
                     </div>
-                    <button type="submit" class="boxai-go"><i class="fas fa-wand-magic-sparkles"></i> ${esc(t('Design my box', 'ออกแบบกล่องให้ฉัน'))}</button>
+                    <p class="boxai-foot">${esc(t('Read by Google Gemini AI — don\'t type your name, phone or address. Parts and prices come from our real price list.', 'ข้อความจะถูกส่งให้ AI ของ Google (Gemini) อ่าน อย่าพิมพ์ชื่อ เบอร์โทร หรือที่อยู่ ชิ้นส่วนและราคาทั้งหมดมาจากรายการราคาจริงของเรา'))}</p>
                 </form>
-                <div class="boxai-result" id="advisorResult" aria-live="polite"></div>
-                <p class="boxai-foot">${esc(t('Your text is read by Google Gemini AI — please don\'t type your name, phone number or address. The AI only reads what you need; every part and price comes from our real price list. Free AI questions are limited per day; after that a simpler reader takes over.', 'ข้อความของคุณจะถูกส่งให้ AI ของ Google (Gemini) อ่าน กรุณาอย่าพิมพ์ชื่อ เบอร์โทร หรือที่อยู่ AI มีหน้าที่อ่านความต้องการเท่านั้น ส่วนชิ้นส่วนและราคาทั้งหมดมาจากรายการราคาจริงของเรา AI ฟรีใช้ได้จำนวนจำกัดต่อวัน หลังจากนั้นจะใช้ระบบอ่านแบบสำรองแทน'))}</p>
             </section>`;
         document.body.appendChild(el);
+        thread = el.querySelector('#advisorThread');
         el.addEventListener('click', onClick);
-        el.querySelector('#advisorForm').addEventListener('submit', e => { e.preventDefault(); run(); });
-        el.querySelector('#advisorText').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); run(); } });
+        el.addEventListener('change', onEdit);
+        el.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.ed === 'dim') onEdit(e); });
+        el.querySelector('#advisorForm').addEventListener('submit', e => { e.preventDefault(); send(); });
+        el.querySelector('#advisorText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && !el.hidden) close(); });
+        renderIntro();
+    }
+
+    function renderIntro() {
+        thread.innerHTML = `
+            <div class="boxai-intro">
+                <p>${esc(t('Where will the plants grow, what do you grow, what goes wrong, and what\'s your budget? We\'ll match a ready-made box — or design one part by part. You can keep asking to adjust it.', 'ปลูกที่ไหน ปลูกอะไร เจอปัญหาอะไร งบเท่าไร แล้วเราจะจับคู่กล่องให้ หรือออกแบบให้ทีละชิ้น จากนั้นถามต่อเพื่อปรับได้เรื่อย ๆ'))}</p>
+                <span>${esc(t('Try one:', 'ลองตัวอย่าง:'))}</span>
+                <div class="boxai-examples">${EXAMPLES.map((e, i) => `<button type="button" class="boxai-chip" data-adv="example" data-i="${i}">${esc(T(e))}</button>`).join('')}</div>
+            </div>`;
+        el.querySelector('#advisorQuick').innerHTML = '';
+        el.querySelector('#advisorText').placeholder = t('e.g. ' + EXAMPLES[0].en, 'เช่น ' + EXAMPLES[0].th);
+        el.querySelector('[data-adv="reset"]').hidden = true;
     }
 
     function open() {
@@ -543,45 +587,119 @@
         if (fab) fab.focus({ preventScroll: true });
     }
 
+    // ---- talking to the AI
     const AI_URL = 'https://gjsfhgsbrdfftytdfkyt.supabase.co/functions/v1/box-advisor';
-    const aiCache = new Map(); // same sentence again -> same answer, no extra quota
-    async function askAI(text) {
-        if (aiCache.has(text)) return aiCache.get(text);
+    const aiCache = new Map(); // same conversation again -> same answer, no extra quota
+    async function askAI(text, history) {
+        const key = JSON.stringify([history, text]);
+        if (aiCache.has(key)) return aiCache.get(key);
         const ctl = new AbortController();
         const timer = setTimeout(() => ctl.abort(), 25000);
         try {
-            const r = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), signal: ctl.signal });
+            const r = await fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, history }), signal: ctl.signal });
             const j = await r.json();
-            if (j && j.ok && j.data) aiCache.set(text, j);
+            if (j && j.ok && j.data) aiCache.set(key, j);
             return j;
         } catch (e) {
             return { ok: false, fallback: 'network' };
         } finally { clearTimeout(timer); }
     }
 
+    const CHEAPER = /(ถูกกว่า|ถูกลง|ราคาต่ำกว่า|ประหยัดกว่า|ลดงบ|cheaper|less expensive|lower price|cut the cost)/i;
     let busy = false;
-    async function run() {
+    async function send(preset) {
         if (busy) return;
-        const text = el.querySelector('#advisorText').value.trim().slice(0, 600);
-        const box = el.querySelector('#advisorResult');
-        if (!text) { box.innerHTML = `<p class="boxai-hint">${esc(t('Type a sentence or two first — or tap an example.', 'พิมพ์เล่ามาสักประโยคก่อน หรือกดตัวอย่างด้านบนก็ได้'))}</p>`; return; }
+        const ta = el.querySelector('#advisorText');
+        const text = (preset || ta.value).trim().slice(0, 600);
+        if (!text) { ta.focus(); return; }
         busy = true;
-        const btn = el.querySelector('.boxai-go');
+        ta.value = '';
+        const btn = el.querySelector('.boxai-send');
         btn.disabled = true;
-        box.innerHTML = `<p class="boxai-thinking"><i class="fas fa-spinner fa-spin"></i> ${esc(t('The AI is reading what you wrote…', 'AI กำลังอ่านสิ่งที่คุณพิมพ์…'))}</p>`;
-        const res = text.length >= 2 ? await askAI(text) : { ok: false, fallback: 'bad-input' };
+        if (!turns.length) thread.innerHTML = '';
+        const history = turns.map(x => x.text).slice(-4);
+        const prev = turns[turns.length - 1];
+        const turn = { id: ++turnSeq, text, r: null, mode: null, edit: null };
+        turns.push(turn);
+        const node = document.createElement('article');
+        node.className = 'boxai-turn';
+        node.dataset.turn = turn.id;
+        node.innerHTML = `<div class="boxai-you">${esc(text)}</div><div class="boxai-reply"><p class="boxai-thinking"><i class="fas fa-spinner fa-spin"></i> ${esc(t('The AI is reading what you wrote…', 'AI กำลังอ่านสิ่งที่คุณพิมพ์…'))}</p></div>`;
+        thread.appendChild(node);
+        scrollToTurn(node);
+
         let s;
-        if (res && res.ok) s = fromAI(res.data, text);
-        else { s = read(text); s.fallback = (res && res.fallback) || 'error'; }
-        last = decide(s);
-        box.innerHTML = render(last);
+        // just "cheaper please": keep what we already understood and only lower the budget (no AI call)
+        const rest = text.replace(CHEAPER, '').replace(/[\s.!?,ๆ]|ครับ|ค่ะ|คะ|นะ|หน่อย|ขอ|อีก|please|a bit|make it|can you/gi, '');
+        const onlyCheaper = prev && prev.r && prev.r.s && prev.r.route !== 'ask' && CHEAPER.test(text) && rest.length < 8;
+        if (onlyCheaper) {
+            s = Object.assign({}, prev.r.s, { needs: new Set(prev.r.s.needs), source: 'adjust' });
+        } else {
+            const res = await askAI(text, history);
+            if (res && res.ok) s = fromAI(res.data, [...history, text].join(' \n'));
+            else { s = read([...history, text].join(' \n')); s.fallback = (res && res.fallback) || 'error'; }
+        }
+        // "cheaper than that": aim below the last answer's total
+        if (prev && prev.r && CHEAPER.test(text)) {
+            const was = turnTotal(prev);
+            if (was > 0) { const cap = Math.max(100, Math.round(was * 0.8 / 10) * 10); if (!s.budget || s.budget.unlimited || s.budget.amount > cap) s.budget = { amount: cap, fromCheaper: true }; s.cheap = true; }
+        }
+        turn.r = decide(s);
+        last = turn.r;
+        setupEdit(turn);
+        renderTurn(turn);
+        scrollToTurn(node);
+        el.querySelector('#advisorQuick').innerHTML = turn.r.route === 'ask' ? '' : `<span>${esc(t('Ask more:', 'ถามต่อ:'))}</span>${FOLLOW_UPS.map((f, i) => `<button type="button" class="boxai-chip" data-adv="follow" data-i="${i}">${esc(T(f))}</button>`).join('')}`;
+        ta.placeholder = t('Ask a follow-up or ask for a change…', 'ถามต่อ หรือขอปรับ เช่น "ขอถูกกว่านี้" "เพิ่มกล้อง"…');
+        el.querySelector('[data-adv="reset"]').hidden = false;
         btn.disabled = false;
         busy = false;
-        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // the newest question goes to the top of the chat so its answer can be read from the start
+    function scrollToTurn(node) {
+        // the latest turn is at least one screen tall, so it can always scroll up to the top
+        thread.querySelectorAll('.boxai-turn').forEach(n => { n.style.minHeight = ''; });
+        node.style.minHeight = Math.max(0, thread.clientHeight - 24) + 'px';
+        thread.scrollTo({ top: Math.max(0, node.offsetTop - thread.offsetTop - 8), behavior: reduceMotionOK() ? 'smooth' : 'auto' });
+    }
+    const reduceMotionOK = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ---- editable state for each answer
+    function setupEdit(turn) {
+        const r = turn.r;
+        turn.mode = r.route;
+        if (r.route === 'kit' || r.route === 'box') {
+            const k = r.kit;
+            turn.edit = { cat: r.cat, controller: k.controller, parts: new Set(k.parts), material: k.material, size: [...k.size], why: Object.assign({}, k.why) };
+        } else if (r.route === 'custom') {
+            turn.edit = { f: Object.assign({}, r.form.f), size: r.form.f.size ? [...r.form.f.size] : [60, 40, 50], why: Object.assign({}, r.form.why) };
+        }
+    }
+    const kitOf = e => ({ controller: e.controller, parts: new Map([...e.parts].map(id => [id, { why: e.why[id] }])), material: e.material, size: e.size, cWhy: e.why[e.controller], mWhy: e.why.material });
+    const customSel = id => document.querySelector('#customConfigForm #' + id);
+    function customTotal(e) {
+        let sum = 0;
+        ['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'ai'].forEach(k => { const s = customSel(k); if (s && s.options[e.f[k] || 0]) sum += parseFloat(s.options[e.f[k] || 0].value) || 0; });
+        const m = customSel('boxMaterial');
+        if (m && e.f.boxMaterial) { const [w, l, h] = e.size; sum += 2 * (w * l + w * h + l * h) * (parseFloat(m.options[e.f.boxMaterial].value) || 0); }
+        return Math.round(sum * 100) / 100;
+    }
+    function turnTotal(turn) {
+        if (!turn.edit) return turn.r && turn.r.box ? turn.r.box.o.price : 0;
+        if (turn.mode === 'box') return turn.r.box.o.price;
+        return turn.mode === 'custom' ? customTotal(turn.edit) : kitTotal(kitOf(turn.edit));
+    }
+
+    // ---- drawing an answer
+    function renderTurn(turn) {
+        const node = thread.querySelector(`[data-turn="${turn.id}"] .boxai-reply`);
+        if (node) node.innerHTML = sourceNote(turn.r.s) + renderBody(turn);
     }
 
     // where the reading came from: the AI (with its one-line summary) or the keyword back-up
     function sourceNote(s) {
+        if (s.source === 'adjust') return `<p class="boxai-source ai"><i class="fas fa-arrow-down-wide-short"></i> <span><b>${esc(t('Same needs, lower budget', 'ความต้องการเดิม งบต่ำลง'))}</b> — ${esc(t('we kept what you asked for and cut the rest first', 'คงสิ่งที่คุณต้องการไว้ แล้วตัดส่วนอื่นออกก่อน'))}</span></p>`;
         if (s.source === 'ai') {
             return `<p class="boxai-source ai"><i class="fas fa-wand-magic-sparkles"></i> <span><b>${esc(t('Read by AI', 'AI อ่านแล้ว'))}</b>${s.summary ? ` — “${esc(s.summary)}”` : ''}</span></p>`;
         }
@@ -605,36 +723,42 @@
         if (s.size) pills.push(`${s.size.join('×')} ${t('cm', 'ซม.')}`);
         else if (s.small) pills.push(t('Small box', 'กล่องเล็ก'));
         else if (s.large) pills.push(t('Large box', 'กล่องใหญ่'));
-        if (s.budget) pills.push(s.budget.unlimited ? t('No budget limit', 'ไม่จำกัดงบ') : s.budget.implied ? t(`Low budget (about ${baht(s.budget.amount)})`, `งบประหยัด (ราว ${baht(s.budget.amount)})`) : t(`Budget up to ${baht(s.budget.amount)}`, `งบไม่เกิน ${baht(s.budget.amount)}`));
+        if (s.budget) pills.push(s.budget.unlimited ? t('No budget limit', 'ไม่จำกัดงบ') : s.budget.implied ? t(`Low budget (about ${baht(s.budget.amount)})`, `งบประหยัด (ราว ${baht(s.budget.amount)})`) : s.budget.fromCheaper ? t(`Cheaper: up to ${baht(s.budget.amount)}`, `ถูกลง: ไม่เกิน ${baht(s.budget.amount)}`) : t(`Budget up to ${baht(s.budget.amount)}`, `งบไม่เกิน ${baht(s.budget.amount)}`));
         return pills.length ? `<div class="boxai-understood"><span>${esc(t('What we understood:', 'สิ่งที่ผู้ช่วยเข้าใจ:'))}</span>${pills.map(p => `<b>${esc(p)}</b>`).join('')}</div>` : '';
     }
 
-    function switcher(r) {
+    function switcher(turn) {
+        const r = turn.r;
         const opts = ['disaster', 'farmer', 'household', 'commercial'].filter(c => c !== r.cat || r.route === 'custom');
         return `<div class="boxai-switch"><span>${esc(t('Not quite? Try:', 'ไม่ใช่แบบนี้? ลอง:'))}</span>
             ${opts.map(c => `<button type="button" class="boxai-chip" data-adv="force" data-cat="${c}">${esc(T(CAT_NAME[c]))}</button>`).join('')}
             ${r.route !== 'custom' ? `<button type="button" class="boxai-chip" data-adv="force" data-cat="custom">${esc(t('05 · Custom (pick every part)', '05 · Custom (เลือกเองทุกชิ้น)'))}</button>` : ''}</div>`;
     }
-
-    const linesHtml = ls => `<ul class="boxai-lines">${ls.map(l => `<li><div><b>${esc(l.name)}</b>${l.why ? `<small>${esc(T(l.why))}</small>` : ''}</div><span>${baht(l.price)}</span></li>`).join('')}</ul>`;
     const notesHtml = ns => ns.length ? `<div class="boxai-notes">${ns.map(n => `<p><i class="fas fa-circle-info"></i> ${esc(T(n))}</p>`).join('')}</div>` : '';
+    const opt = (v, label, on, dis) => `<option value="${esc(v)}"${on ? ' selected' : ''}${dis ? ' disabled' : ''}>${esc(label)}</option>`;
+    const overNote = (total, s) => {
+        const b = s.budget && s.budget.amount;
+        if (!b) return '';
+        return total > b
+            ? `<p class="boxai-budget over"><i class="fas fa-triangle-exclamation"></i> ${esc(t(`${baht(total - b)} over your ${baht(b)} budget`, `เกินงบ ${baht(b)} ไป ${baht(total - b)}`))}</p>`
+            : `<p class="boxai-budget"><i class="fas fa-circle-check"></i> ${esc(t(`Within your ${baht(b)} budget`, `อยู่ในงบ ${baht(b)}`))}</p>`;
+    };
 
-    function render(r) {
-        return sourceNote(r.s) + renderBody(r);
-    }
-    function renderBody(r) {
+    function renderBody(turn) {
+        const r = turn.r;
         if (r.route === 'ask') {
             const off = r.s.aboutPlants === false;
-            return `${understood(r.s, null)}<div class="boxai-card">${off ? `<p>${esc(t('That doesn\'t look like it\'s about growing plants. Tell us what you want to grow, where, and your budget.', 'ข้อความนี้ดูไม่เกี่ยวกับการปลูกต้นไม้ ลองเล่าว่าอยากปลูกอะไร ที่ไหน งบเท่าไร'))}</p>` : ''}<h3>${esc(t('Tell us a little more', 'ขอรายละเอียดอีกนิด'))}</h3>
-                <p>${esc(t('Where will the plants grow? Tap one — it gets added to your text.', 'จะปลูกที่ไหน? กดเลือกได้เลย ระบบจะเติมลงในข้อความให้'))}</p>
+            return `${understood(r.s, null)}<div class="boxai-card">${off ? `<p>${esc(t('That doesn\'t look like it\'s about growing plants. Tell us what you want to grow, where, and your budget.', 'ข้อความนี้ดูไม่เกี่ยวกับการปลูกต้นไม้ ลองเล่าว่าอยากปลูกอะไร ที่ไหน งบเท่าไร'))}</p>` : ''}
+                <h3>${esc(t('Tell us a little more', 'ขอรายละเอียดอีกนิด'))}</h3>
+                <p>${esc(t('Where will the plants grow?', 'จะปลูกที่ไหน?'))}</p>
                 <div class="boxai-switch">${[
                     [L('Condo / room', 'คอนโด/ในห้อง'), 'คอนโด'], [L('Home / balcony', 'บ้าน/ระเบียง'), 'ระเบียงบ้าน'],
                     [L('Farm / greenhouse', 'ฟาร์ม/โรงเรือน'), 'โรงเรือน'], [L('After a disaster', 'หลังภัยพิบัติ'), 'น้ำท่วม'],
-                    [L('High-value crops', 'พืชมูลค่าสูง'), 'พืชมูลค่าสูง']].map(([lab, add]) => `<button type="button" class="boxai-chip" data-adv="append" data-add="${esc(add)}">${esc(T(lab))}</button>`).join('')}
+                    [L('High-value crops', 'พืชมูลค่าสูง'), 'พืชมูลค่าสูง']].map(([lab, add]) => `<button type="button" class="boxai-chip" data-adv="answer" data-add="${esc(add)}">${esc(T(lab))}</button>`).join('')}
                 </div></div>`;
         }
         const head = understood(r.s, r.cat);
-        if (r.route === 'box') {
+        if (turn.mode === 'box') {
             const o = r.box.o;
             const covers = r.box.covers.map(n => T(NEED_NAME[n]));
             return `${head}<div class="boxai-card">
@@ -644,53 +768,131 @@
                     <div>
                         <h3>${esc(T(o.name))} <span>${o.priceNote ? esc(T(o.priceNote)) + ' ' : ''}${baht(o.price)}</span></h3>
                         <p class="boxai-sub">${esc(T(CAT_NAME[r.cat]))} · ${esc(T(o.tag))}</p>
-                        <ul>${covers.length ? covers.map(c => `<li><i class="fas fa-check"></i> ${esc(t('Covers', 'ครอบคลุม'))}: ${esc(c)}</li>`).join('') : ''}
+                        <ul>${covers.map(c => `<li><i class="fas fa-check"></i> ${esc(t('Covers', 'ครอบคลุม'))}: ${esc(c)}</li>`).join('')}
                             ${r.cat === 'disaster' && r.s.people ? `<li><i class="fas fa-check"></i> ${esc(t(`Sized for ${r.s.people} people`, `ขนาดเหมาะกับ ${r.s.people} คน`))}</li>` : ''}
-                            ${r.s.budget && r.s.budget.amount ? `<li><i class="fas fa-check"></i> ${esc(t(`Within your ${baht(r.s.budget.amount)} budget`, `อยู่ในงบ ${baht(r.s.budget.amount)}`))}</li>` : ''}
-                            ${o.features.slice(0, 3).map(f => `<li class="muted"><i class="fas fa-minus"></i> ${esc(T(f))}</li>`).join('')}
+                            ${o.features.map(f => `<li class="muted"><i class="fas fa-minus"></i> ${esc(T(f))}</li>`).join('')}
                         </ul>
                     </div>
                 </div>
+                ${overNote(o.price, r.s)}
                 <div class="boxai-actions">
-                    <button type="button" class="boxai-btn ghost" data-adv="kit"><i class="fas fa-sliders"></i> ${esc(t('Build my own instead', 'ปรับแต่งเองทีละชิ้นแทน'))}</button>
-                    <button type="button" class="boxai-btn" data-adv="box"><i class="fas fa-arrow-right"></i> ${esc(t('See this box', 'ดูกล่องนี้'))}</button>
-                </div></div>${switcher(r)}`;
+                    <button type="button" class="boxai-btn ghost" data-adv="tweak"><i class="fas fa-sliders"></i> ${esc(t('Adjust part by part here', 'ปรับทีละชิ้นตรงนี้'))}</button>
+                    <button type="button" class="boxai-btn ghost" data-adv="box"><i class="fas fa-arrow-right"></i> ${esc(t('See this box', 'ดูกล่องนี้'))}</button>
+                    <button type="button" class="boxai-btn" data-adv="cart-box"><i class="fas fa-bag-shopping"></i> ${esc(t('Add to cart', 'ใส่ตะกร้า'))}</button>
+                </div></div>${switcher(turn)}`;
         }
-        if (r.route === 'kit') {
-            const k = r.kit;
-            return `${head}<div class="boxai-card">
-                <span class="boxai-tag"><i class="fas fa-layer-group"></i> ${esc(t('Matched category', 'จับคู่กับหมวด'))}: ${esc(T(CAT_NAME[r.cat]))}</span>
-                <h3>${esc(t('Your recommended kit', 'ชุดที่แนะนำสำหรับคุณ'))} <span>${baht(k.total)}</span></h3>
-                ${r.nearWhy ? `<p class="boxai-sub">${esc(t('No ready-made box fits exactly', 'ยังไม่มีกล่องสำเร็จที่ตรงทุกข้อ'))}: ${esc(T(r.nearWhy))}</p>` : ''}
-                ${linesHtml(k.lines)}${notesHtml(k.notes)}
-                <div class="boxai-actions">
-                    <button type="button" class="boxai-btn ghost" data-adv="force" data-cat="custom"><i class="fas fa-screwdriver-wrench"></i> ${esc(t('Use the full Custom form', 'ใช้ฟอร์ม Custom เต็ม'))}</button>
-                    <button type="button" class="boxai-btn" data-adv="kit"><i class="fas fa-arrow-right"></i> ${esc(t('Open this kit', 'เปิดชุดนี้'))}</button>
-                </div></div>${switcher(r)}`;
-        }
-        // custom form
-        const F = r.form, form = document.getElementById('customConfigForm');
-        const label = { microcontroller: L('Controller', 'บอร์ดควบคุม'), watering: L('Water', 'ระบบรดน้ำ'), light: L('Light', 'ไฟ'), temperature: L('Temperature', 'อุณหภูมิ'), mist: L('Misting', 'พ่นหมอก'), camera: L('Camera', 'กล้อง'), ai: L('AI', 'AI'), boxMaterial: L('Enclosure', 'วัสดุกล่อง') };
-        let total = 0;
-        const rows = Object.keys(label).map(k => {
-            const sel = form && form.querySelector('#' + k);
-            const opt = sel && sel.options[F.f[k]];
-            const txt = opt ? opt.textContent.trim() : '—';
-            const isRate = k === 'boxMaterial';
-            const price = opt ? (isRate ? (F.f.size ? Math.round(2 * (F.f.size[0] * F.f.size[1] + F.f.size[0] * F.f.size[2] + F.f.size[1] * F.f.size[2]) * parseFloat(opt.value) * 100) / 100 : 0) : parseFloat(opt.value) || 0) : 0;
-            total += price;
-            const shown = isRate && F.f.size && F.f.boxMaterial ? `${txt.replace(/\s*\(.*\)$/, '')} ${F.f.size.join('×')} ${t('cm', 'ซม.')}` : txt.replace(/\s*\(฿[^)]*\)$/, '');
-            return { name: `${T(label[k])}: ${shown}`, price, why: F.why[k] };
-        });
-        const budget = r.s.budget && r.s.budget.amount;
-        return `${head}<div class="boxai-card">
-            <span class="boxai-tag"><i class="fas fa-screwdriver-wrench"></i> ${esc(r.cat ? t('Custom design (05)', 'ออกแบบเฉพาะ (05 Custom)') : t('No box or category matched — custom design (05)', 'ไม่ตรงกับกล่องหรือหมวดไหน จึงออกแบบให้ใหม่ (05 Custom)'))}</span>
-            <h3>${esc(t('Every part, picked for you', 'เลือกให้ครบทุกช่อง'))} <span>${baht(total)}</span></h3>
-            ${linesHtml(rows)}
-            ${notesHtml(F.notes.concat(budget && total > budget ? [L(`About ${baht(total - budget)} over your budget — you can change any field on the form.`, `เกินงบประมาณ ${baht(total - budget)} แก้ช่องไหนก็ได้ในฟอร์ม`)] : []))}
+        if (turn.mode === 'kit') return head + kitEditor(turn) + switcher(turn);
+        return head + customEditor(turn) + switcher(turn);
+    }
+
+    // ---- a kit you can change right here
+    function kitEditor(turn) {
+        const e = turn.edit, C = cat(), r = turn.r;
+        const arduino = e.controller === 'nano' || e.controller === 'uno';
+        const k = kitOf(e), total = kitTotal(k);
+        const partName = id => T(C.PARTS.find(p => p.id === id).name);
+        const reason = id => (e.why[id] ? T(e.why[id]) : T((C.PARTS.find(p => p.id === id) || C.CONTROLLERS.find(p => p.id === id) || {}).why || ''));
+        const others = C.PARTS.filter(p => !e.parts.has(p.id));
+        const groups = [...new Set(others.map(p => p.group))];
+        const sizeRow = e.material !== 'none' ? `<div class="boxai-dims">${[t('W', 'กว้าง'), t('L', 'ยาว'), t('H', 'สูง')].map((lab, i) => `<label>${esc(lab)}<input type="number" min="10" max="400" step="1" data-ed="dim" data-i="${i}" value="${e.size[i]}"></label>`).join('')}<span>${esc(t('cm', 'ซม.'))}</span></div>` : '';
+        return `<div class="boxai-card">
+            <span class="boxai-tag"><i class="fas fa-layer-group"></i> ${esc(r.route === 'box' ? t('Built from the matched box', 'ปรับจากกล่องที่จับคู่ไว้') : t('Matched category', 'จับคู่กับหมวด'))}: ${esc(T(CAT_NAME[e.cat]))}</span>
+            <h3>${esc(t('Your kit — change anything', 'ชุดของคุณ — ปรับได้ทุกชิ้น'))} <span>${baht(total)}</span></h3>
+            ${r.nearWhy && r.route === 'kit' ? `<p class="boxai-sub">${esc(t('No ready-made box fits exactly', 'ยังไม่มีกล่องสำเร็จที่ตรงทุกข้อ'))}: ${esc(T(r.nearWhy))}</p>` : ''}
+            <div class="boxai-row">
+                <label class="boxai-field">${esc(t('Controller', 'บอร์ดควบคุม'))}
+                    <select data-ed="controller">${C.CONTROLLERS.map(c => opt(c.id, `${T(c.name)} (${baht(c.price)})`, c.id === e.controller)).join('')}</select></label>
+                <small>${esc(reason(e.controller))}</small>
+            </div>
+            <ul class="boxai-lines">
+                ${[...e.parts].map(id => `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span><b>${esc(partName(id))}</b><small>${esc(reason(id))}</small></span></label><span>${baht(priceOf(id))}</span></li>`).join('')}
+            </ul>
+            <label class="boxai-field">${esc(t('Add a part', 'เพิ่มชิ้นส่วน'))}
+                <select data-ed="add"><option value="">${esc(t('+ choose a part…', '+ เลือกชิ้นส่วน…'))}</option>
+                ${groups.map(g => `<optgroup label="${esc(T(GROUP_NAME[g] || L(g, g)))}">${others.filter(p => p.group === g).map(p => opt(p.id, `${T(p.name)} (${baht(p.price)})`, false, p.id === 'ai3' && arduino)).join('')}</optgroup>`).join('')}
+                </select></label>
+            <div class="boxai-row">
+                <label class="boxai-field">${esc(t('Enclosure', 'กล่อง'))}
+                    <select data-ed="material">${C.MATERIALS.map(m => opt(m.id, `${T(m.name)}${m.rate ? ` (${baht(m.rate)}/${t('cm²', 'ตร.ซม.')})` : ''}`, m.id === e.material)).join('')}</select></label>
+                ${e.material !== 'none' ? `<span class="boxai-price">${baht(boxCost(e.material, e.size))}</span>` : ''}
+            </div>
+            ${sizeRow}
+            ${notesHtml(r.kit.notes || [])}
+            ${overNote(total, r.s)}
             <div class="boxai-actions">
-                <button type="button" class="boxai-btn" data-adv="custom"><i class="fas fa-arrow-right"></i> ${esc(t('Open the Custom form, filled in', 'เปิดฟอร์ม Custom ที่กรอกไว้แล้ว'))}</button>
-            </div></div>${switcher(r)}`;
+                <button type="button" class="boxai-btn ghost" data-adv="kit"><i class="fas fa-up-right-from-square"></i> ${esc(t('Open in the full builder', 'เปิดในหน้าปรับแต่งเต็ม'))}</button>
+                <button type="button" class="boxai-btn" data-adv="cart-kit"><i class="fas fa-bag-shopping"></i> ${esc(t('Add to cart', 'ใส่ตะกร้า'))} · ${baht(total)}</button>
+            </div></div>`;
+    }
+
+    // ---- the Custom (05) design you can change right here: same lists as the big form
+    const CUSTOM_KEYS = { microcontroller: L('Controller', 'บอร์ดควบคุม'), watering: L('Water', 'ระบบรดน้ำ'), light: L('Light', 'ไฟ'), temperature: L('Temperature', 'อุณหภูมิ'), mist: L('Misting', 'พ่นหมอก'), camera: L('Camera', 'กล้อง'), ai: L('AI', 'AI'), boxMaterial: L('Enclosure', 'วัสดุกล่อง') };
+    function customEditor(turn) {
+        const e = turn.edit, r = turn.r;
+        const total = customTotal(e);
+        const board = e.f.microcontroller || 0, arduino = board >= 1 && board <= 3;
+        const rows = Object.keys(CUSTOM_KEYS).map(k => {
+            const sel = customSel(k);
+            if (!sel) return '';
+            const options = [...sel.options].map((o, i) => opt(i, o.textContent.trim(), (e.f[k] || 0) === i, k === 'ai' && ((i > 0 && board === 0) || (i === 3 && arduino)))).join('');
+            const why = e.why[k] ? `<small>${esc(T(e.why[k]))}</small>` : '';
+            return `<div class="boxai-row"><label class="boxai-field">${esc(T(CUSTOM_KEYS[k]))}<select data-ed="cf" data-k="${k}">${options}</select></label>${why}</div>`;
+        }).join('');
+        const sizeRow = e.f.boxMaterial ? `<div class="boxai-dims">${[t('W', 'กว้าง'), t('L', 'ยาว'), t('H', 'สูง')].map((lab, i) => `<label>${esc(lab)}<input type="number" min="1" max="1000" step="1" data-ed="dim" data-i="${i}" value="${e.size[i]}"></label>`).join('')}<span>${esc(t('cm', 'ซม.'))}</span></div>` : '';
+        return `<div class="boxai-card">
+            <span class="boxai-tag"><i class="fas fa-screwdriver-wrench"></i> ${esc(r.cat ? t('Custom design (05)', 'ออกแบบเฉพาะ (05 Custom)') : t('No box or category matched — custom design (05)', 'ไม่ตรงกับกล่องหรือหมวดไหน จึงออกแบบให้ใหม่ (05 Custom)'))}</span>
+            <h3>${esc(t('Every part, picked for you — change anything', 'เลือกให้ครบทุกช่อง — ปรับได้ทุกช่อง'))} <span>${baht(total)}</span></h3>
+            ${rows}${sizeRow}
+            ${notesHtml(r.form.notes || [])}
+            ${overNote(total, r.s)}
+            <div class="boxai-actions">
+                <button type="button" class="boxai-btn ghost" data-adv="custom"><i class="fas fa-up-right-from-square"></i> ${esc(t('Open the Custom form', 'เปิดฟอร์ม Custom'))}</button>
+                <button type="button" class="boxai-btn" data-adv="order-custom"><i class="fas fa-bag-shopping"></i> ${esc(t('Order this', 'สั่งชุดนี้'))} · ${baht(total)}</button>
+            </div></div>`;
+    }
+
+    function onEdit(e) {
+        const x = e.target;
+        if (!x.dataset || !x.dataset.ed) return;
+        const node = x.closest('[data-turn]');
+        const turn = node && turns.find(tt => String(tt.id) === node.dataset.turn);
+        if (!turn || !turn.edit) return;
+        const ed = turn.edit, kind = x.dataset.ed;
+        let note = null;
+        if (turn.mode === 'kit') {
+            if (kind === 'controller') {
+                ed.controller = x.value;
+                if ((x.value === 'nano' || x.value === 'uno') && ed.parts.has('ai3')) { ed.parts.delete('ai3'); ed.parts.add('ai2'); note = t('Arduino can\'t run AI Model 3 — switched to Model 2', 'Arduino ใช้ AI Model 3 ไม่ได้ จึงเปลี่ยนเป็น Model 2'); }
+            } else if (kind === 'part') {
+                if (!x.checked) ed.parts.delete(x.value);
+            } else if (kind === 'add' && x.value) {
+                if (/^ai\d$/.test(x.value)) [...ed.parts].filter(id => /^ai\d$/.test(id)).forEach(id => ed.parts.delete(id)); // one AI model at a time
+                ed.parts.add(x.value);
+            } else if (kind === 'material') ed.material = x.value;
+            else if (kind === 'dim') { ed.size[+x.dataset.i] = Math.min(400, Math.max(10, parseInt(x.value, 10) || 10)); if (e.type === 'input') return refreshTotal(turn, node); }
+        } else if (turn.mode === 'custom') {
+            if (kind === 'cf') {
+                ed.f[x.dataset.k] = +x.value;
+                delete ed.why[x.dataset.k];
+                const b = ed.f.microcontroller || 0;
+                if (b === 0 && ed.f.ai) { ed.f.ai = 0; note = t('Pick a controller first to use AI', 'เลือกบอร์ดก่อน จึงจะใช้ AI ได้'); }
+                if (b >= 1 && b <= 3 && ed.f.ai === 3) { ed.f.ai = 2; note = t('Arduino can\'t run AI Model 3 — switched to Model 2', 'Arduino ใช้ AI Model 3 ไม่ได้ จึงเปลี่ยนเป็น Model 2'); }
+            } else if (kind === 'dim') { ed.size[+x.dataset.i] = Math.min(1000, Math.max(1, parseInt(x.value, 10) || 1)); if (e.type === 'input') return refreshTotal(turn, node); }
+        }
+        if (note && typeof showToast === 'function') showToast(note);
+        const keep = thread.scrollTop;
+        renderTurn(turn);
+        thread.scrollTop = keep;
+    }
+    // while typing a size, only update the numbers (re-drawing would steal the cursor)
+    function refreshTotal(turn, node) {
+        const total = turnTotal(turn);
+        const h = node.querySelector('.boxai-card h3 span');
+        if (h) h.textContent = baht(total);
+        const b = node.querySelector('[data-adv="cart-kit"], [data-adv="order-custom"]');
+        if (b) b.lastChild.textContent = ` · ${baht(total)}`;
+        const price = node.querySelector('.boxai-price');
+        if (price && turn.mode === 'kit') price.textContent = baht(boxCost(turn.edit.material, turn.edit.size));
     }
 
     // ---------------------------------------------------------------- actions
@@ -698,15 +900,23 @@
         const main = document.getElementById('main-page');
         if (main && !main.classList.contains('active') && typeof showMainPage === 'function') showMainPage();
     }
+    const presetOf = ed => ({ controller: ed.controller, parts: [...ed.parts], material: ed.material, size: [...ed.size] });
 
-    function openKit(r) {
-        const k = r.kit, C = cat();
+    function openKit(turn) {
+        const C = cat(), ed = turn.edit;
         ensureMain();
         close();
-        window.openUseCase(r.cat, { kit: { label: C.UC[r.cat].short, preset: { controller: k.controller, parts: k.parts, material: k.material, size: k.size }, why: k.why, name: L('Your recommended kit', 'ชุดที่ผู้ช่วยแนะนำ') } });
+        window.openUseCase(ed.cat, { kit: { label: C.UC[ed.cat].short, preset: presetOf(ed), why: ed.why, name: L('Your kit from the AI', 'ชุดที่ AI ออกแบบให้') } });
     }
 
-    function openBox(r) {
+    function addKitToCart(turn) {
+        const C = cat(), ed = turn.edit;
+        if (!ed.parts.size) { if (typeof showToast === 'function') showToast(t('Pick at least one part', 'เลือกชิ้นส่วนอย่างน้อย 1 ชิ้น')); return; }
+        if (window.__ucCart) window.__ucCart.addPreset(ed.cat, presetOf(ed), ed.why, C.UC[ed.cat].short);
+    }
+
+    function openBox(turn) {
+        const r = turn.r;
         ensureMain();
         close();
         window.openUseCase(r.cat);
@@ -719,42 +929,53 @@
         }, 60);
     }
 
-    function openCustom(r) {
+    // fill the big Custom form with this design (and optionally go straight to ordering)
+    function openCustom(turn, andOrder) {
+        const ed = turn.edit;
         ensureMain();
         close();
         if (typeof selectUserType === 'function') selectUserType('custom');
-        const F = r.form;
         document.querySelectorAll('#customConfigForm .boxai-why').forEach(n => n.remove());
-        Object.keys(F.why).forEach(k => {
+        Object.keys(CUSTOM_KEYS).forEach(k => {
             const sel = document.getElementById(k);
             if (!sel) return;
             if (k === 'ai') sel.disabled = false;
-            sel.selectedIndex = F.f[k] || 0;
-            const why = document.createElement('small');
-            why.className = 'boxai-why';
-            why.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i> ${esc(T(F.why[k]))}`;
-            sel.insertAdjacentElement('afterend', why);
+            sel.selectedIndex = ed.f[k] || 0;
+            if (ed.why[k]) {
+                const why = document.createElement('small');
+                why.className = 'boxai-why';
+                why.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i> ${esc(T(ed.why[k]))}`;
+                sel.insertAdjacentElement('afterend', why);
+            }
         });
-        ['boxWidth', 'boxLength', 'boxHeight'].forEach((id, i) => { const inp = document.getElementById(id); if (inp) inp.value = F.f.size ? F.f.size[i] : ''; });
+        ['boxWidth', 'boxLength', 'boxHeight'].forEach((id, i) => { const inp = document.getElementById(id); if (inp) inp.value = ed.f.boxMaterial ? ed.size[i] : ''; });
         if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
+        if (andOrder && typeof showCustomOrderForm === 'function') showCustomOrderForm();
     }
 
     function onClick(e) {
         const b = e.target.closest('[data-adv]');
         if (!b) return;
         const a = b.dataset.adv;
+        const node = b.closest('[data-turn]');
+        const turn = node ? turns.find(tt => String(tt.id) === node.dataset.turn) : null;
         if (a === 'close') close();
-        else if (a === 'example') { el.querySelector('#advisorText').value = T(EXAMPLES[+b.dataset.i]); run(); }
-        else if (a === 'append') { const ta = el.querySelector('#advisorText'); ta.value = (ta.value + ' ' + b.dataset.add).trim(); run(); }
-        else if (a === 'force') {
-            const c = b.dataset.cat;
-            const s = last && last.s ? last.s : read(el.querySelector('#advisorText').value);
-            last = decide(s, c);
-            el.querySelector('#advisorResult').innerHTML = render(last);
+        else if (a === 'reset') { turns.length = 0; renderIntro(); el.querySelector('#advisorText').focus(); }
+        else if (a === 'example') send(T(EXAMPLES[+b.dataset.i]));
+        else if (a === 'follow') send(T(FOLLOW_UPS[+b.dataset.i]));
+        else if (a === 'answer') send(b.dataset.add);
+        else if (a === 'force' && turn) {
+            turn.r = decide(turn.r.s, b.dataset.cat);
+            setupEdit(turn);
+            renderTurn(turn);
         }
-        else if (a === 'kit' && last) openKit(last.kit ? last : decide(last.s, last.cat));
-        else if (a === 'box' && last && last.box) openBox(last);
-        else if (a === 'custom' && last && last.form) openCustom(last);
+        else if (a === 'tweak' && turn) { turn.mode = 'kit'; renderTurn(turn); }
+        else if (a === 'kit' && turn) openKit(turn);
+        else if (a === 'cart-kit' && turn) addKitToCart(turn);
+        else if (a === 'box' && turn) openBox(turn);
+        else if (a === 'cart-box' && turn && window.__ucCart) window.__ucCart.addOption(turn.r.cat, turn.r.box.id);
+        else if (a === 'custom' && turn) openCustom(turn, false);
+        else if (a === 'order-custom' && turn) openCustom(turn, true);
     }
 
     // a reason under a Custom field goes away once the customer changes that field
