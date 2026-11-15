@@ -2001,3 +2001,30 @@ body.boxai-open { overflow: hidden; }
 .cfg-qty button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid currentColor; background: transparent; color: inherit; font: 600 0.9rem/1 var(--sans); cursor: pointer; opacity: 0.85; }
 .cfg-qty button:disabled { opacity: 0.3; cursor: default; }
 .cfg-qty span { min-width: 3.4em; text-align: center; font-weight: 600; }
+
+/* Custom form (05): quantity under a choice */
+.cf-qty { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.45rem; font-size: 0.85rem; }
+.cf-qty[hidden] { display: none; }
+.cf-qty > span { opacity: 0.75; margin-right: 0.2rem; }
+.cf-qty b { min-width: 3.5em; text-align: center; }
+.cf-qty button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid currentColor; background: transparent; color: inherit; font: 600 1rem/1 var(--sans); cursor: pointer; }
+.cf-qty button:disabled { opacity: 0.3; cursor: default; }
+
+/* answers about parts */
+.boxai-info h3 { justify-content: flex-start; align-items: center; gap: 0.6rem; margin-top: 0; }
+.boxai-info dl { margin: 0.4rem 0 0; display: grid; gap: 0.15rem; }
+.boxai-info dt { margin-top: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em; color: #a8853c; text-transform: uppercase; }
+.boxai-info dd { margin: 0; font-size: 0.9rem; line-height: 1.6; color: #1d3a2a; }
+.boxai-table { width: 100%; margin-top: 0.8rem; border-collapse: collapse; font-size: 0.8rem; }
+.boxai-table th { text-align: left; font-weight: 600; color: rgba(29, 58, 42, 0.65); padding: 0.35rem 0.3rem; border-bottom: 1px solid rgba(29, 58, 42, 0.15); }
+.boxai-table td { padding: 0.45rem 0.3rem; border-bottom: 1px solid rgba(29, 58, 42, 0.08); vertical-align: middle; }
+.boxai-table td:first-child { font-weight: 600; }
+.boxai-yes { font-weight: 700; color: #2c6a46; }
+.boxai-info-btn { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: 0.25rem; border-radius: 50%; border: 1px solid #a8853c; background: transparent; color: #a8853c; font: italic 700 0.72rem/1 Georgia, serif; cursor: pointer; vertical-align: 1px; }
+.boxai-info-btn:hover { background: #a8853c; color: #fffdf8; }
+.boxai-explain { grid-column: 1 / -1; margin: 0.4rem 0 0.2rem 2.4rem; padding: 0.55rem 0.7rem; border-radius: 10px; background: rgba(168, 133, 60, 0.1); font-size: 0.8rem; line-height: 1.55; color: #1d3a2a; }
+.boxai-explain p { margin: 0 0 0.3rem; }
+.boxai-lines li { flex-wrap: wrap; }
+.boxai-intro-q { padding: 0.55rem 0.75rem; border-radius: 10px; background: rgba(44, 106, 70, 0.08); font-size: 0.85rem !important; }
+.boxai-intro-q i { color: #a8853c; margin-right: 0.3rem; }
+@media (max-width: 480px) { .boxai-table { font-size: 0.72rem; } .boxai-table th:nth-child(4), .boxai-table td:nth-child(4) { display: none; } }

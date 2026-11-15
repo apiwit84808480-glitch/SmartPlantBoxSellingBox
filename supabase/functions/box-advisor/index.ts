@@ -29,6 +29,7 @@ const E = {
   material: ["unspecified", "none", "glass", "acrylic", "plastic"],
   light_type: ["unspecified", "rgb", "rgbw", "redblue", "panel"],
   ai_accuracy: ["unspecified", "basic", "medium", "high"],
+  topics: ["npk", "tds", "ph", "dht", "soil", "lux", "level", "pump", "mist", "fert", "hydro", "fan", "cooler", "heater", "lights", "cameras", "ai", "boards", "materials", "how"],
 };
 
 const SCHEMA = {
@@ -53,9 +54,11 @@ const SCHEMA = {
     dimmable: { type: "boolean" },
     ai_accuracy: { type: "string", enum: E.ai_accuracy },
     wants_custom: { type: "boolean" },
+    is_question: { type: "boolean", description: "true if the message asks what a part is / does / which to choose, instead of describing what they want to grow" },
+    asks_about: { type: "array", items: { type: "string", enum: E.topics } },
     summary: { type: "string", description: "one short sentence, in the customer's language, restating what they want" },
   },
-  required: ["about_plants", "category", "indoor", "crop", "needs", "not_wanted", "budget_max_thb", "budget_unlimited", "cheap", "premium", "size", "dims_cm", "people", "board", "material", "light_type", "dimmable", "ai_accuracy", "wants_custom", "summary"],
+  required: ["about_plants", "category", "indoor", "crop", "needs", "not_wanted", "budget_max_thb", "budget_unlimited", "cheap", "premium", "size", "dims_cm", "people", "board", "material", "light_type", "dimmable", "ai_accuracy", "wants_custom", "is_question", "asks_about", "summary"],
 };
 
 const SYSTEM = `You read one message from a customer of "Smart Plant Box", a Thai shop selling automated plant-growing boxes.
@@ -88,6 +91,11 @@ The message is in Thai or English, often informal, with typos. Extract facts int
 - light_type: only if they name it (RGB, RGBW, red-blue, LED panel). dimmable: they want to dim / adjust brightness.
 - ai_accuracy: "high" if they want the most accurate disease detection, "basic" if cheapest, "medium" if they say so.
 - wants_custom: they want a made-to-order / custom design.
+- is_question: true when the message asks about a part or how things work ("NPK คืออะไร", "ESP32 ต่างจาก Arduino ยังไง",
+  "ต้องมีเซนเซอร์ pH ไหม", "how does it work") rather than describing what they want to grow. Then fill asks_about with the
+  topics asked about: npk, tds, ph, dht (temperature & humidity sensor), soil (soil moisture), lux (light sensor), level (water level),
+  pump, mist, fert (fertilizer doser), hydro, fan, cooler, heater, lights (grow lights), cameras, ai (AI disease models),
+  boards (Arduino/ESP32/Raspberry Pi), materials (acrylic/glass/plastic box), how (how the box works). Otherwise false and [].
 - summary: one short sentence in the customer's language restating their needs (all messages together). No prices, no product names, no advice.`;
 
 const cors = (origin: string | null) => ({
@@ -213,6 +221,8 @@ function clean(x: any) {
     dimmable: x?.dimmable === true,
     ai_accuracy: pick(x?.ai_accuracy, E.ai_accuracy, "unspecified"),
     wants_custom: x?.wants_custom === true,
+    is_question: x?.is_question === true,
+    asks_about: many(x?.asks_about, E.topics),
     summary: typeof x?.summary === "string" ? x.summary.replace(/[<>]/g, "").slice(0, 200) : "",
   };
 }

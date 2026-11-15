@@ -203,9 +203,47 @@ function applyAiRules() {
     }
 }
 
+// Quantities in the Custom form: every piece is charged (AI is one per box; the box is priced by size)
+const QTY_KEYS = ['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera'];
+const customQty = {};
+const qtyMax = id => (id === 'microcontroller' ? 10 : 50);
+function qtyOf(id) { return customQty[id] || 1; }
+function setCustomQty(id, n) {
+    customQty[id] = Math.min(qtyMax(id), Math.max(1, parseInt(n, 10) || 1));
+    calculateCustomPrice();
+}
+function renderCustomQty() {
+    QTY_KEYS.forEach(id => {
+        const box = document.getElementById(id + 'Qty'), sel = document.getElementById(id);
+        if (!box || !sel) return;
+        box.hidden = !(sel.selectedIndex > 0 && parseFloat(sel.value) > 0);
+        const q = qtyOf(id);
+        box.querySelector('b').textContent = id === 'mist' ? t(`${q} set${q > 1 ? 's' : ''}`, `${q} ชุด`) : t(`${q} pc${q > 1 ? 's' : ''}`, `${q} ชิ้น`);
+        box.querySelector('[data-d="-1"]').disabled = q <= 1;
+        box.querySelector('[data-d="1"]').disabled = q >= qtyMax(id);
+    });
+}
+function initCustomQty() {
+    QTY_KEYS.forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel || document.getElementById(id + 'Qty')) return;
+        const box = document.createElement('div');
+        box.className = 'cf-qty';
+        box.id = id + 'Qty';
+        box.hidden = true;
+        box.innerHTML = `<span>${escHtml(t('Quantity', 'จำนวน'))}</span><button type="button" data-d="-1" aria-label="${escHtml(t('Fewer', 'ลดจำนวน'))}">−</button><b></b><button type="button" data-d="1" aria-label="${escHtml(t('More', 'เพิ่มจำนวน'))}">+</button>`;
+        box.addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (b) setCustomQty(id, qtyOf(id) + Number(b.dataset.d)); });
+        sel.insertAdjacentElement('afterend', box);
+    });
+    renderCustomQty();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCustomQty);
+else initCustomQty();
+
 function calculateCustomPrice() {
     applyAiRules();
-    const num = id => parseFloat(document.getElementById(id)?.value) || 0;
+    renderCustomQty();
+    const num = id => (parseFloat(document.getElementById(id)?.value) || 0) * (QTY_KEYS.includes(id) ? qtyOf(id) : 1);
     const microcontroller = num('microcontroller');
     const watering = num('watering');
     const light = num('light');
@@ -240,7 +278,8 @@ function showCustomOrderForm() {
 
     const txt = id => {
         const s = document.getElementById(id);
-        return s ? (s.options[s.selectedIndex]?.text || '') : '';
+        const label = s ? (s.options[s.selectedIndex]?.text || '') : '';
+        return QTY_KEYS.includes(id) && s && s.selectedIndex > 0 && qtyOf(id) > 1 ? `${label} × ${qtyOf(id)}` : label;
     };
 
     customOrderData = {
@@ -260,6 +299,7 @@ function showCustomOrderForm() {
         // What the server needs to price it: which option was picked in each list (not the price)
         choices: Object.fromEntries(['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'ai', 'boxMaterial']
             .map(id => [id, document.getElementById(id)?.selectedIndex || 0])),
+        qty: Object.fromEntries(QTY_KEYS.filter(id => qtyOf(id) > 1).map(id => [id, qtyOf(id)])),
         size: ['boxWidth', 'boxLength', 'boxHeight'].map(id => parseFloat(document.getElementById(id)?.value) || 0)
     };
     window.orderReturnTo = 'customForm';
@@ -366,7 +406,7 @@ async function handleCheckout(e) {
     // tampered price in the browser can't change what the customer pays.
     let items;
     if (customOrderData) {
-        items = [{ type: 'custom', choices: customOrderData.choices, size: customOrderData.size }];
+        items = [{ type: 'custom', choices: customOrderData.choices, qty: customOrderData.qty || {}, size: customOrderData.size }];
     } else {
         items = (cart || []).map(toServerItem);
         if (items.some(x => !x)) {

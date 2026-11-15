@@ -650,8 +650,11 @@
         thread.innerHTML = `
             <div class="boxai-intro">
                 <p>${esc(t('Where will the plants grow, what do you grow, what goes wrong, and what\'s your budget? We\'ll match a ready-made box — or design one part by part. You can keep asking to adjust it.', 'ปลูกที่ไหน ปลูกอะไร เจอปัญหาอะไร งบเท่าไร แล้วเราจะจับคู่กล่องให้ หรือออกแบบให้ทีละชิ้น จากนั้นถามต่อเพื่อปรับได้เรื่อย ๆ'))}</p>
+                <p class="boxai-intro-q"><i class="fas fa-circle-question"></i> ${esc(t('You can also ask about any part — e.g. "What is an NPK sensor?" or "ESP32 vs Arduino?"', 'ถามเรื่องอุปกรณ์ก็ได้ เช่น "เซนเซอร์ NPK คืออะไร" หรือ "ESP32 ต่างจาก Arduino ยังไง"'))}</p>
                 <span>${esc(t('Try one:', 'ลองตัวอย่าง:'))}</span>
-                <div class="boxai-examples">${EXAMPLES.map((e, i) => `<button type="button" class="boxai-chip" data-adv="example" data-i="${i}">${esc(T(e))}</button>`).join('')}</div>
+                <div class="boxai-examples">${EXAMPLES.map((e, i) => `<button type="button" class="boxai-chip" data-adv="example" data-i="${i}">${esc(T(e))}</button>`).join('')}
+                    <button type="button" class="boxai-chip" data-adv="topic" data-topic="npk"><i class="fas fa-circle-question"></i> ${esc(t('What is an NPK sensor?', 'เซนเซอร์ NPK คืออะไร'))}</button>
+                    <button type="button" class="boxai-chip" data-adv="topic" data-topic="boards"><i class="fas fa-circle-question"></i> ${esc(t('Which control board should I pick?', 'บอร์ดควบคุมแต่ละแบบต่างกันยังไง'))}</button></div>
             </div>`;
         el.querySelector('#advisorQuick').innerHTML = '';
         el.querySelector('#advisorText').placeholder = t('e.g. ' + EXAMPLES[0].en, 'เช่น ' + EXAMPLES[0].th);
@@ -704,7 +707,7 @@
 
     const CHEAPER = /(ถูกกว่า|ถูกลง|ราคาต่ำกว่า|ประหยัดกว่า|ลดงบ|cheaper|less expensive|lower price|cut the cost)/i;
     let busy = false;
-    async function send(preset) {
+    async function send(preset, opts) {
         if (busy) return;
         const ta = el.querySelector('#advisorText');
         const text = (preset || ta.value).trim().slice(0, 600);
@@ -736,8 +739,17 @@
         } else if (onlyCheaper) {
             s = Object.assign({}, prev.r.s, { needs: new Set(prev.r.s.needs), source: 'adjust' });
         } else {
-            const res = await askAI(text, history);
-            if (res && res.ok) s = fromAI(res.data, [...history, text].join(' \n'));
+            // "NPK คืออะไร", "ESP32 ต่างจาก Arduino ยังไง": answer from our own texts, no AI question spent
+            const asked = !(opts && opts.design) && window.__kb ? window.__kb.detect(text) : null;
+            if (asked && asked.topics.length) return finishInfo(turn, node, asked.topics, text);
+            const res = await askAI(text, asked ? [] : history); // a question is read on its own, not mixed with earlier messages
+            const d = res && res.ok ? res.data : null;
+            if (d && d.is_question && !(opts && opts.design)) {
+                const topics = (d.asks_about || []).filter(x => window.__kb && window.__kb.TOPICS[x]).slice(0, 3);
+                if (topics.length || asked) return finishInfo(turn, node, topics, text);
+            }
+            if (!d && asked && !(opts && opts.design)) return finishInfo(turn, node, [], text);
+            if (d) s = fromAI(d, [...history, text].join(' \n'));
             else { s = read([...history, text].join(' \n')); s.fallback = (res && res.fallback) || 'error'; }
         }
         // "cheaper than that": aim below the last answer's total
@@ -759,6 +771,22 @@
         busy = false;
     }
 
+    // a question about parts gets our written answer (plus "ask more" chips)
+    const POPULAR = ['npk', 'boards', 'ai', 'lights', 'tds', 'ph', 'how'];
+    function finishInfo(turn, node, topics, text) {
+        turn.r = { route: 'info', topics, text };
+        turn.mode = 'info';
+        turn.edit = null;
+        renderTurn(turn);
+        scrollToTurn(node);
+        const more = POPULAR.filter(x => !topics.includes(x)).slice(0, 4);
+        el.querySelector('#advisorQuick').innerHTML = `<span>${esc(t('Ask more:', 'ถามต่อ:'))}</span>${more.map(x => `<button type="button" class="boxai-chip" data-adv="topic" data-topic="${x}">${esc(T(window.__kb.TOPICS[x].title))}</button>`).join('')}`;
+        el.querySelector('#advisorText').placeholder = t('Ask about another part, or tell us what you want to grow…', 'ถามเรื่องอุปกรณ์อื่น หรือเล่าว่าอยากปลูกอะไร…');
+        el.querySelector('[data-adv="reset"]').hidden = false;
+        el.querySelector('.boxai-send').disabled = false;
+        busy = false;
+    }
+
     // the newest question goes to the top of the chat so its answer can be read from the start
     function scrollToTurn(node) {
         // the latest turn is at least one screen tall, so it can always scroll up to the top
@@ -772,7 +800,7 @@
     function setupEdit(turn) {
         const r = turn.r;
         turn.mode = r.route;
-        if (r.route === 'budget') { turn.edit = null; return; }
+        if (r.route === 'budget' || r.route === 'info') { turn.edit = null; return; }
         if (r.route === 'box' && BOX_PARTS[r.box.id]) {
             const b = BOX_PARTS[r.box.id];
             turn.edit = { qty: {}, cqty: 1, off: [], cat: r.cat, controller: b.controller, parts: new Set(b.parts), material: b.material, size: [...b.size], why: {}, fromBox: r.box.o };
@@ -780,14 +808,14 @@
             const k = r.kit;
             turn.edit = { qty: {}, cqty: 1, off: [], cat: r.cat, controller: k.controller, parts: new Set(k.parts), material: k.material, size: [...k.size], why: Object.assign({}, k.why) };
         } else if (r.route === 'custom') {
-            turn.edit = { f: Object.assign({}, r.form.f), size: r.form.f.size ? [...r.form.f.size] : [60, 40, 50], why: Object.assign({}, r.form.why) };
+            turn.edit = { fq: {}, f: Object.assign({}, r.form.f), size: r.form.f.size ? [...r.form.f.size] : [60, 40, 50], why: Object.assign({}, r.form.why) };
         }
     }
     const kitOf = e => ({ controller: e.controller, parts: new Map([...e.parts].map(id => [id, { why: e.why[id] }])), material: e.material, size: e.size, cWhy: e.why[e.controller], mWhy: e.why.material, qty: e.qty, cqty: e.cqty });
     const customSel = id => document.querySelector('#customConfigForm #' + id);
     function customTotal(e) {
         let sum = 0;
-        ['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'ai'].forEach(k => { const s = customSel(k); if (s && s.options[e.f[k] || 0]) sum += parseFloat(s.options[e.f[k] || 0].value) || 0; });
+        ['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera', 'ai'].forEach(k => { const s = customSel(k); if (s && s.options[e.f[k] || 0]) sum += (parseFloat(s.options[e.f[k] || 0].value) || 0) * (k !== 'ai' && e.fq && e.fq[k] || 1); });
         const m = customSel('boxMaterial');
         if (m && e.f.boxMaterial) { const [w, l, h] = e.size; sum += 2 * (w * l + w * h + l * h) * (parseFloat(m.options[e.f.boxMaterial].value) || 0); }
         return Math.round(sum * 100) / 100;
@@ -801,7 +829,7 @@
     // ---- drawing an answer
     function renderTurn(turn) {
         const node = thread.querySelector(`[data-turn="${turn.id}"] .boxai-reply`);
-        if (node) node.innerHTML = sourceNote(turn.r.s) + renderBody(turn);
+        if (node) node.innerHTML = (turn.r.route === 'info' ? '' : sourceNote(turn.r.s)) + renderBody(turn);
     }
 
     // where the reading came from: the AI (with its one-line summary) or the keyword back-up
@@ -856,6 +884,7 @@
     function renderBody(turn) {
         const r = turn.r;
         if (r.route === 'budget') return understood(r.s, r.cat) + budgetQuestion(turn);
+        if (r.route === 'info') return infoCards(turn);
         if (r.route === 'ask') {
             const off = r.s.aboutPlants === false;
             return `${understood(r.s, null)}<div class="boxai-card">${off ? `<p>${esc(t('That doesn\'t look like it\'s about growing plants. Tell us what you want to grow, where, and your budget.', 'ข้อความนี้ดูไม่เกี่ยวกับการปลูกต้นไม้ ลองเล่าว่าอยากปลูกอะไร ที่ไหน งบเท่าไร'))}</p>` : ''}
@@ -900,7 +929,8 @@
     // − n + : every piece is charged; misting comes in sets of 2 nozzles; AI is one per box
     function qtyStepper(id, q) {
         if (/^ai\d$/.test(id)) return `<span class="boxai-qty fixed">${esc(t('1 per box', '1 ตัวต่อกล่อง'))}</span>`;
-        const max = id === '__ctrl' ? 10 : 50;
+        const max = id === '__ctrl' || id === 'cf:microcontroller' ? 10 : 50;
+        if (id === 'cf:mist') { const lab = t(`${q} set${q > 1 ? 's' : ''}`, `${q} ชุด`); return `<span class="boxai-qty"><button type="button" data-adv="qty" data-id="${id}" data-d="-1"${q <= 1 ? ' disabled' : ''}>−</button><b>${esc(lab)}</b><button type="button" data-adv="qty" data-id="${id}" data-d="1"${q >= max ? ' disabled' : ''}>+</button></span>`; }
         const label = id === 'mist' ? t(`${q} set${q > 1 ? 's' : ''} · ${q * 2} nozzles`, `${q} ชุด · ${q * 2} หัว`) : t(`${q} pc${q > 1 ? 's' : ''}`, `${q} ชิ้น`);
         return `<span class="boxai-qty"><button type="button" data-adv="qty" data-id="${id}" data-d="-1"${q <= 1 ? ' disabled' : ''} aria-label="${esc(t('Fewer', 'ลดจำนวน'))}">−</button><b>${esc(label)}</b><button type="button" data-adv="qty" data-id="${id}" data-d="1"${q >= max ? ' disabled' : ''} aria-label="${esc(t('More', 'เพิ่มจำนวน'))}">+</button></span>`;
     }
@@ -920,13 +950,13 @@
             ${e.fromBox ? `<p class="boxai-sub">${esc(t(`Starts from the parts inside ${T(e.fromBox.name)} (${baht(e.fromBox.price)}). Built part by part it costs the parts only; the ready-made box also includes assembly and fittings.`, `เริ่มจากชิ้นส่วนใน ${T(e.fromBox.name)} (${baht(e.fromBox.price)}) ราคาแบบปรับแต่งคิดเฉพาะชิ้นส่วน ส่วนกล่องสำเร็จรวมค่าประกอบและอุปกรณ์ติดตั้งแล้ว`))}</p>` : ''}
             ${r.nearWhy && r.route === 'kit' ? `<p class="boxai-sub">${esc(t('No ready-made box fits exactly', 'ยังไม่มีกล่องสำเร็จที่ตรงทุกข้อ'))}: ${esc(T(r.nearWhy))}</p>` : ''}
             <div class="boxai-row">
-                <label class="boxai-field">${esc(t('Controller', 'บอร์ดควบคุม'))}
+                <label class="boxai-field">${esc(t('Controller', 'บอร์ดควบคุม'))} <button type="button" class="boxai-info-btn" data-adv="explain" data-id="${e.controller}" aria-label="${esc(t('Which board?', 'บอร์ดต่างกันยังไง'))}">i</button>
                     <select data-ed="controller">${C.CONTROLLERS.map(c => opt(c.id, `${T(c.name)} (${baht(c.price)})`, c.id === e.controller)).join('')}</select></label>
                 ${reason(e.controller) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(e.controller))}</em>` : ''}
                 <div class="boxai-ctrlqty"><span>${esc(t('Boards', 'จำนวนบอร์ด'))}</span>${qtyStepper('__ctrl', e.cqty || 1)}<span>${baht(priceOf(e.controller) * (e.cqty || 1))}</span></div>
             </div>
             <ul class="boxai-lines">
-                ${[...e.parts].map(id => { const q = (e.qty && e.qty[id]) || 1; return `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span class="boxai-pricecol">${baht(priceOf(id) * q)}${qtyStepper(id, q)}</span></li>`; }).join('')}
+                ${[...e.parts].map(id => { const q = (e.qty && e.qty[id]) || 1; return `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b> <button type="button" class="boxai-info-btn" data-adv="explain" data-id="${id}" aria-label="${esc(t('What is this?', 'คืออะไร'))}">i</button>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span class="boxai-pricecol">${baht(priceOf(id) * q)}${qtyStepper(id, q)}</span></li>`; }).join('')}
                 ${(e.off || []).filter(id => !e.parts.has(id)).map(id => `<li class="is-off"><label><input type="checkbox" data-ed="part" value="${id}"><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b><small>${esc(t('Removed — tick to put it back', 'เอาออกแล้ว — ติ๊กเพื่อใส่กลับ'))}</small></span></label><span class="boxai-pricecol">${baht(priceOf(id))}</span></li>`).join('')}
             </ul>
             <label class="boxai-field">${esc(t('Add a part', 'เพิ่มชิ้นส่วน'))}
@@ -960,7 +990,10 @@
             if (!sel) return '';
             const options = [...sel.options].map((o, i) => opt(i, o.textContent.trim(), (e.f[k] || 0) === i, k === 'ai' && ((i > 0 && board === 0) || (i === 3 && arduino)))).join('');
             const why = e.why[k] ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(T(e.why[k]))}</em>` : '';
-            return `<div class="boxai-row"><label class="boxai-field">${esc(T(CUSTOM_KEYS[k]))}<select data-ed="cf" data-k="${k}">${options}</select></label>${why}</div>`;
+            const priced = k !== 'ai' && k !== 'boxMaterial' && (e.f[k] || 0) > 0 && (parseFloat((sel.options[e.f[k]] || {}).value) || 0) > 0;
+            const q = (e.fq && e.fq[k]) || 1;
+            const qty = priced ? `<div class="boxai-ctrlqty"><span>${esc(t('Quantity', 'จำนวน'))}</span>${qtyStepper('cf:' + k, q)}<span>${baht((parseFloat(sel.options[e.f[k]].value) || 0) * q)}</span></div>` : '';
+            return `<div class="boxai-row"><label class="boxai-field">${esc(T(CUSTOM_KEYS[k]))}<select data-ed="cf" data-k="${k}">${options}</select></label>${why}${qty}</div>`;
         }).join('');
         const sizeRow = e.f.boxMaterial ? `<div class="boxai-dims">${[t('W', 'กว้าง'), t('L', 'ยาว'), t('H', 'สูง')].map((lab, i) => `<label>${esc(lab)}<input type="number" min="1" max="1000" step="1" data-ed="dim" data-i="${i}" value="${e.size[i]}"></label>`).join('')}<span>${esc(t('cm', 'ซม.'))}</span></div>` : '';
         return `<div class="boxai-card">
@@ -1059,6 +1092,95 @@
         if (r.route === 'custom') return `${t('Custom design', 'ออกแบบเฉพาะ')} · ${baht(customTotal({ f: r.form.f, size: r.form.f.size || [60, 40, 50] }))}`;
         return '';
     }
+    // ---- answers about parts (texts from js/advisor-kb.js, prices from the live catalogue)
+    const topicOf = id => (/^ai\d$/.test(id) ? 'ai' : id === 'ledRB' || id === 'ledFull' ? 'lights' : id === 'cam' || id === 'picam' ? 'cameras' : cat().CONTROLLERS.some(c => c.id === id) ? 'boards' : id);
+    const nameOf = id => { const C = cat(); const p = C.PARTS.find(x => x.id === id) || C.CONTROLLERS.find(x => x.id === id); return p ? T(p.name) : id; };
+    const latestKit = () => [...turns].reverse().find(x => x.mode === 'kit' && x.edit);
+    const yes = v => `<span class="boxai-yes">${v ? '✓' : '—'}</span>`;
+    function compareTable(kind) {
+        const C = cat();
+        const btn = (act, id, label) => `<button type="button" class="boxai-chip boxai-add" data-adv="${act}" data-id="${id}">${esc(label)}</button>`;
+        const addLabel = latestKit() ? t('Add', 'เพิ่ม') : t('Use', 'ใช้');
+        if (kind === 'boards') {
+            const rows = [['nano', 0, 0, 0], ['uno', 0, 0, 0], ['esp32', 1, 0, 1], ['pi0', 1, 1, 1], ['pi4', 1, 1, 1]];
+            return `<table class="boxai-table"><thead><tr><th>${esc(t('Board', 'บอร์ด'))}</th><th>${esc(t('Price', 'ราคา'))}</th><th>${esc(t('Phone (Wi-Fi)', 'ดูผ่านมือถือ'))}</th><th>${esc(t('Pi camera', 'กล้อง Pi'))}</th><th>AI 90%</th><th></th></tr></thead><tbody>
+                ${rows.map(([id, wifi, picam, m3]) => `<tr><td>${esc(nameOf(id).replace(/\s*\(.*\)$/, ''))}</td><td>${baht(priceOf(id))}</td><td>${yes(wifi)}</td><td>${yes(picam)}</td><td>${yes(m3)}</td><td>${btn('pick-board', id, latestKit() ? t('Pick', 'เลือก') : t('Use', 'ใช้'))}</td></tr>`).join('')}
+            </tbody></table>`;
+        }
+        if (kind === 'ai') {
+            const rows = [['ai1', '60%', 1], ['ai2', '75%', 1], ['ai3', '90%', 0]];
+            return `<table class="boxai-table"><thead><tr><th>${esc(t('Model', 'รุ่น'))}</th><th>${esc(t('Accuracy', 'ความแม่นยำ'))}</th><th>${esc(t('Price', 'ราคา'))}</th><th>Arduino</th><th></th></tr></thead><tbody>
+                ${rows.map(([id, acc, ard]) => `<tr><td>Model ${id.slice(2)}</td><td>~${acc}</td><td>${baht(priceOf(id))}</td><td>${yes(ard)}</td><td>${btn('kb-add', id, addLabel)}</td></tr>`).join('')}
+            </tbody></table>`;
+        }
+        if (kind === 'lights') {
+            const rows = [['ledRB', t('Pink-purple', 'ชมพู-ม่วง'), t('Budget, greenhouses', 'งบประหยัด โรงเรือน')], ['ledFull', t('Like daylight', 'ใกล้แสงแดด'), t('Indoors, seedlings, looks', 'ในบ้าน ต้นกล้า เน้นสวย')]];
+            return `<table class="boxai-table"><thead><tr><th>${esc(t('Light', 'ไฟ'))}</th><th>${esc(t('Price', 'ราคา'))}</th><th>${esc(t('Colour', 'สีแสง'))}</th><th>${esc(t('Best for', 'เหมาะกับ'))}</th><th></th></tr></thead><tbody>
+                ${rows.map(([id, col, fit]) => `<tr><td>${esc(nameOf(id))}</td><td>${baht(priceOf(id))}</td><td>${esc(col)}</td><td>${esc(fit)}</td><td>${btn('kb-add', id, addLabel)}</td></tr>`).join('')}
+            </tbody></table>`;
+        }
+        if (kind === 'cameras') {
+            const rows = [['cam', t('Good', 'พอใช้'), t('Any board (sends over Wi-Fi)', 'ทุกบอร์ด (ส่งภาพผ่าน Wi-Fi)')], ['picam', t('Sharp', 'คมชัด'), t('Raspberry Pi only', 'ต้องใช้ Raspberry Pi')]];
+            return `<table class="boxai-table"><thead><tr><th>${esc(t('Camera', 'กล้อง'))}</th><th>${esc(t('Price', 'ราคา'))}</th><th>${esc(t('Photos', 'ภาพ'))}</th><th>${esc(t('Works with', 'ใช้กับ'))}</th><th></th></tr></thead><tbody>
+                ${rows.map(([id, img, works]) => `<tr><td>${esc(nameOf(id))}</td><td>${baht(priceOf(id))}</td><td>${esc(img)}</td><td>${esc(works)}</td><td>${btn('kb-add', id, addLabel)}</td></tr>`).join('')}
+            </tbody></table>`;
+        }
+        if (kind === 'materials') {
+            const rows = [['acrylic', t('Clear', 'ใส'), t('Light', 'เบา'), t('Hard to break', 'ไม่แตกง่าย')], ['glass', t('Clearest', 'ใสที่สุด'), t('Heavy', 'หนัก'), t('Can break', 'แตกได้')], ['plastic', t('Less clear', 'ใสน้อยกว่า'), t('Lightest', 'เบาที่สุด'), t('Hard to break', 'ไม่แตกง่าย')]];
+            return `<table class="boxai-table"><thead><tr><th>${esc(t('Box', 'กล่อง'))}</th><th>${esc(t('Price', 'ราคา'))}</th><th>${esc(t('Clarity', 'ความใส'))}</th><th>${esc(t('Weight', 'น้ำหนัก'))}</th><th>${esc(t('Breaks?', 'แตก?'))}</th><th></th></tr></thead><tbody>
+                ${rows.map(([id, clear, wt, br]) => { const m = C.MATERIALS.find(x => x.id === id); return `<tr><td>${esc(T(m.name))}</td><td>${baht(m.rate)}/${esc(t('cm²', 'ตร.ซม.'))}</td><td>${esc(clear)}</td><td>${esc(wt)}</td><td>${esc(br)}</td><td>${latestKit() ? btn('pick-material', id, t('Pick', 'เลือก')) : ''}</td></tr>`; }).join('')}
+            </tbody></table>`;
+        }
+        return '';
+    }
+    function infoCards(turn) {
+        const KB = window.__kb;
+        const kit = latestKit();
+        if (!turn.r.topics.length) {
+            return `<div class="boxai-card boxai-info"><h3>${esc(t('I can answer questions about our parts', 'ตอบได้เฉพาะเรื่องอุปกรณ์ในร้านครับ'))}</h3>
+                <p>${esc(t('For example what a sensor measures, which board or AI model to pick, or how the box works. Tap a topic, or tell us what you want to grow and we\'ll build a set.', 'เช่น เซนเซอร์แต่ละตัววัดอะไร ควรเลือกบอร์ดหรือ AI รุ่นไหน หรือกล่องทำงานยังไง กดหัวข้อด้านล่าง หรือเล่าว่าอยากปลูกอะไรแล้วเราจะจัดชุดให้'))}</p>
+                <div class="boxai-switch">${Object.keys(KB.TOPICS).slice(0, 12).map(x => `<button type="button" class="boxai-chip" data-adv="topic" data-topic="${x}">${esc(T(KB.TOPICS[x].title))}</button>`).join('')}</div></div>`;
+        }
+        return turn.r.topics.map(x => {
+            const k = KB.TOPICS[x];
+            const single = !k.compare && k.parts.length === 1 ? k.parts[0] : null;
+            const action = single ? (kit
+                ? `<button type="button" class="boxai-btn" data-adv="kb-add" data-id="${single}"><i class="fas fa-plus"></i> ${esc(t(`Add to my kit · ${baht(priceOf(single))} each`, `เพิ่มเข้าชุดของฉัน · ชิ้นละ ${baht(priceOf(single))}`))}</button>`
+                : `<button type="button" class="boxai-btn" data-adv="kb-design" data-id="${single}"><i class="fas fa-wand-magic-sparkles"></i> ${esc(t(`Build me a set with it`, `จัดชุดที่มีชิ้นนี้ให้`))}</button>`) : '';
+            return `<div class="boxai-card boxai-info">
+                <h3><span class="boxai-ico"><i class="fas ${k.icon}"></i></span> ${esc(T(k.title))}</h3>
+                <dl>
+                    <dt>${esc(t('What it is', 'คืออะไร'))}</dt><dd>${esc(T(k.what))}</dd>
+                    <dt>${esc(t('What it does for you', 'ช่วยอะไร'))}</dt><dd>${esc(T(k.why))}</dd>
+                    <dt>${esc(t('Who needs it', 'เหมาะกับใคร'))}</dt><dd>${esc(T(k.fit))}</dd>
+                    ${single ? `<dt>${esc(t('Price', 'ราคา'))}</dt><dd><b>${baht(priceOf(single))}</b> ${esc(t('per piece', 'ต่อชิ้น'))}</dd>` : ''}
+                </dl>
+                ${k.compare ? compareTable(k.compare) : ''}
+                ${action ? `<div class="boxai-actions">${action}</div>` : ''}
+            </div>`;
+        }).join('') + `<p class="boxai-sub">${esc(t('Written by our team — prices are from our live price list.', 'คำอธิบายนี้เขียนโดยทีมของเรา ราคามาจากรายการราคาจริง'))}</p>`;
+    }
+    // "add this part" from an answer: goes into the latest kit in the chat
+    function addFromKb(id) {
+        const kit = latestKit();
+        if (!kit) return;
+        const e = kit.edit;
+        let note = null;
+        if (/^ai\d$/.test(id)) {
+            if (id === 'ai3' && (e.controller === 'nano' || e.controller === 'uno')) { note = t('Arduino can\'t run AI Model 3 — pick ESP32 or Raspberry Pi first', 'Arduino ใช้ AI Model 3 ไม่ได้ เลือก ESP32 หรือ Raspberry Pi ก่อน'); if (typeof showToast === 'function') showToast(note); return; }
+            [...e.parts].filter(x => /^ai\d$/.test(x)).forEach(x => e.parts.delete(x));
+            if (!e.parts.has('cam') && !e.parts.has('picam')) e.parts.add('cam');
+        }
+        if (id === 'picam') { e.parts.delete('cam'); if (e.controller !== 'pi0' && e.controller !== 'pi4') e.controller = 'pi0'; }
+        if (id === 'ledFull') e.parts.delete('ledRB');
+        if (id === 'ledRB') e.parts.delete('ledFull');
+        if (e.parts.has(id)) { e.qty = e.qty || {}; e.qty[id] = Math.min(50, (e.qty[id] || 1) + 1); }
+        else e.parts.add(id);
+        e.off = (e.off || []).filter(x => x !== id);
+        renderTurn(kit);
+        if (typeof showToast === 'function') showToast(t(`Added ${nameOf(id)} to your kit`, `เพิ่ม ${nameOf(id)} เข้าชุดแล้ว`));
+    }
+
     function budgetQuestion(turn) {
         const s0 = turn.r.s, force = turn.r.wouldBe === 'custom' ? 'custom' : undefined;
         const all = (BUDGETS_FOR[turn.r.cat] || BUDGETS).map(v => ({ v, preview: previewFor(s0, v, force) }));
@@ -1191,6 +1313,7 @@
             }
         });
         ['boxWidth', 'boxLength', 'boxHeight'].forEach((id, i) => { const inp = document.getElementById(id); if (inp) inp.value = ed.f.boxMaterial ? ed.size[i] : ''; });
+        if (typeof setCustomQty === 'function') ['microcontroller', 'watering', 'light', 'temperature', 'mist', 'camera'].forEach(k => setCustomQty(k, (ed.fq && ed.fq[k]) || 1));
         if (typeof calculateCustomPrice === 'function') calculateCustomPrice();
         if (andOrder && typeof showCustomOrderForm === 'function') showCustomOrderForm();
     }
@@ -1204,6 +1327,22 @@
         if (a === 'close') close();
         else if (a === 'reset') { turns.length = 0; renderIntro(); el.querySelector('#advisorText').focus(); }
         else if (a === 'example') send(T(EXAMPLES[+b.dataset.i]));
+        else if (a === 'topic') send(T(window.__kb.TOPICS[b.dataset.topic].title));
+        else if (a === 'kb-add') addFromKb(b.dataset.id);
+        else if (a === 'kb-design') send(t(`I want a box with ${nameOf(b.dataset.id)}`, `อยากได้กล่องที่มี ${nameOf(b.dataset.id)}`), { design: true });
+        else if (a === 'pick-board') { const kit = latestKit(); if (kit) { kit.edit.controller = b.dataset.id; if ((b.dataset.id === 'nano' || b.dataset.id === 'uno') && kit.edit.parts.has('ai3')) { kit.edit.parts.delete('ai3'); kit.edit.parts.add('ai2'); } renderTurn(kit); if (typeof showToast === 'function') showToast(t(`Board changed to ${nameOf(b.dataset.id)}`, `เปลี่ยนบอร์ดเป็น ${nameOf(b.dataset.id)} แล้ว`)); } else send(t(`I want a box with ${nameOf(b.dataset.id)}`, `อยากได้กล่องที่ใช้ ${nameOf(b.dataset.id)}`), { design: true }); }
+        else if (a === 'pick-material') { const kit = latestKit(); if (kit) { kit.edit.material = b.dataset.id; renderTurn(kit); if (typeof showToast === 'function') showToast(t('Box material changed', 'เปลี่ยนวัสดุกล่องแล้ว')); } }
+        else if (a === 'explain') {
+            const k = window.__kb && window.__kb.TOPICS[topicOf(b.dataset.id)];
+            const holder = b.closest('li, .boxai-row');
+            if (!k || !holder) return;
+            const open = holder.querySelector('.boxai-explain');
+            if (open) { open.remove(); return; }
+            const box = document.createElement('div');
+            box.className = 'boxai-explain';
+            box.innerHTML = `<p><b>${esc(t('What it is:', 'คืออะไร:'))}</b> ${esc(T(k.what))}</p><p><b>${esc(t('What it does for you:', 'ช่วยอะไร:'))}</b> ${esc(T(k.why))}</p>`;
+            holder.appendChild(box);
+        }
         else if (a === 'follow') send(T(FOLLOW_UPS[+b.dataset.i]));
         else if (a === 'answer') send(b.dataset.add);
         else if (a === 'force' && turn) {
@@ -1214,7 +1353,8 @@
         else if (a === 'tweak' && turn) { turn.mode = 'kit'; renderTurn(turn); }
         else if (a === 'qty' && turn && turn.edit) {
             const e = turn.edit, id = b.dataset.id, d = +b.dataset.d;
-            if (id === '__ctrl') e.cqty = Math.min(10, Math.max(1, (e.cqty || 1) + d));
+            if (id.startsWith('cf:')) { const k = id.slice(3); e.fq = e.fq || {}; e.fq[k] = Math.min(k === 'microcontroller' ? 10 : 50, Math.max(1, (e.fq[k] || 1) + d)); }
+            else if (id === '__ctrl') e.cqty = Math.min(10, Math.max(1, (e.cqty || 1) + d));
             else { e.qty = e.qty || {}; e.qty[id] = Math.min(50, Math.max(1, (e.qty[id] || 1) + d)); }
             const keep = thread.scrollTop;
             renderTurn(turn);
