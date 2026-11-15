@@ -1953,3 +1953,33 @@ body.boxai-open { overflow: hidden; }
 @media (max-width: 480px) {
     .boxai-you { max-width: 94%; }
 }
+
+/* "Want to add anything?" and the budget question */
+.boxai-addons { margin-top: 0.8rem; padding: 0.75rem 0.85rem; border-radius: 14px; background: rgba(168, 133, 60, 0.09); border: 1px dashed rgba(168, 133, 60, 0.5); }
+.boxai-addons-q { margin: 0 0 0.4rem; font-size: 0.85rem; font-weight: 600; color: #5b4515; }
+.boxai-addons-q i { margin-right: 0.3rem; color: #a8853c; }
+.boxai-addon { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.45rem 0; border-top: 1px solid rgba(168, 133, 60, 0.25); }
+.boxai-addon:first-of-type { border-top: 0; }
+.boxai-addon b { display: block; font-size: 0.86rem; color: #1d3a2a; }
+.boxai-addon small { display: block; font-size: 0.76rem; line-height: 1.45; color: rgba(29, 58, 42, 0.7); }
+.boxai-add { flex: none; font-weight: 600; white-space: nowrap; background: #1d3a2a; color: #f6f1e7; border-color: #1d3a2a; }
+.boxai-add:hover { background: #2c6a46; border-color: #2c6a46; color: #fff; }
+.boxai-ask { display: grid; gap: 0.4rem; padding: 0.65rem 0.8rem; border-radius: 12px; background: rgba(44, 106, 70, 0.08); font-size: 0.84rem; color: #1d3a2a; }
+.boxai-ask i { margin-right: 0.3rem; color: #a8853c; }
+.boxai-ask > div { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+/* reasons that stand out when you skim */
+.boxai-gain { display: block; margin-top: 0.3rem; padding: 0.3rem 0.55rem; border-left: 3px solid #2c6a46; border-radius: 4px 8px 8px 4px; background: rgba(44, 106, 70, 0.09); color: #1d3a2a; font-style: normal; font-size: 0.82rem; font-weight: 500; line-height: 1.45; }
+.boxai-gain i { margin-right: 0.3rem; font-size: 0.72rem; color: #2c6a46; }
+.boxai-ico { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #1d3a2a; color: #e6cf98; font-size: 0.8rem; margin-top: -0.1rem; }
+.boxai-lines li { align-items: flex-start; }
+.boxai-lines li label span b { font-size: 0.92rem; }
+/* the budget question */
+.boxai-budgetq h3 { margin-top: 0; }
+.boxai-budget-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin: 0.6rem 0 0.4rem; }
+.boxai-budget-opt { text-align: left; display: grid; gap: 0.2rem; padding: 0.7rem 0.8rem; border-radius: 12px; border: 1px solid rgba(29, 58, 42, 0.22); background: #fffdf8; color: #1d3a2a; cursor: pointer; font-family: var(--sans); }
+.boxai-budget-opt b { font-size: 0.95rem; }
+.boxai-budget-opt small { font-size: 0.76rem; line-height: 1.4; color: #2c6a46; }
+.boxai-budget-opt:hover { border-color: #2c6a46; background: rgba(44, 106, 70, 0.06); }
+
+.boxai-budget-opt .boxai-full { color: #8a6a1f; font-style: italic; }

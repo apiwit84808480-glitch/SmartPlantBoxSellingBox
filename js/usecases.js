@@ -21,6 +21,7 @@
         { id: 'nano', name: L('Arduino Nano', 'Arduino Nano'), price: 120, why: L('Simple, low-cost board that runs the basics', 'บอร์ดราคาประหยัด ทำงานพื้นฐานได้ครบ') },
         { id: 'uno', name: L('Arduino Uno', 'Arduino Uno'), price: 140, why: L('Reliable board with room for more sensors', 'บอร์ดเสถียร ต่อเซนเซอร์เพิ่มได้') },
         { id: 'esp32', name: L('ESP32 (Wi-Fi app control)', 'ESP32 (ควบคุมผ่านแอปด้วย Wi-Fi)'), price: 145, why: L('Lets you check and control it from your phone', 'ดูสถานะและสั่งงานผ่านมือถือได้') },
+        { id: 'pi0', name: L('Raspberry Pi Zero 2 W (budget Pi)', 'Raspberry Pi Zero 2 W (Pi รุ่นประหยัด)'), price: 650, why: L('A low-cost Raspberry Pi: runs the Pi camera and every AI model', 'Raspberry Pi ราคาประหยัด ใช้กล้อง Pi และ AI ได้ทุกรุ่น') },
         { id: 'pi4', name: L('Raspberry Pi 4 (4 GB)', 'Raspberry Pi 4 (4 GB)'), price: 1500, why: L('Powerful enough to run the most accurate AI model', 'แรงพอสำหรับ AI รุ่นที่แม่นยำที่สุด') },
     ];
     const GROUPS = { Light: L('Light', 'ไฟ'), Water: L('Water', 'น้ำ'), Climate: L('Climate', 'อากาศ'), Sensors: L('Sensors', 'เซนเซอร์'), Camera: L('Camera', 'กล้อง'), AI: L('AI plant disease detection (pick one)', 'AI ตรวจโรคพืช (เลือก 1 รุ่น)') };

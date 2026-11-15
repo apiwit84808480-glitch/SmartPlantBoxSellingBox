@@ -43,6 +43,7 @@ const SCHEMA = {
     budget_max_thb: { type: "integer", description: "0 if no budget was given" },
     budget_unlimited: { type: "boolean" },
     cheap: { type: "boolean" },
+    premium: { type: "boolean", description: "true if they want it luxurious / premium / beautiful / the best" },
     size: { type: "string", enum: E.size },
     dims_cm: { type: "array", items: { type: "integer" }, description: "[width, length, height] in cm, or [] if not given" },
     people: { type: "integer", description: "household size if given, else 0" },
@@ -54,7 +55,7 @@ const SCHEMA = {
     wants_custom: { type: "boolean" },
     summary: { type: "string", description: "one short sentence, in the customer's language, restating what they want" },
   },
-  required: ["about_plants", "category", "indoor", "crop", "needs", "not_wanted", "budget_max_thb", "budget_unlimited", "cheap", "size", "dims_cm", "people", "board", "material", "light_type", "dimmable", "ai_accuracy", "wants_custom", "summary"],
+  required: ["about_plants", "category", "indoor", "crop", "needs", "not_wanted", "budget_max_thb", "budget_unlimited", "cheap", "premium", "size", "dims_cm", "people", "board", "material", "light_type", "dimmable", "ai_accuracy", "wants_custom", "summary"],
 };
 
 const SYSTEM = `You read one message from a customer of "Smart Plant Box", a Thai shop selling automated plant-growing boxes.
@@ -79,6 +80,7 @@ The message is in Thai or English, often informal, with typos. Extract facts int
 - budget_max_thb: the highest amount they will pay, in baht. Ranges -> the top ("500-1000" -> 1000, "2-3 พัน" -> 3000).
   พัน=1000, หมื่น=10000, แสน=100000, "k"=1000, "พันนึง"=1000, "งบหลักร้อย"=999. Ignore numbers that are not money (people, cm, rai, pots).
 - cheap: true if they want it cheap / not expensive / low budget ("ถูกๆ", "ไม่แพง", "ประหยัด").
+- premium: true if they want it luxurious, premium, beautiful, stylish or the best ("หรู", "เท่", "สวยๆ", "พรีเมียม", "จัดเต็ม").
 - size: small = "เล็ก", desk, dorm, small space. large = "ใหญ่", big family. Otherwise unknown (or medium if they say medium).
 - dims_cm: only if they give dimensions (e.g. "80x40x60"). people: number of people in the household if given.
 - board: only if they name a controller board (Arduino Nano/Uno, "Uno ของแท้" = arduino_uno_official, ESP32, ESP32-CAM, Raspberry Pi model and RAM).
@@ -201,6 +203,7 @@ function clean(x: any) {
     budget_max_thb: int(x?.budget_max_thb, 50, 5000000),
     budget_unlimited: x?.budget_unlimited === true,
     cheap: x?.cheap === true,
+    premium: x?.premium === true,
     size: pick(x?.size, E.size, "unknown"),
     dims_cm: dims.length >= 2 ? dims : [],
     people: int(x?.people, 1, 50),

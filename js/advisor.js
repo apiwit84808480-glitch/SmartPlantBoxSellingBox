@@ -19,6 +19,7 @@
         farmer: ['ฟาร์ม', 'ไร่', 'เกษตรกร', 'แปลง', 'โรงเรือน', 'กรีนเฮาส์', 'ปลูกขาย', 'ทำเกษตร', 'สวนผัก', 'ชาวสวน', 'ชาวไร่', 'farm', 'greenhouse', 'field', /\bplots?\b/, 'grower', 'acre'],
         household: ['บ้าน', 'ครัวเรือน', 'คอนโด', 'ห้อง', 'ระเบียง', 'ในครัว', 'อพาร์ต', 'หอพัก', /อยู่หอ/, 'โต๊ะ', 'ออฟฟิศ', 'ที่ทำงาน', 'desk', 'office', /\btable\b/, 'windowsill', 'กินเอง', 'home', 'house', 'condo', 'apartment', 'balcony', 'kitchen', 'indoor', 'bedroom', 'dorm', /\broom\b/],
         commercial: ['มูลค่าสูง', 'พืชเศรษฐกิจ', 'ราคาสูง', 'พรีเมียม', 'เมลอน', 'เมล่อน', 'เมล่อน', 'สตรอว์เบอร์รี', 'สตรอเบอร์รี', 'สตอเบอรี', 'สตอเบอร์รี่', 'วาซาบิ', 'หญ้าฝรั่น', 'ส่งออก', 'ห้องแล็บ', 'งานวิจัย', 'premium', 'high-value', 'high value', 'melon', 'strawberr', 'wasabi', 'saffron', 'export', 'precision', /\blab\b/, 'research', 'commercial'],
+        outdoor: ['ระเบียง', 'หน้าบ้าน', 'หลังบ้าน', 'สวน', 'ลานบ้าน', 'ดาดฟ้า', 'นอกบ้าน', 'กลางแจ้ง', 'balcony', 'porch', 'garden', 'yard', 'patio', 'terrace', 'rooftop', 'outdoor', 'outside'],
         indoor: ['คอนโด', 'ห้อง', 'ในบ้าน', 'อพาร์ต', 'หอพัก', /อยู่หอ/, 'โต๊ะ', 'ออฟฟิศ', 'ที่ทำงาน', 'desk', 'office', 'condo', 'apartment', 'indoor', 'bedroom', 'dorm', /\broom\b/, 'inside'],
 
         veg: ['ผัก', 'สลัด', 'คะน้า', 'ผักบุ้ง', 'กวางตุ้ง', 'ไมโครกรีน', 'ต้นอ่อน', 'lettuce', 'salad', 'vegetable', 'veggie', 'kale', 'spinach', 'microgreen'],
@@ -43,6 +44,7 @@
         fert: ['ปุ๋ย', 'fertili', /\bfeed/],
         labour: ['แรงงาน', 'คนงาน', 'ไม่มีคนดูแล', 'ประหยัดแรง', 'labour', 'labor', 'worker', 'manpower'],
         yield: ['ผลผลิต', 'yield', 'harvest'],
+        premium: ['หรู', /เท่(?!า)/, 'สวยๆ', 'สวย ๆ', 'สวยงาม', 'พรีเมียม', 'ไฮเอนด์', 'ดีที่สุด', 'จัดเต็ม', 'ครบๆ', 'premium', 'luxury', 'fancy', 'high-end', 'high end', 'stylish', 'beautiful', 'the best'],
         cheap: ['ราคาถูก', 'ถูกที่สุด', 'ถูกกว่า', 'ถูกลง', 'cheaper', 'ถูกๆ', 'ถูก ๆ', 'ประหยัด', 'ไม่แพง', 'งบน้อย', 'งบจำกัด', 'cheap', 'affordable', 'low cost', 'low-cost', 'inexpensive'],
         unlimited: ['ไม่จำกัดงบ', 'งบไม่จำกัด', 'ไม่อั้น', 'no budget limit', 'unlimited', 'money is no'],
         small: ['เล็ก', 'กะทัดรัด', 'small', 'compact', 'mini', 'tiny'],
@@ -125,6 +127,7 @@
             text: raw,
             score: { disaster: count(txt, W.disaster), farmer: count(txt, W.farmer), household: count(txt, W.household), commercial: count(txt, W.commercial) },
             indoor: hit(txt, W.indoor),
+            outdoor: hit(txt, W.outdoor),
             crop: ['seedling', 'herb', 'flower', 'fruit', 'veg'].find(k => hit(txt, W[k])) || null,
             lowlight: hit(txt, W.lowlight) && !negated(txt, ['ไฟ', 'light', 'led']),
             heat: hit(heatTxt, W.heat),
@@ -144,6 +147,7 @@
             labour: hit(txt, W.labour),
             yield: hit(txt, W.yield),
             cheap: hit(txt, W.cheap),
+            premium: hit(txt, W.premium) && !hit(txt, W.cheap),
             small: hit(txt, W.small), large: hit(txt, W.large),
             wantsCustom: hit(txt, W.custom),
             material: hit(txt, W.noBox) ? 'none' : hit(txt, W.glass) ? 'glass' : hit(txt, W.acrylic) ? 'acrylic' : hit(txt, W.plastic) ? 'plastic' : null,
@@ -161,6 +165,7 @@
             s.boardDetail = hit(txt, W.pi5) ? 'pi5' : hit(txt, W.pi3) ? 'pi3' : hit(txt, W.zero) ? 'zero' : hit(txt, W.pico) ? 'pico' : 'pi4';
         } else if (hit(txt, W.nano)) s.board = 'nano';
         else if (hit(txt, W.uno) || hit(txt, W.arduino)) { s.board = 'uno'; if (hit(txt, W.unoOfficial)) s.boardDetail = 'unoOfficial'; }
+        if (s.boardDetail === 'zero') s.board = 'pi0';
         if (s.board === 'pi4' && hit(txt, W.gb8)) s.boardDetail = s.boardDetail === 'pi5' ? 'pi5-8' : 'pi4-8';
         else if (s.board === 'pi4' && hit(txt, W.gb2) && s.boardDetail === 'pi4') s.boardDetail = 'pi4-2';
         if (s.disease && !hit(txt, ['ไม่มีโรค', 'no disease'])) { /* keep */ } else s.disease = false;
@@ -198,7 +203,7 @@
         const need = x => d.needs.includes(x), no = x => d.not_wanted.includes(x);
         const BOARD = {
             arduino_nano: ['nano'], arduino_uno: ['uno'], arduino_uno_official: ['uno', 'unoOfficial'], esp32: ['esp32'], esp32_cam: ['esp32', 'espcam'],
-            pi_pico: ['pi4', 'pico'], pi_zero: ['pi4', 'zero'], pi3: ['pi4', 'pi3'], pi4: ['pi4', 'pi4'], pi4_2gb: ['pi4', 'pi4-2'], pi4_8gb: ['pi4', 'pi4-8'], pi5: ['pi4', 'pi5'], pi5_8gb: ['pi4', 'pi5-8'],
+            pi_pico: ['pi4', 'pico'], pi_zero: ['pi0', 'zero'], pi3: ['pi4', 'pi3'], pi4: ['pi4', 'pi4'], pi4_2gb: ['pi4', 'pi4-2'], pi4_8gb: ['pi4', 'pi4-8'], pi5: ['pi4', 'pi5'], pi5_8gb: ['pi4', 'pi5-8'],
         };
         const [board, boardDetail] = BOARD[d.board] || [null, null];
         const dims = d.dims_cm.length >= 2 ? [d.dims_cm[0], d.dims_cm[1], d.dims_cm[2] || Math.max(d.dims_cm[0], d.dims_cm[1])] : null;
@@ -209,7 +214,7 @@
         const s = {
             text, source: 'ai', summary: d.summary, aboutPlants: d.about_plants,
             score: { disaster: 0, farmer: 0, household: 0, commercial: 0 },
-            indoor: d.indoor,
+            indoor: d.indoor && !k.outdoor, outdoor: k.outdoor,
             crop: ['veg', 'herb', 'flower', 'fruit', 'seedling'].includes(d.crop) ? d.crop : null,
             lowlight: need('light') && !no('light'), heat: need('heat'), cold: need('cold'), cool: need('cool'),
             dry: need('water'), humid: need('mist') && !no('mist'),
@@ -217,7 +222,7 @@
             precise: d.ai_accuracy === 'high', aiBasic: d.ai_accuracy === 'basic', noCamera: no('camera') || no('ai'),
             phone: need('phone') && !no('phone'), hydro: need('hydro'), nutrients: need('nutrients'), fert: need('fert'),
             labour: need('labour'), yield: need('yield'),
-            cheap: d.cheap, small: d.size === 'small', large: d.size === 'large',
+            cheap: d.cheap, premium: d.premium === true && !d.cheap, small: d.size === 'small', large: d.size === 'large',
             wantsCustom: d.wants_custom,
             material: no('box') ? 'none' : (d.material === 'unspecified' ? null : d.material),
             light: d.light_type === 'unspecified' ? null : d.light_type, dim: d.dimmable,
@@ -246,19 +251,19 @@
     const BOX = {
         'relief-s': { cat: 'disaster', size: 's', does: ['water'] },
         'relief-l': { cat: 'disaster', size: 'l', does: ['mist', 'heat', 'phone'] },
-        'home-tent': { cat: 'household', size: 'l', does: ['light', 'mist', 'water', 'phone'] },
+        'home-tent': { cat: 'household', size: 'l', outdoorOnly: true, does: ['light', 'mist', 'water', 'phone'] },
         'farmer-vision': { cat: 'farmer', size: 'l', does: ['light', 'water', 'fert', 'mist', 'heat', 'camera', 'ai', 'phone'] },
         'hydro-cube': { cat: 'commercial', size: 'm', does: ['hydro', 'light', 'heat', 'mist', 'water', 'phone'] },
         'v4-pro': { cat: 'commercial', size: 'm', does: ['light', 'heat', 'mist', 'water', 'camera', 'ai', 'phone', 'hydro'] },
     };
     // The parts inside each ready-made box (what "adjust part by part" starts from)
     const BOX_PARTS = {
-        'relief-s': { controller: 'nano', parts: ['pump', 'soil'], material: 'plastic', size: [45, 32, 30] },
+        'relief-s': { controller: 'nano', parts: ['pump', 'soil'], material: 'plastic', size: [45, 30, 30] },
         'relief-l': { controller: 'esp32', parts: ['mist', 'dht', 'pump', 'soil'], material: 'plastic', size: [60, 40, 40] },
         'home-tent': { controller: 'esp32', parts: ['ledRB', 'mist', 'pump', 'soil', 'dht'], material: 'plastic', size: [60, 60, 60] },
         'farmer-vision': { controller: 'esp32', parts: ['ledFull', 'pump', 'fert', 'soil', 'dht', 'mist', 'cam', 'ai2'], material: 'none', size: [100, 100, 60] },
-        'hydro-cube': { controller: 'esp32', parts: ['hydro', 'ledRB', 'cooler', 'mist', 'ph', 'level', 'dht'], material: 'acrylic', size: [40, 32, 56] },
-        'v4-pro': { controller: 'pi4', parts: ['ledRB', 'hydro', 'ph', 'level', 'dht', 'cooler', 'mist', 'fan', 'picam', 'ai3'], material: 'acrylic', size: [40, 32, 56] },
+        'hydro-cube': { controller: 'esp32', parts: ['hydro', 'ledRB', 'cooler', 'mist', 'ph', 'level', 'dht'], material: 'acrylic', size: [40, 30, 55] },
+        'v4-pro': { controller: 'pi4', parts: ['ledRB', 'hydro', 'ph', 'level', 'dht', 'cooler', 'mist', 'fan', 'picam', 'ai3'], material: 'acrylic', size: [40, 30, 55] },
     };
     const optionById = id => { for (const k of Object.keys(cat().UC)) { const o = cat().UC[k].options.find(x => x.id === id); if (o) return o; } return null; };
 
@@ -287,7 +292,7 @@
         const candidates = cat().UC[c].options.map(o => o.id).filter(id => BOX[id]);
         // relief boxes are chosen by household size first
         if (c === 'disaster' && s.people) candidates.sort((a, b) => (a === (s.people > 4 ? 'relief-l' : 'relief-s') ? -1 : b === (s.people > 4 ? 'relief-l' : 'relief-s') ? 1 : 0));
-        else if (budget && !s.cheap && !s.budget.implied && !s.budget.fromCheaper) candidates.sort((a, b) => optionById(b).price - optionById(a).price); // best box within budget
+        else if ((budget || s.premium || (s.budget && s.budget.unlimited)) && !s.cheap && !(s.budget && (s.budget.implied || s.budget.fromCheaper))) candidates.sort((a, b) => optionById(b).price - optionById(a).price); // best box within budget
         else candidates.sort((a, b) => optionById(a).price - optionById(b).price);
         for (const id of candidates) {
             const o = optionById(id);
@@ -295,8 +300,12 @@
             const tooDear = budget && o.price > budget;
             const wrongPeople = c === 'disaster' && s.people && ((s.people > 4) !== (id === 'relief-l'));
             const tooBig = s.small && BOX[id].size === 'l', tooSmall = s.large && BOX[id].size === 's';
-            if (!missing.length && !tooDear && !wrongPeople && !tooBig && !tooSmall) { box = { id, o, covers: wanted.filter(n => BOX[id].does.includes(n)) }; break; }
-            if (!near) { near = o; nearWhy = tooDear ? L(`${o.name.en} is over your budget`, `${o.name.th} เกินงบของคุณ`) : tooBig ? L(`${o.name.en} is bigger than you want`, `${o.name.th} ใหญ่เกินกว่าที่คุณต้องการ`) : tooSmall ? L(`${o.name.en} is smaller than you want`, `${o.name.th} เล็กเกินกว่าที่คุณต้องการ`) : missing.length ? L(`${o.name.en} doesn't have: ${missing.map(m => NEED_NAME[m].en.toLowerCase()).join(', ')}`, `${o.name.th} ยังไม่มี: ${missing.map(m => NEED_NAME[m].th).join(', ')}`) : null; }
+            const notIndoors = BOX[id].outdoorOnly && !s.outdoor; // open mesh walls + misting would wet a room
+            if (!missing.length && !tooDear && !wrongPeople && !tooBig && !tooSmall && !notIndoors) { box = { id, o, covers: wanted.filter(n => BOX[id].does.includes(n)) }; break; }
+            if (!near) { near = o; nearWhy = notIndoors ? L(`${o.name.en} is an open mesh tent with misting — made for a balcony or outdoors, not inside the house`, `${o.name.th} เป็นเต็นท์ตาข่ายเปิดโล่งและมีพ่นหมอก เหมาะกับระเบียงหรือนอกบ้าน ไม่เหมาะวางในบ้าน`) : tooDear ? L(`${o.name.en} is over your budget`, `${o.name.th} เกินงบของคุณ`) : tooBig ? L(`${o.name.en} is bigger than you want`, `${o.name.th} ใหญ่เกินกว่าที่คุณต้องการ`) : tooSmall ? L(`${o.name.en} is smaller than you want`, `${o.name.th} เล็กเกินกว่าที่คุณต้องการ`) : missing.length ? L(`${o.name.en} doesn't have: ${missing.map(m => NEED_NAME[m].en.toLowerCase()).join(', ')}`, `${o.name.th} ยังไม่มี: ${missing.map(m => NEED_NAME[m].th).join(', ')}`) : null; }
+        }
+        if (box && !s.cheap && ((s.budget && s.budget.unlimited) || (budget && budget >= box.o.price * 2.5)) && kit.total > box.o.price * 1.3) {
+            return { route: 'kit', cat: c, s, kit, near: box.o, nearWhy: L(`Your budget allows more than ${box.o.name.en} (${baht(box.o.price)}), so here is a fuller set`, `งบของคุณทำได้มากกว่า ${box.o.name.th} (${baht(box.o.price)}) จึงจัดชุดที่ครบกว่าให้`) };
         }
         if (box) return { route: 'box', cat: c, s, box, kit };
         return { route: 'kit', cat: c, s, kit, near, nearWhy };
@@ -353,19 +362,40 @@
         add('dht', L('Reads heat and humidity so everything runs at the right time', 'วัดอุณหภูมิและความชื้น ให้ทุกอย่างทำงานถูกเวลา'), false);
         // You told us little beyond where and what: give the full standard set for this kind of grower
         // (it's trimmed to the budget below; "cheap" keeps it lean)
-        if (s.needs.size <= 1 && !s.cheap && !(s.budget && (s.budget.implied || s.budget.fromCheaper))) {
+        if ((s.needs.size <= 1 || s.premium || (s.budget && (s.budget.unlimited || s.budget.amount >= 3000))) && !s.cheap && !(s.budget && (s.budget.implied || s.budget.fromCheaper))) {
             const std = C.UC[c].preset.parts.filter(id => !(s.noCamera && /^(cam|picam|ai\d)$/.test(id)));
             std.forEach(id => {
                 if (/^ai\d$/.test(id) && [...parts.keys()].some(x => /^ai\d$/.test(x))) return;
-                add(id, L(`Part of our standard ${C.UC[c].shortName.en} set`, `อยู่ในชุดมาตรฐานสำหรับ${C.UC[c].shortName.th}`), false);
+                // say what the part does for them, not just "it's in the set"
+                const p = C.PARTS.find(x => x.id === id);
+                add(id, p ? p.why : L(`Part of our standard ${C.UC[c].shortName.en} set`, `อยู่ในชุดมาตรฐานสำหรับ${C.UC[c].shortName.th}`), false);
             });
+        }
+
+        const amount = s.budget && s.budget.amount;
+        const rich = !s.cheap && (s.premium || (s.budget && s.budget.unlimited) || amount >= 3000);
+        if (rich) {
+            if (parts.has('ledRB') && s.light !== 'redblue') { parts.delete('ledRB'); parts.set('ledFull', { why: L('Full-spectrum light: richer leaf colour and better growth', 'แสงครบสเปกตรัม ใบสีสวย โตดีกว่า'), core: false }); }
+            if (!parts.has('ledFull') && !parts.has('ledRB')) add('ledFull', L('Full-spectrum light: richer leaf colour and better growth', 'แสงครบสเปกตรัม ใบสีสวย โตดีกว่า'), false);
+            add('lux', L('Turns the light on by itself when it gets dim', 'เปิดไฟเองเมื่อแสงน้อย'), false);
+            const roomyCam = (s.budget && s.budget.unlimited) || amount >= 4000 || (s.premium && !s.budget);
+            if (!s.noCamera && ![...parts.keys()].some(x => /^ai\d$/.test(x))) {
+                if (roomyCam) { add('picam', L('Sharp photos of your plants, viewable from your phone', 'ภาพต้นไม้คมชัด ดูผ่านมือถือได้'), false); add('ai3', L('Our most accurate disease check (90%)', 'ตรวจโรคแม่นที่สุด (90%)'), false); }
+                else { add('cam', L('See your plants from your phone', 'ดูต้นไม้ผ่านมือถือได้'), false); add(s.precise ? 'ai3' : 'ai2', L('Warns you about leaf disease early', 'แจ้งเตือนโรคที่ใบตั้งแต่ระยะแรก'), false); }
+            }
+            if (!parts.has('fan') && !parts.has('cooler')) add('fan', L('Moves the air so mould does not grow in the box', 'อากาศถ่ายเท ลดเชื้อราในกล่อง'), false);
         }
 
         // controller
         let controller, cWhy;
         const wantsArduino = s.board === 'nano' || s.board === 'uno';
         if (s.board) { controller = s.board; cWhy = L('The board you asked for', 'บอร์ดที่คุณเลือกไว้'); }
-        else if (parts.has('picam') || parts.has('ai3') && c === 'commercial') { controller = 'pi4'; cWhy = L('Needed for the Pi camera and the most accurate AI', 'จำเป็นสำหรับกล้อง Pi และ AI ที่แม่นยำที่สุด'); }
+        else if (parts.has('picam') || parts.has('ai3') && c === 'commercial') {
+            // the full Pi 4 for premium / roomy budgets, the ฿650 Pi Zero 2 W otherwise
+            const roomy = s.premium || !s.budget || s.budget.unlimited || s.budget.amount >= 5000;
+            controller = roomy ? 'pi4' : 'pi0';
+            cWhy = roomy ? L('Needed for the Pi camera and the most accurate AI', 'จำเป็นสำหรับกล้อง Pi และ AI ที่แม่นยำที่สุด') : L('A low-cost Raspberry Pi that still runs the Pi camera and AI Model 3', 'Raspberry Pi รุ่นประหยัด ยังใช้กล้อง Pi และ AI Model 3 ได้');
+        }
         else if (s.phone || parts.has('cam') || ai) { controller = 'esp32'; cWhy = s.phone ? L('Recommended because you want to check it from your phone (Wi-Fi)', 'แนะนำเพราะคุณอยากดูผ่านมือถือ (มี Wi-Fi)') : L('Runs the camera and sends alerts over Wi-Fi', 'ควบคุมกล้องและส่งแจ้งเตือนผ่าน Wi-Fi'); }
         else if (s.cheap || (s.budget && s.budget.amount < 600)) { controller = 'nano'; cWhy = L('The lowest-cost board that runs the basics', 'บอร์ดราคาประหยัดที่สุด ทำงานพื้นฐานได้ครบ'); }
         else { controller = 'esp32'; cWhy = L('Lets you check and control it from your phone', 'ดูสถานะและสั่งงานผ่านมือถือได้'); }
@@ -378,13 +408,19 @@
         // enclosure
         const base = C.UC[c].preset;
         let material = s.material || base.material, mWhy = null;
+        if (!s.material && rich && material !== 'acrylic' && c !== 'farmer' && c !== 'disaster') { material = 'acrylic'; mWhy = L('A clear acrylic box shows the plants off', 'กล่องอะคริลิกใส โชว์ต้นไม้ได้สวย'); }
         if (s.material) mWhy = L('The material you asked for', 'วัสดุที่คุณเลือกไว้');
         let size = s.size ? [...s.size] : [...base.size];
-        if (!s.size && material !== 'none') { const k = s.small ? 0.75 : s.large ? 1.4 : 1; size = size.map(v => Math.round(v * k)); }
-        let cfg = { controller, parts, material, size, cWhy, mWhy };
+        if (!s.size) { const k = s.small ? 0.75 : s.large ? 1.4 : 1; size = size.map(v => Math.max(10, Math.round(v * k / 5) * 5)); } // whole 5 cm steps keep the box price in whole baht
+        const indoorish = s.indoor || (c === 'household' && !s.outdoor);
+        if (indoorish && material === 'none' && parts.has('mist')) {
+            if (parts.get('mist').core) { material = 'acrylic'; mWhy = L('Misting indoors has to happen inside a closed box so the room stays dry', 'พ่นหมอกในบ้านต้องอยู่ในกล่องปิด บ้านจะได้ไม่เปียก'); }
+            else parts.delete('mist');
+        }
+        let cfg = { controller, parts, material, size, cWhy, mWhy, indoorish };
         cfg = fitBudget(cfg, s, notes);
         // a Raspberry Pi is only worth it for the Pi camera / AI Model 3; without them an ESP32 does the job
-        if (cfg.controller === 'pi4' && !cfg.parts.has('picam') && !cfg.parts.has('ai3') && s.board !== 'pi4') {
+        if ((cfg.controller === 'pi4' || cfg.controller === 'pi0') && !cfg.parts.has('picam') && s.board !== 'pi4' && s.board !== 'pi0') {
             cfg.controller = 'esp32';
             cfg.cWhy = L('Wi-Fi and app control — a Raspberry Pi isn\'t needed for these parts', 'ควบคุมผ่านแอปด้วย Wi-Fi ชิ้นส่วนชุดนี้ไม่จำเป็นต้องใช้ Raspberry Pi');
         }
@@ -413,10 +449,18 @@
         if (!budget || kitTotal(c) <= budget) return c;
         const start = kitTotal(c);
         const origMaterial = c.material, origWhy = c.mWhy;
-        if (c.material !== 'none' && !s.material) { c.material = 'none'; c.mWhy = L('No enclosure keeps it within budget', 'ไม่ใส่กล่องเพื่อให้อยู่ในงบ'); }
+        if (c.controller === 'pi4' && s.board !== 'pi4') { c.controller = 'pi0'; c.cWhy = L('The ฿650 Raspberry Pi Zero 2 W keeps the Pi camera and AI within budget', 'Raspberry Pi Zero 2 W (฿650) ยังใช้กล้อง Pi และ AI ได้ และอยู่ในงบ'); }
+        const mistNeedsBox = c.indoorish && c.parts.has('mist') && c.parts.get('mist').core;
+        if ((c.material === 'acrylic' || c.material === 'glass') && !s.material) {
+            c.material = 'plastic'; c.mWhy = L('A plastic box keeps it within budget', 'กล่องพลาสติกทำให้อยู่ในงบ');
+        }
+        if (kitTotal(c) > budget && c.material !== 'none' && !s.material && !mistNeedsBox) {
+            c.material = 'none'; c.mWhy = L('No enclosure keeps it within budget', 'ไม่ใส่กล่องเพื่อให้อยู่ในงบ');
+            if (c.indoorish) c.parts.delete('mist'); // no misting in an open room
+        }
         const extras = [...c.parts.entries()].filter(([, v]) => !v.core).map(([id]) => id).sort((a, b) => priceOf(b) - priceOf(a));
         const piNoLongerNeeded = () => {
-            if (c.controller === 'pi4' && !c.parts.has('picam') && !c.parts.has('ai3') && s.board !== 'pi4') {
+            if ((c.controller === 'pi4' || c.controller === 'pi0') && !c.parts.has('picam') && s.board !== 'pi4' && s.board !== 'pi0') {
                 c.controller = 'esp32';
                 c.cWhy = L('Wi-Fi and app control — a Raspberry Pi isn\'t needed for these parts', 'ควบคุมผ่านแอปด้วย Wi-Fi ชิ้นส่วนชุดนี้ไม่จำเป็นต้องใช้ Raspberry Pi');
             }
@@ -424,17 +468,20 @@
         for (const id of extras) {
             if (kitTotal(c) <= budget) break;
             if (id === 'dht' && ['fan', 'cooler', 'mist', 'heater'].some(x => c.parts.has(x))) continue;
-            c.parts.delete(id);
+            if (id === 'picam' && [...c.parts.keys()].some(x => /^ai\d$/.test(x))) { const v = c.parts.get('picam'); c.parts.delete('picam'); c.parts.set('cam', { why: v.why, core: v.core }); }
+            else c.parts.delete(id);
             piNoLongerNeeded(); // dropping the Pi camera / Model 3 frees the ฿1,500 board for other parts
         }
         const swap = (from, to, why) => { if (kitTotal(c) > budget && c.parts.has(from)) { const v = c.parts.get(from); c.parts.delete(from); c.parts.set(to, { why: why || v.why, core: v.core }); } };
         swap('ledFull', 'ledRB'); swap('cooler', 'fan'); swap('picam', 'cam');
         swap('ai3', 'ai2', L('Model 2 keeps it within budget', 'Model 2 ทำให้อยู่ในงบ')); swap('ai2', 'ai1', L('Model 1 keeps it within budget', 'Model 1 ทำให้อยู่ในงบ'));
         swap('npk', 'tds');
-        if (kitTotal(c) > budget && c.controller === 'pi4' && !c.parts.has('picam') && s.board !== 'pi4') { c.controller = 'esp32'; c.cWhy = L('ESP32 keeps it within budget and still has Wi-Fi', 'ESP32 ทำให้อยู่ในงบ และยังมี Wi-Fi'); }
+        if (kitTotal(c) > budget && (c.controller === 'pi4' || c.controller === 'pi0') && !c.parts.has('picam') && s.board !== 'pi4') { c.controller = 'esp32'; c.cWhy = L('ESP32 keeps it within budget and still has Wi-Fi', 'ESP32 ทำให้อยู่ในงบ และยังมี Wi-Fi'); }
         if (kitTotal(c) > budget && c.controller === 'esp32' && !s.phone && !c.parts.has('cam') && !s.board && ![...c.parts.keys()].some(id => /^ai/.test(id))) { c.controller = 'nano'; c.cWhy = L('Arduino Nano keeps it within budget', 'Arduino Nano ทำให้อยู่ในงบ'); }
         // put the enclosure back if it still fits
-        if (c.material === 'none' && origMaterial !== 'none' && kitTotal(c) + boxCost(origMaterial, c.size) <= budget) { c.material = origMaterial; c.mWhy = origWhy; }
+        if (c.material !== origMaterial && origMaterial !== 'none' && kitTotal(c) - boxCost(c.material, c.size) + boxCost(origMaterial, c.size) <= budget) { c.material = origMaterial; c.mWhy = origWhy; }
+        else if (c.material === 'none' && origMaterial !== 'none' && kitTotal(c) + boxCost('plastic', c.size) <= budget) { c.material = 'plastic'; c.mWhy = L('A plastic box keeps it within budget', 'กล่องพลาสติกทำให้อยู่ในงบ'); }
+        if (c.indoorish && c.material === 'none') c.parts.delete('mist');
         const end = kitTotal(c);
         if (end < start) notes.push(L(`Trimmed to fit your ${baht(budget)} budget (saved ${baht(start - end)}).`, `ปรับให้เข้างบ ${baht(budget)} แล้ว (ลดไป ${baht(start - end)})`));
         if (end > budget) notes.push(L(`Still ${baht(end - budget)} over budget — everything left fixes a problem you mentioned.`, `ยังเกินงบ ${baht(end - budget)} เพราะทุกชิ้นที่เหลือแก้ปัญหาที่คุณบอกมา`));
@@ -446,7 +493,7 @@
         const f = {}, why = {}, notes = [];
         const set = (k, i, w) => { f[k] = i; why[k] = w; };
         // board
-        const bd = { nano: 1, uno: 2, unoOfficial: 3, esp32: 4, espcam: 5, pico: 6, zero: 8, pi3: 10, 'pi4-2': 11, pi4: 12, 'pi4-8': 13, pi5: 14, 'pi5-8': 15 };
+        const bd = { nano: 1, uno: 2, unoOfficial: 3, esp32: 4, espcam: 5, pico: 6, zero: 8, pi0: 8, pi3: 10, 'pi4-2': 11, pi4: 12, 'pi4-8': 13, pi5: 14, 'pi5-8': 15 };
         const wantsAI = s.disease || s.ai;
         if (s.boardDetail && bd[s.boardDetail]) set('microcontroller', bd[s.boardDetail], L('The board you asked for', 'บอร์ดที่คุณเลือกไว้'));
         else if (s.board) set('microcontroller', bd[s.board], L('The board you asked for', 'บอร์ดที่คุณเลือกไว้'));
@@ -535,6 +582,8 @@
         L('Cheaper please', 'ขอถูกกว่านี้'), L('Add a camera with AI', 'เพิ่มกล้องกับ AI'),
         L('No box needed', 'ไม่เอากล่อง'), L('I want to check it from my phone', 'อยากดูผ่านมือถือ'),
     ];
+    const GROUP_ICON = { Light: 'fa-lightbulb', Water: 'fa-droplet', Climate: 'fa-temperature-half', Sensors: 'fa-gauge-high', Camera: 'fa-camera', AI: 'fa-brain' };
+    const partIcon = id => { const p = cat().PARTS.find(x => x.id === id); return GROUP_ICON[p && p.group] || 'fa-puzzle-piece'; };
     const GROUP_NAME = { Light: L('Light', 'ไฟ'), Water: L('Water', 'น้ำ'), Climate: L('Climate', 'อากาศ'), Sensors: L('Sensors', 'เซนเซอร์'), Camera: L('Camera', 'กล้อง'), AI: L('AI', 'AI') };
 
     function mount() {
@@ -641,6 +690,18 @@
         } finally { clearTimeout(timer); }
     }
 
+    // a typed answer to "what's your budget?": "2500", "฿3,000", "3 พัน", "5k", "ไม่จำกัด"
+    function typedBudget(text) {
+        const r = read(text).budget;
+        if (r && (r.amount || r.unlimited) && !r.implied) return r;
+        const m = String(text).trim().match(/^[฿\s]*(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*(k|พัน|หมื่น|บาท|baht|฿)?\s*$/i);
+        if (!m) return null;
+        let v = parseFloat(m[1].replace(/,/g, ''));
+        const u = (m[2] || '').toLowerCase();
+        if (u === 'k' || u === 'พัน') v *= 1000; else if (u === 'หมื่น') v *= 10000;
+        return v >= 50 ? { amount: Math.round(v) } : null;
+    }
+
     const CHEAPER = /(ถูกกว่า|ถูกลง|ราคาต่ำกว่า|ประหยัดกว่า|ลดงบ|cheaper|less expensive|lower price|cut the cost)/i;
     let busy = false;
     async function send(preset) {
@@ -668,7 +729,11 @@
         // just "cheaper please": keep what we already understood and only lower the budget (no AI call)
         const rest = text.replace(CHEAPER, '').replace(/[\s.!?,ๆ]|ครับ|ค่ะ|คะ|นะ|หน่อย|ขอ|อีก|please|a bit|make it|can you/gi, '');
         const onlyCheaper = prev && prev.r && prev.r.s && prev.r.route !== 'ask' && CHEAPER.test(text) && rest.length < 8;
-        if (onlyCheaper) {
+        // answering our budget question by typing a number ("2500", "งบ 3 พัน"): no AI call needed
+        const typed = prev && prev.mode === 'budget' && text.length <= 30 ? typedBudget(text) : null;
+        if (typed && (typed.amount || typed.unlimited)) {
+            s = Object.assign({}, prev.r.s, { needs: new Set(prev.r.s.needs), budget: typed, source: 'budget' });
+        } else if (onlyCheaper) {
             s = Object.assign({}, prev.r.s, { needs: new Set(prev.r.s.needs), source: 'adjust' });
         } else {
             const res = await askAI(text, history);
@@ -681,11 +746,13 @@
             if (was > 0) { const cap = Math.max(100, Math.round(was * 0.8 / 10) * 10); if (!s.budget || s.budget.unlimited || s.budget.amount > cap) s.budget = { amount: cap, fromCheaper: true }; s.cheap = true; }
         }
         turn.r = decide(s);
+        // no budget yet: ask for it first (each option shows what it would get), then recommend
+        if (turn.r.route !== 'ask' && !s.budget) { turn.r = { route: 'budget', s, cat: turn.r.cat, wouldBe: turn.r.route }; }
         last = turn.r;
         setupEdit(turn);
         renderTurn(turn);
         scrollToTurn(node);
-        el.querySelector('#advisorQuick').innerHTML = turn.r.route === 'ask' ? '' : `<span>${esc(t('Ask more:', 'ถามต่อ:'))}</span>${FOLLOW_UPS.map((f, i) => `<button type="button" class="boxai-chip" data-adv="follow" data-i="${i}">${esc(T(f))}</button>`).join('')}`;
+        el.querySelector('#advisorQuick').innerHTML = turn.r.route === 'ask' || turn.r.route === 'budget' ? '' : `<span>${esc(t('Ask more:', 'ถามต่อ:'))}</span>${FOLLOW_UPS.map((f, i) => `<button type="button" class="boxai-chip" data-adv="follow" data-i="${i}">${esc(T(f))}</button>`).join('')}`;
         ta.placeholder = t('Ask a follow-up or ask for a change…', 'ถามต่อ หรือขอปรับ เช่น "ขอถูกกว่านี้" "เพิ่มกล้อง"…');
         el.querySelector('[data-adv="reset"]').hidden = false;
         btn.disabled = false;
@@ -705,6 +772,7 @@
     function setupEdit(turn) {
         const r = turn.r;
         turn.mode = r.route;
+        if (r.route === 'budget') { turn.edit = null; return; }
         if (r.route === 'box' && BOX_PARTS[r.box.id]) {
             const b = BOX_PARTS[r.box.id];
             turn.edit = { cat: r.cat, controller: b.controller, parts: new Set(b.parts), material: b.material, size: [...b.size], why: {}, fromBox: r.box.o };
@@ -738,6 +806,7 @@
 
     // where the reading came from: the AI (with its one-line summary) or the keyword back-up
     function sourceNote(s) {
+        if (s.source === 'budget') return `<p class="boxai-source ai"><i class="fas fa-coins"></i> <span><b>${esc(t('Got your budget', 'ได้งบประมาณแล้ว'))}</b> — ${esc(t('here is the best set for it', 'นี่คือชุดที่ดีที่สุดในงบนี้'))}</span></p>`;
         if (s.source === 'adjust') return `<p class="boxai-source ai"><i class="fas fa-arrow-down-wide-short"></i> <span><b>${esc(t('Same needs, lower budget', 'ความต้องการเดิม งบต่ำลง'))}</b> — ${esc(t('we kept what you asked for and cut the rest first', 'คงสิ่งที่คุณต้องการไว้ แล้วตัดส่วนอื่นออกก่อน'))}</span></p>`;
         if (s.source === 'ai') {
             return `<p class="boxai-source ai"><i class="fas fa-wand-magic-sparkles"></i> <span><b>${esc(t('Read by AI', 'AI อ่านแล้ว'))}</b>${s.summary ? ` — “${esc(s.summary)}”` : ''}</span></p>`;
@@ -761,6 +830,7 @@
         if (s.material) pills.push(t(`Box: ${s.material}`, `กล่อง: ${{ none: 'ไม่มี', glass: 'กระจก', acrylic: 'อะคริลิก', plastic: 'พลาสติก' }[s.material]}`));
         if (s.size) pills.push(`${s.size.join('×')} ${t('cm', 'ซม.')}`);
         else if (s.small) pills.push(t('Small box', 'กล่องเล็ก'));
+        if (s.premium) pills.push(t('Premium', 'สไตล์พรีเมียม'));
         else if (s.large) pills.push(t('Large box', 'กล่องใหญ่'));
         if (s.budget) pills.push(s.budget.unlimited ? t('No budget limit', 'ไม่จำกัดงบ') : s.budget.implied ? t(`Low budget (about ${baht(s.budget.amount)})`, `งบประหยัด (ราว ${baht(s.budget.amount)})`) : s.budget.fromCheaper ? t(`Cheaper: up to ${baht(s.budget.amount)}`, `ถูกลง: ไม่เกิน ${baht(s.budget.amount)}`) : t(`Budget up to ${baht(s.budget.amount)}`, `งบไม่เกิน ${baht(s.budget.amount)}`));
         return pills.length ? `<div class="boxai-understood"><span>${esc(t('What we understood:', 'สิ่งที่ผู้ช่วยเข้าใจ:'))}</span>${pills.map(p => `<b>${esc(p)}</b>`).join('')}</div>` : '';
@@ -785,6 +855,7 @@
 
     function renderBody(turn) {
         const r = turn.r;
+        if (r.route === 'budget') return understood(r.s, r.cat) + budgetQuestion(turn);
         if (r.route === 'ask') {
             const off = r.s.aboutPlants === false;
             return `${understood(r.s, null)}<div class="boxai-card">${off ? `<p>${esc(t('That doesn\'t look like it\'s about growing plants. Tell us what you want to grow, where, and your budget.', 'ข้อความนี้ดูไม่เกี่ยวกับการปลูกต้นไม้ ลองเล่าว่าอยากปลูกอะไร ที่ไหน งบเท่าไร'))}</p>` : ''}
@@ -796,7 +867,7 @@
                     [L('High-value crops', 'พืชมูลค่าสูง'), 'พืชมูลค่าสูง']].map(([lab, add]) => `<button type="button" class="boxai-chip" data-adv="answer" data-add="${esc(add)}">${esc(T(lab))}</button>`).join('')}
                 </div></div>`;
         }
-        const head = understood(r.s, r.cat);
+        const head = understood(r.s, r.cat) + budgetAsk(turn);
         if (turn.mode === 'box') {
             const o = r.box.o;
             const covers = r.box.covers.map(n => T(NEED_NAME[n]));
@@ -813,6 +884,7 @@
                         </ul>
                     </div>
                 </div>
+                ${addonsHtml(turn)}
                 ${overNote(o.price, r.s)}
                 <div class="boxai-actions">
                     <button type="button" class="boxai-btn ghost" data-adv="tweak"><i class="fas fa-sliders"></i> ${esc(t('Adjust part by part here', 'ปรับทีละชิ้นตรงนี้'))}</button>
@@ -842,10 +914,10 @@
             <div class="boxai-row">
                 <label class="boxai-field">${esc(t('Controller', 'บอร์ดควบคุม'))}
                     <select data-ed="controller">${C.CONTROLLERS.map(c => opt(c.id, `${T(c.name)} (${baht(c.price)})`, c.id === e.controller)).join('')}</select></label>
-                <small>${esc(reason(e.controller))}</small>
+                ${reason(e.controller) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(e.controller))}</em>` : ''}
             </div>
             <ul class="boxai-lines">
-                ${[...e.parts].map(id => `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span><b>${esc(partName(id))}</b><small>${esc(reason(id))}</small></span></label><span>${baht(priceOf(id))}</span></li>`).join('')}
+                ${[...e.parts].map(id => `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span>${baht(priceOf(id))}</span></li>`).join('')}
             </ul>
             <label class="boxai-field">${esc(t('Add a part', 'เพิ่มชิ้นส่วน'))}
                 <select data-ed="add"><option value="">${esc(t('+ choose a part…', '+ เลือกชิ้นส่วน…'))}</option>
@@ -858,6 +930,8 @@
             </div>
             ${sizeRow}
             ${notesHtml(r.kit.notes || [])}
+            ${(r.s.indoor || (e.cat === 'household' && !r.s.outdoor)) && e.material === 'none' && e.parts.has('mist') ? `<p class="boxai-budget over"><i class="fas fa-triangle-exclamation"></i> ${esc(t('Misting without a closed box will wet the room — add a box or untick misting.', 'พ่นหมอกโดยไม่มีกล่องปิดในบ้าน น้ำจะเปียกพื้น ควรเพิ่มกล่องหรือเอาพ่นหมอกออก'))}</p>` : ''}
+            ${addonsHtml(turn)}
             ${overNote(total, r.s)}
             <div class="boxai-actions">
                 <button type="button" class="boxai-btn ghost" data-adv="kit"><i class="fas fa-up-right-from-square"></i> ${esc(t('Open in the full builder', 'เปิดในหน้าปรับแต่งเต็ม'))}</button>
@@ -875,7 +949,7 @@
             const sel = customSel(k);
             if (!sel) return '';
             const options = [...sel.options].map((o, i) => opt(i, o.textContent.trim(), (e.f[k] || 0) === i, k === 'ai' && ((i > 0 && board === 0) || (i === 3 && arduino)))).join('');
-            const why = e.why[k] ? `<small>${esc(T(e.why[k]))}</small>` : '';
+            const why = e.why[k] ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(T(e.why[k]))}</em>` : '';
             return `<div class="boxai-row"><label class="boxai-field">${esc(T(CUSTOM_KEYS[k]))}<select data-ed="cf" data-k="${k}">${options}</select></label>${why}</div>`;
         }).join('');
         const sizeRow = e.f.boxMaterial ? `<div class="boxai-dims">${[t('W', 'กว้าง'), t('L', 'ยาว'), t('H', 'สูง')].map((lab, i) => `<label>${esc(lab)}<input type="number" min="1" max="1000" step="1" data-ed="dim" data-i="${i}" value="${e.size[i]}"></label>`).join('')}<span>${esc(t('cm', 'ซม.'))}</span></div>` : '';
@@ -889,6 +963,118 @@
                 <button type="button" class="boxai-btn ghost" data-adv="custom"><i class="fas fa-up-right-from-square"></i> ${esc(t('Open the Custom form', 'เปิดฟอร์ม Custom'))}</button>
                 <button type="button" class="boxai-btn" data-adv="order-custom"><i class="fas fa-bag-shopping"></i> ${esc(t('Order this', 'สั่งชุดนี้'))} · ${baht(total)}</button>
             </div></div>`;
+    }
+
+
+    // ---- "Want to add anything?": upgrades not in the kit yet, each with its price and what it gives you
+    function addonList(turn) {
+        const e = turn.edit, has = id => e.parts.has(id), sig = turn.r.s;
+        const arduino = e.controller === 'nano' || e.controller === 'uno';
+        const isPi = e.controller === 'pi4' || e.controller === 'pi0';
+        const hasAI = [...e.parts].some(id => /^ai\d$/.test(id));
+        const list = [];
+        const push = (key, label, plus, gain, rank) => list.push({ key, label, plus, gain, rank });
+        if (!hasAI && !sig.noCamera) push('ai', L('Camera + AI plant disease check (Model 2, 75%)', 'กล้อง + AI ตรวจโรคพืช (Model 2 แม่นยำ 75%)'),
+            (has('cam') || has('picam') ? 0 : priceOf('cam')) + priceOf('ai2'),
+            L('Photographs the leaves every day and warns you before a disease spreads; you can see your plants from your phone', 'ถ่ายใบทุกวัน แจ้งเตือนก่อนโรคลามทั้งต้น และดูต้นไม้ผ่านมือถือได้'), sig.disease || sig.premium ? 0 : 3);
+        if ((has('ai1') || has('ai2')) && !arduino) push('ai3', L('Upgrade to AI Model 3 (90% accuracy)', 'อัปเกรดเป็น AI Model 3 (แม่นยำ 90%)'),
+            priceOf('ai3') - priceOf(has('ai1') ? 'ai1' : 'ai2'),
+            L('Our most accurate disease detection — fewer false alarms, catches disease earlier', 'ตรวจโรคแม่นที่สุด แจ้งเตือนผิดน้อยลง เจอโรคได้เร็วขึ้น'), sig.precise || sig.premium ? 1 : 6);
+        if (!has('ledFull')) push('ledFull', has('ledRB') ? L('Upgrade to a full-spectrum LED panel', 'อัปเกรดเป็นแผงไฟ LED ฟูลสเปกตรัม') : L('Full-spectrum LED panel', 'แผงไฟ LED ฟูลสเปกตรัม'),
+            priceOf('ledFull') - (has('ledRB') ? priceOf('ledRB') : 0),
+            L('Light like the sun: richer leaf colour and steady growth even with little sun', 'แสงเหมือนแดดจริง ใบสีสวย โตดีแม้แดดน้อย'), sig.premium || sig.lowlight ? 1 : 4);
+        if (e.material === 'none') push('box', L('Clear acrylic box', 'กล่องอะคริลิกใส'), boxCost('acrylic', e.size),
+            L('Shows the plants off, keeps out dust and insects, and holds the humidity in', 'โชว์ต้นไม้ได้สวย กันฝุ่นและแมลง และเก็บความชื้นไว้ที่ต้นไม้'), sig.premium ? 0 : 7);
+        if (!has('pump') && !has('hydro')) push('pump', L('Automatic watering pump + soil sensor', 'ปั๊มรดน้ำอัตโนมัติ + เซนเซอร์ความชื้นดิน'), priceOf('pump') + (has('soil') ? 0 : priceOf('soil')),
+            L('Waters by itself when the soil is dry — no more forgotten plants', 'รดน้ำเองเมื่อดินแห้ง ไม่ต้องกลัวลืมรดน้ำ'), 2);
+        const indoorish = sig.indoor || (e.cat === 'household' && !sig.outdoor);
+        if (!has('mist') && !(indoorish && e.material === 'none')) push('mist', L('Misting system', 'ระบบพ่นหมอก'), priceOf('mist'),
+            L('Keeps the air humid: glossy leaves, ideal for ornamental and tropical plants', 'เพิ่มความชื้นในอากาศ ใบเงาสวย เหมาะกับไม้ประดับและไม้เขตร้อน'), 5);
+        if (!has('lux') && (has('ledRB') || has('ledFull'))) push('lux', L('Light sensor', 'เซนเซอร์วัดแสง'), priceOf('lux'),
+            L('Turns the light on only when it gets dim and saves power', 'เปิดไฟเองเมื่อแสงน้อย ประหยัดไฟ'), 8);
+        if (!has('level') && (has('pump') || has('mist') || has('hydro'))) push('level', L('Water level sensor', 'เซนเซอร์ระดับน้ำ'), priceOf('level'),
+            L('Warns you before the water tank runs dry', 'เตือนก่อนน้ำในถังหมด'), 8);
+        if (!has('fert')) push('fert', L('Automatic fertilizer doser', 'ชุดให้ปุ๋ยอัตโนมัติ'), priceOf('fert'),
+            L('Feeds on a schedule so plants grow faster without you remembering', 'ให้ปุ๋ยตามเวลา ต้นโตไวโดยไม่ต้องจำ'), 9);
+        if (!has('fan') && !has('cooler')) push('fan', L('Air-flow fan', 'พัดลมระบายอากาศ'), priceOf('fan'),
+            L('Moves the air so mould doesn\'t grow in a closed box', 'อากาศถ่ายเท ลดเชื้อราในกล่องปิด'), e.material !== 'none' ? 4 : 9);
+        if (has('hydro') && !has('tds')) push('tds', L('TDS nutrient sensor', 'เซนเซอร์ TDS วัดธาตุอาหารในน้ำ'), priceOf('tds'),
+            L('Tells you when the nutrient water is too weak or too strong', 'บอกว่าน้ำผสมธาตุอาหารเจือจางหรือเข้มข้นเกินไป'), 6);
+        if (arduino) push('esp32', L('Upgrade the board to ESP32 (Wi-Fi)', 'อัปเกรดบอร์ดเป็น ESP32 (มี Wi-Fi)'), priceOf('esp32') - priceOf(e.controller),
+            L('Check and control everything from your phone', 'ดูสถานะและสั่งงานผ่านมือถือได้'), 3);
+        if (has('cam') && isPi && !has('picam')) push('picam', L('Upgrade to the Raspberry Pi camera', 'อัปเกรดเป็นกล้อง Raspberry Pi'), priceOf('picam') - priceOf('cam'),
+            L('Sharper photos, so the AI spots disease more reliably', 'ภาพคมชัดขึ้น AI ตรวจโรคได้แม่นขึ้น'), sig.premium ? 2 : 7);
+        return list.sort((a, b) => a.rank - b.rank).slice(0, 5);
+    }
+
+    function addonsHtml(turn) {
+        const list = addonList(turn);
+        if (!list.length) return '';
+        return `<div class="boxai-addons">
+            <p class="boxai-addons-q"><i class="fas fa-circle-plus"></i> ${esc(t('Want to add anything? Here is what each one gives you:', 'อยากเพิ่มอะไรไหมครับ? แต่ละอย่างได้อะไรเพิ่ม:'))}</p>
+            ${list.map(a => `<div class="boxai-addon"><div><b>${esc(T(a.label))}</b><small>${esc(T(a.gain))}</small></div>
+                <button type="button" class="boxai-chip boxai-add" data-adv="addon" data-a="${a.key}">+ ${baht(a.plus)}</button></div>`).join('')}
+        </div>`;
+    }
+
+    function applyAddon(turn, key) {
+        if (turn.mode === 'box') turn.mode = 'kit'; // a ready-made box + extras becomes a kit built from its parts
+        const e = turn.edit, add = id => e.parts.add(id);
+        const dropAI = () => [...e.parts].filter(id => /^ai\d$/.test(id)).forEach(id => e.parts.delete(id));
+        if (key === 'ai') { if (!e.parts.has('cam') && !e.parts.has('picam')) add('cam'); dropAI(); add('ai2'); }
+        else if (key === 'ai3') { dropAI(); add('ai3'); }
+        else if (key === 'ledFull') { e.parts.delete('ledRB'); add('ledFull'); }
+        else if (key === 'box') e.material = 'acrylic';
+        else if (key === 'pump') { add('pump'); add('soil'); }
+        else if (key === 'esp32') e.controller = 'esp32';
+        else if (key === 'picam') { e.parts.delete('cam'); add('picam'); }
+        else add(key);
+        e.why[key === 'ai' ? 'ai2' : key] = L('You added this', 'คุณเพิ่มเอง');
+    }
+
+    // no budget given yet: ask, so the answer can use it well (answering doesn't spend an AI question)
+    const BUDGETS = [1000, 3000, 7000, 15000, 0];
+    const BUDGETS_FOR = { disaster: [500, 1000, 2000, 0], household: [1000, 3000, 5000, 10000, 0], farmer: [3000, 7000, 15000, 30000, 0], commercial: [3000, 7000, 15000, 30000, 0] };
+    function previewFor(s0, v, force) {
+        const r = decide(Object.assign({}, s0, { needs: new Set(s0.needs), budget: v ? { amount: v } : { unlimited: true } }), force);
+        if (r.route === 'box') return t(`${T(r.box.o.name)} · ${baht(r.box.o.price)}`, `${T(r.box.o.name)} · ${baht(r.box.o.price)}`);
+        if (r.route === 'kit') {
+            const extras = [];
+            const has = id => r.kit.parts.includes(id);
+            if (has('ai1') || has('ai2') || has('ai3')) extras.push(t('camera + AI', 'กล้อง + AI'));
+            if (has('ledFull') || has('ledRB')) extras.push(t('grow light', 'ไฟปลูกพืช'));
+            if (r.kit.material !== 'none') extras.push(t('clear box', 'กล่องใส'));
+            return `${t('Kit', 'ชุด')} ${baht(r.kit.total)}${extras.length ? ' · ' + extras.slice(0, 2).join(', ') : ''}`;
+        }
+        if (r.route === 'custom') return `${t('Custom design', 'ออกแบบเฉพาะ')} · ${baht(customTotal({ f: r.form.f, size: r.form.f.size || [60, 40, 50] }))}`;
+        return '';
+    }
+    function budgetQuestion(turn) {
+        const s0 = turn.r.s, force = turn.r.wouldBe === 'custom' ? 'custom' : undefined;
+        const all = (BUDGETS_FOR[turn.r.cat] || BUDGETS).map(v => ({ v, preview: previewFor(s0, v, force) }));
+        const opts = [];
+        all.forEach(o => { const lastO = opts[opts.length - 1]; if (lastO && lastO.preview === o.preview) { lastO.to = o.v; } else opts.push(Object.assign({}, o)); });
+        const label = o => {
+            if (!o.v) return t('No limit', 'ไม่จำกัดงบ');
+            if (o.to === 0) return t(`${baht(o.v)} or more`, `${baht(o.v)} ขึ้นไป`);
+            if (o.to) return `${baht(o.v)}–${baht(o.to)}`;
+            return t(`Up to ${baht(o.v)}`, `ไม่เกิน ${baht(o.v)}`);
+        };
+        return `<div class="boxai-card boxai-budgetq">
+            <h3>${esc(t('First, roughly what\'s your budget?', 'ก่อนแนะนำ ขอทราบงบประมาณคร่าว ๆ ครับ'))}</h3>
+            <p>${esc(t('Pick one and we\'ll fit the best set to it — here\'s what each budget gets you:', 'เลือกงบที่ใกล้เคียง แล้วเราจะจัดชุดที่ดีที่สุดในงบนั้นให้ ดูได้เลยว่าแต่ละงบได้อะไร:'))}</p>
+            <div class="boxai-budget-opts">${opts.map(o => `<button type="button" class="boxai-budget-opt" data-adv="setbudget" data-v="${o.v}">
+                <b>${esc(label(o))}</b>
+                <small>${esc(o.preview)}</small>
+                ${o.to === 0 ? `<small class="boxai-full">${esc(t('Complete — a bigger budget gets the same set', 'ครบทุกอย่างแล้ว งบมากกว่านี้ก็ได้ชุดเดียวกัน'))}</small>` : ''}</button>`).join('')}</div>
+            <p class="boxai-sub">${esc(t('Or type your own budget below, e.g. "2,500".', 'หรือพิมพ์งบเองในช่องด้านล่าง เช่น "2,500"'))}</p>
+        </div>`;
+    }
+    function budgetAsk(turn) {
+        const b = turn.r.s.budget;
+        if (b && !b.implied) return '';
+        return `<div class="boxai-ask"><span><i class="fas fa-coins"></i> ${esc(t('Roughly what budget? We\'ll fit the best set to it:', 'งบประมาณประมาณเท่าไหร่ครับ? จะได้จัดชุดที่ดีที่สุดในงบนั้นให้:'))}</span>
+            <div>${BUDGETS.map(v => `<button type="button" class="boxai-chip" data-adv="setbudget" data-v="${v}">${esc(v ? t(`up to ${baht(v)}`, `ไม่เกิน ${baht(v)}`) : t('No limit', 'ไม่จำกัด'))}</button>`).join('')}</div></div>`;
     }
 
     function onEdit(e) {
@@ -1010,6 +1196,23 @@
             renderTurn(turn);
         }
         else if (a === 'tweak' && turn) { turn.mode = 'kit'; renderTurn(turn); }
+        else if (a === 'addon' && turn && turn.edit) {
+            const keep = thread.scrollTop;
+            applyAddon(turn, b.dataset.a);
+            renderTurn(turn);
+            thread.scrollTop = keep;
+        }
+        else if (a === 'setbudget' && turn) {
+            const v = +b.dataset.v;
+            const s2 = Object.assign({}, turn.r.s, { needs: new Set(turn.r.s.needs), budget: v ? { amount: v } : { unlimited: true } });
+            const force = turn.r.route === 'custom' || turn.r.wouldBe === 'custom' ? 'custom' : undefined;
+            turn.r = decide(s2, force);
+            last = turn.r;
+            setupEdit(turn);
+            renderTurn(turn);
+            scrollToTurn(node);
+            el.querySelector('#advisorQuick').innerHTML = `<span>${esc(t('Ask more:', 'ถามต่อ:'))}</span>${FOLLOW_UPS.map((f, i) => `<button type="button" class="boxai-chip" data-adv="follow" data-i="${i}">${esc(T(f))}</button>`).join('')}`;
+        }
         else if (a === 'kit' && turn) openKit(turn);
         else if (a === 'cart-kit' && turn) addKitToCart(turn);
         else if (a === 'box' && turn) openBox(turn);
