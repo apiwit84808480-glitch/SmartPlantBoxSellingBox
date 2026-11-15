@@ -1800,3 +1800,103 @@ body.detail-mode .light-zone .custom-form, body.detail-mode .light-zone .order-f
 .cfg-option.is-off { opacity: 0.45; cursor: not-allowed; }
 .form-hint { display: block; margin-top: 0.35rem; font-size: 0.8rem; opacity: 0.7; }
 .custom-select:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ===================== Box design assistant (js/advisor.js) ===================== */
+.boxai-fab {
+    position: fixed; right: 24px; bottom: 84px; z-index: 950;
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    padding: 0.85rem 1.25rem; border-radius: 999px;
+    border: 1px solid rgba(230, 207, 152, 0.7);
+    background: #1d3a2a; color: #f6f1e7;
+    font: 600 0.98rem var(--sans); cursor: pointer;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s, background 0.2s;
+}
+.boxai-fab i { color: #e6cf98; }
+.boxai-fab:hover { background: #2c6a46; transform: translateY(-2px); }
+.boxai-fab:focus-visible { outline: 2px solid #e6cf98; outline-offset: 3px; }
+body.boxai-open .boxai-fab, .boxai-fab.is-away { opacity: 0; pointer-events: none; transform: translateY(12px); }
+.boxai-fab { transition: transform 0.25s, background 0.2s, opacity 0.25s; }
+@media (max-width: 760px) {
+    .boxai-fab { right: 16px; bottom: 76px; padding: 0.8rem 1rem; font-size: 0.9rem; }
+}
+
+.boxai[hidden] { display: none; }
+.boxai { position: fixed; inset: 0; z-index: 6000; display: flex; justify-content: flex-end; }
+.boxai-backdrop { position: absolute; inset: 0; background: rgba(11, 9, 14, 0.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+body.boxai-open { overflow: hidden; }
+.boxai-panel {
+    position: relative; width: min(560px, 100%); height: 100%; overflow-y: auto;
+    background: #f6f1e7; color: #1d3a2a; font-family: var(--sans);
+    padding: 1.6rem clamp(16px, 4vw, 30px) 2rem;
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.35);
+    animation: advisorIn 0.28s ease-out;
+}
+@keyframes advisorIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .boxai-panel { animation: none; } }
+.boxai-head { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; }
+.boxai-eyebrow { display: inline-flex; gap: 0.4rem; align-items: center; font-size: 0.8rem; font-weight: 600; color: #a8853c; letter-spacing: 0.04em; }
+.boxai-head h2 { margin: 0.35rem 0 0.4rem; font-family: var(--serif); font-weight: 400; font-size: clamp(1.6rem, 4vw, 2.1rem); line-height: 1.15; color: #1d3a2a; }
+.boxai-head p { margin: 0; font-size: 0.92rem; line-height: 1.55; color: rgba(29, 58, 42, 0.75); }
+.boxai-x { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(29, 58, 42, 0.25); background: transparent; color: #1d3a2a; cursor: pointer; font-size: 1.05rem; }
+.boxai-x:hover { background: rgba(29, 58, 42, 0.07); }
+.boxai-form { margin-top: 1.1rem; display: grid; gap: 0.75rem; }
+.boxai-form textarea {
+    width: 100%; resize: vertical; min-height: 92px; padding: 0.85rem 1rem; border-radius: 14px;
+    border: 1px solid rgba(29, 58, 42, 0.28); background: #fffdf8; color: #1d3a2a;
+    font: 0.98rem/1.55 var(--sans);
+}
+.boxai-form textarea:focus { outline: 2px solid #2c6a46; outline-offset: 1px; border-color: transparent; }
+.boxai-examples, .boxai-switch { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; font-size: 0.82rem; color: rgba(29, 58, 42, 0.7); }
+.boxai-chip {
+    border: 1px solid rgba(29, 58, 42, 0.22); background: #fffdf8; color: #1d3a2a;
+    border-radius: 999px; padding: 0.38rem 0.75rem; font: 0.8rem/1.35 var(--sans); cursor: pointer; text-align: left;
+}
+.boxai-chip:hover { border-color: #2c6a46; background: rgba(44, 106, 70, 0.07); }
+.boxai-go, .boxai-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.85rem 1.2rem; border-radius: 999px; border: 1px solid #1d3a2a;
+    background: #1d3a2a; color: #f6f1e7; font: 600 0.95rem var(--sans); cursor: pointer;
+}
+.boxai-go i, .boxai-btn i { color: #e6cf98; }
+.boxai-go:hover, .boxai-btn:hover { background: #2c6a46; }
+.boxai-btn.ghost { background: transparent; color: #1d3a2a; }
+.boxai-btn.ghost i { color: #a8853c; }
+.boxai-btn.ghost:hover { background: rgba(29, 58, 42, 0.06); }
+.boxai-result { margin-top: 1.25rem; display: grid; gap: 0.85rem; }
+.boxai-result:empty { display: none; }
+.boxai-hint { margin: 0; font-size: 0.9rem; color: #8a5a00; }
+.boxai-understood { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; font-size: 0.8rem; color: rgba(29, 58, 42, 0.7); }
+.boxai-understood b { font-weight: 600; background: rgba(168, 133, 60, 0.14); color: #5b4515; border-radius: 999px; padding: 0.22rem 0.6rem; }
+.boxai-card { background: #fffdf8; border: 1px solid rgba(168, 133, 60, 0.45); border-radius: 18px; padding: 1.1rem 1.15rem; }
+.boxai-card h3 { margin: 0.55rem 0 0.35rem; display: flex; justify-content: space-between; gap: 0.75rem; align-items: baseline; font: 600 1.15rem/1.3 var(--sans); color: #1d3a2a; }
+.boxai-card h3 span { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.boxai-card > p, .boxai-sub { margin: 0.2rem 0 0.4rem; font-size: 0.85rem; color: rgba(29, 58, 42, 0.72); }
+.boxai-tag { display: inline-flex; gap: 0.4rem; align-items: center; font-size: 0.78rem; font-weight: 600; color: #2c6a46; background: rgba(44, 106, 70, 0.1); border-radius: 999px; padding: 0.25rem 0.65rem; }
+.boxai-box { display: grid; grid-template-columns: 112px 1fr; gap: 0.9rem; margin-top: 0.4rem; }
+.boxai-box img { width: 112px; height: 112px; object-fit: cover; border-radius: 12px; }
+.boxai-box h3 { margin-top: 0; }
+.boxai-box ul { list-style: none; margin: 0.3rem 0 0; padding: 0; display: grid; gap: 0.25rem; font-size: 0.85rem; }
+.boxai-box li i { color: #2c6a46; width: 1em; }
+.boxai-box li.muted { color: rgba(29, 58, 42, 0.6); }
+.boxai-box li.muted i { color: rgba(29, 58, 42, 0.35); }
+.boxai-lines { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+.boxai-lines li { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.55rem 0; border-top: 1px solid rgba(29, 58, 42, 0.1); font-size: 0.88rem; }
+.boxai-lines li span { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.boxai-lines small { display: block; margin-top: 0.15rem; font-size: 0.78rem; color: rgba(29, 58, 42, 0.68); }
+.boxai-notes p { margin: 0.5rem 0 0; font-size: 0.82rem; color: #6b4e12; }
+.boxai-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; margin-top: 0.9rem; }
+.boxai-foot { margin: 1.4rem 0 0; font-size: 0.75rem; color: rgba(29, 58, 42, 0.55); }
+@media (max-width: 480px) {
+    .boxai-box { grid-template-columns: 1fr; }
+    .boxai-box img { width: 100%; height: 150px; }
+    .boxai-actions .boxai-btn { flex: 1 1 100%; }
+}
+/* the box the assistant picked, on its category page */
+.uc-option.boxai-pick { outline: 3px solid #a8853c; outline-offset: 4px; border-radius: 18px; }
+/* reason under a Custom form field the assistant filled in */
+.boxai-why { display: block; margin-top: 0.35rem; font-size: 0.8rem; line-height: 1.45; color: #2c6a46; }
+.boxai-why i { color: #a8853c; margin-right: 0.3rem; }
+/* homepage call-to-action under the problem chips */
+.boxai-cta { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; justify-content: center; margin: 1.6rem auto 0; max-width: 760px; padding: 1rem 1.25rem; border: 1px dashed rgba(168, 133, 60, 0.6); border-radius: 18px; text-align: center; }
+.boxai-cta p { margin: 0; color: rgba(29, 58, 42, 0.8); }
