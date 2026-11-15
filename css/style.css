@@ -1784,17 +1784,17 @@ body.detail-mode nav { background: rgba(11, 9, 14, 0.78); backdrop-filter: satur
 .light-zone .back-btn i { font-size: 0.95rem; color: #e6cf98; }
 .light-zone .back-btn:hover { background: var(--green); border-color: #e6cf98; transform: translateX(-3px); }
 @media (max-width: 760px) {
-    /* phones: bottom-left, where the thumb is */
+    /* phones too: top-left, just under the menu bar — where people look first for "back" */
     .light-zone .back-btn,
-    .light-zone .usecase-detail .back-btn { top: auto; bottom: 18px; left: 16px; padding: 0.85rem 1.2rem 0.85rem 1rem; font-size: 0.95rem; }
+    .light-zone .usecase-detail .back-btn { top: 76px; bottom: auto; left: 16px; padding: 0.8rem 1.2rem 0.8rem 1rem; font-size: 0.95rem; }
 }
 /* room for the Back button above the page content (desktop) */
 body.detail-mode .light-zone .usecase-detail { padding-top: 152px; }
 body.detail-mode .light-zone .custom-form, body.detail-mode .light-zone .order-form { padding-top: 156px; }
 @media (max-width: 760px) {
-    body.detail-mode .light-zone .usecase-detail { padding-top: 5.5rem; }
-    body.detail-mode .light-zone .custom-form, body.detail-mode .light-zone .order-form { padding-top: 6rem; padding-bottom: 7rem; }
-    body.detail-mode .light-zone .usecase-detail { padding-bottom: 7rem; }
+    /* the Back button now sits at the top, so the content starts below it */
+    body.detail-mode .light-zone .usecase-detail { padding-top: 140px; padding-bottom: 5rem; }
+    body.detail-mode .light-zone .custom-form, body.detail-mode .light-zone .order-form { padding-top: 144px; padding-bottom: 5rem; }
 }
 
 /* AI model group (configurator + custom form) */
