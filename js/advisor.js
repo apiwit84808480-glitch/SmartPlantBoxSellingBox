@@ -432,7 +432,7 @@
 
     const priceOf = id => { const C = cat(); const p = C.PARTS.find(x => x.id === id) || C.CONTROLLERS.find(x => x.id === id); return p ? p.price : 0; };
     const boxCost = (m, size) => { const r = (cat().MATERIALS.find(x => x.id === m) || {}).rate || 0; const [w, l, h] = size; return Math.round(2 * (w * l + w * h + l * h) * r * 100) / 100; };
-    const kitTotal = c => priceOf(c.controller) + [...c.parts.keys()].reduce((s, id) => s + priceOf(id), 0) + boxCost(c.material, c.size);
+    const kitTotal = c => priceOf(c.controller) * (c.cqty || 1) + [...c.parts.keys()].reduce((s, id) => s + priceOf(id) * ((c.qty && c.qty[id]) || 1), 0) + boxCost(c.material, c.size);
     function kitLines(c) {
         const C = cat();
         const nm = id => T((C.PARTS.find(x => x.id === id) || C.CONTROLLERS.find(x => x.id === id)).name);
@@ -775,15 +775,15 @@
         if (r.route === 'budget') { turn.edit = null; return; }
         if (r.route === 'box' && BOX_PARTS[r.box.id]) {
             const b = BOX_PARTS[r.box.id];
-            turn.edit = { cat: r.cat, controller: b.controller, parts: new Set(b.parts), material: b.material, size: [...b.size], why: {}, fromBox: r.box.o };
+            turn.edit = { qty: {}, cqty: 1, off: [], cat: r.cat, controller: b.controller, parts: new Set(b.parts), material: b.material, size: [...b.size], why: {}, fromBox: r.box.o };
         } else if (r.route === 'kit' || r.route === 'box') {
             const k = r.kit;
-            turn.edit = { cat: r.cat, controller: k.controller, parts: new Set(k.parts), material: k.material, size: [...k.size], why: Object.assign({}, k.why) };
+            turn.edit = { qty: {}, cqty: 1, off: [], cat: r.cat, controller: k.controller, parts: new Set(k.parts), material: k.material, size: [...k.size], why: Object.assign({}, k.why) };
         } else if (r.route === 'custom') {
             turn.edit = { f: Object.assign({}, r.form.f), size: r.form.f.size ? [...r.form.f.size] : [60, 40, 50], why: Object.assign({}, r.form.why) };
         }
     }
-    const kitOf = e => ({ controller: e.controller, parts: new Map([...e.parts].map(id => [id, { why: e.why[id] }])), material: e.material, size: e.size, cWhy: e.why[e.controller], mWhy: e.why.material });
+    const kitOf = e => ({ controller: e.controller, parts: new Map([...e.parts].map(id => [id, { why: e.why[id] }])), material: e.material, size: e.size, cWhy: e.why[e.controller], mWhy: e.why.material, qty: e.qty, cqty: e.cqty });
     const customSel = id => document.querySelector('#customConfigForm #' + id);
     function customTotal(e) {
         let sum = 0;
@@ -897,6 +897,14 @@
     }
 
     // ---- a kit you can change right here
+    // − n + : every piece is charged; misting comes in sets of 2 nozzles; AI is one per box
+    function qtyStepper(id, q) {
+        if (/^ai\d$/.test(id)) return `<span class="boxai-qty fixed">${esc(t('1 per box', '1 ตัวต่อกล่อง'))}</span>`;
+        const max = id === '__ctrl' ? 10 : 50;
+        const label = id === 'mist' ? t(`${q} set${q > 1 ? 's' : ''} · ${q * 2} nozzles`, `${q} ชุด · ${q * 2} หัว`) : t(`${q} pc${q > 1 ? 's' : ''}`, `${q} ชิ้น`);
+        return `<span class="boxai-qty"><button type="button" data-adv="qty" data-id="${id}" data-d="-1"${q <= 1 ? ' disabled' : ''} aria-label="${esc(t('Fewer', 'ลดจำนวน'))}">−</button><b>${esc(label)}</b><button type="button" data-adv="qty" data-id="${id}" data-d="1"${q >= max ? ' disabled' : ''} aria-label="${esc(t('More', 'เพิ่มจำนวน'))}">+</button></span>`;
+    }
+
     function kitEditor(turn) {
         const e = turn.edit, C = cat(), r = turn.r;
         const arduino = e.controller === 'nano' || e.controller === 'uno';
@@ -915,9 +923,11 @@
                 <label class="boxai-field">${esc(t('Controller', 'บอร์ดควบคุม'))}
                     <select data-ed="controller">${C.CONTROLLERS.map(c => opt(c.id, `${T(c.name)} (${baht(c.price)})`, c.id === e.controller)).join('')}</select></label>
                 ${reason(e.controller) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(e.controller))}</em>` : ''}
+                <div class="boxai-ctrlqty"><span>${esc(t('Boards', 'จำนวนบอร์ด'))}</span>${qtyStepper('__ctrl', e.cqty || 1)}<span>${baht(priceOf(e.controller) * (e.cqty || 1))}</span></div>
             </div>
             <ul class="boxai-lines">
-                ${[...e.parts].map(id => `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span>${baht(priceOf(id))}</span></li>`).join('')}
+                ${[...e.parts].map(id => { const q = (e.qty && e.qty[id]) || 1; return `<li><label><input type="checkbox" data-ed="part" value="${id}" checked><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b>${reason(id) ? `<em class="boxai-gain"><i class="fas fa-arrow-right"></i> ${esc(reason(id))}</em>` : ''}</span></label><span class="boxai-pricecol">${baht(priceOf(id) * q)}${qtyStepper(id, q)}</span></li>`; }).join('')}
+                ${(e.off || []).filter(id => !e.parts.has(id)).map(id => `<li class="is-off"><label><input type="checkbox" data-ed="part" value="${id}"><span class="boxai-ico"><i class="fas ${partIcon(id)}"></i></span><span><b>${esc(partName(id))}</b><small>${esc(t('Removed — tick to put it back', 'เอาออกแล้ว — ติ๊กเพื่อใส่กลับ'))}</small></span></label><span class="boxai-pricecol">${baht(priceOf(id))}</span></li>`).join('')}
             </ul>
             <label class="boxai-field">${esc(t('Add a part', 'เพิ่มชิ้นส่วน'))}
                 <select data-ed="add"><option value="">${esc(t('+ choose a part…', '+ เลือกชิ้นส่วน…'))}</option>
@@ -1019,7 +1029,7 @@
 
     function applyAddon(turn, key) {
         if (turn.mode === 'box') turn.mode = 'kit'; // a ready-made box + extras becomes a kit built from its parts
-        const e = turn.edit, add = id => e.parts.add(id);
+        const e = turn.edit, add = id => { e.parts.add(id); e.off = (e.off || []).filter(x => x !== id); };
         const dropAI = () => [...e.parts].filter(id => /^ai\d$/.test(id)).forEach(id => e.parts.delete(id));
         if (key === 'ai') { if (!e.parts.has('cam') && !e.parts.has('picam')) add('cam'); dropAI(); add('ai2'); }
         else if (key === 'ai3') { dropAI(); add('ai3'); }
@@ -1090,10 +1100,16 @@
                 ed.controller = x.value;
                 if ((x.value === 'nano' || x.value === 'uno') && ed.parts.has('ai3')) { ed.parts.delete('ai3'); ed.parts.add('ai2'); note = t('Arduino can\'t run AI Model 3 — switched to Model 2', 'Arduino ใช้ AI Model 3 ไม่ได้ จึงเปลี่ยนเป็น Model 2'); }
             } else if (kind === 'part') {
-                if (!x.checked) ed.parts.delete(x.value);
+                if (!x.checked) { ed.parts.delete(x.value); ed.off = (ed.off || []).filter(id => id !== x.value); ed.off.push(x.value); }
+                else {
+                    if (/^ai\d$/.test(x.value)) [...ed.parts].filter(id => /^ai\d$/.test(id)).forEach(id => { ed.parts.delete(id); ed.off.push(id); });
+                    if (x.value === 'ai3' && (ed.controller === 'nano' || ed.controller === 'uno')) { x.checked = false; note = t('Arduino can\'t run AI Model 3 — pick ESP32 or Raspberry Pi first', 'Arduino ใช้ AI Model 3 ไม่ได้ เลือก ESP32 หรือ Raspberry Pi ก่อน'); }
+                    else { ed.parts.add(x.value); ed.off = (ed.off || []).filter(id => id !== x.value); }
+                }
             } else if (kind === 'add' && x.value) {
                 if (/^ai\d$/.test(x.value)) [...ed.parts].filter(id => /^ai\d$/.test(id)).forEach(id => ed.parts.delete(id)); // one AI model at a time
                 ed.parts.add(x.value);
+                ed.off = (ed.off || []).filter(id => id !== x.value);
             } else if (kind === 'material') ed.material = x.value;
             else if (kind === 'dim') { ed.size[+x.dataset.i] = Math.min(400, Math.max(10, parseInt(x.value, 10) || 10)); if (e.type === 'input') return refreshTotal(turn, node); }
         } else if (turn.mode === 'custom') {
@@ -1126,7 +1142,7 @@
         const main = document.getElementById('main-page');
         if (main && !main.classList.contains('active') && typeof showMainPage === 'function') showMainPage();
     }
-    const presetOf = ed => ({ controller: ed.controller, parts: [...ed.parts], material: ed.material, size: [...ed.size] });
+    const presetOf = ed => ({ controller: ed.controller, parts: [...ed.parts], material: ed.material, size: [...ed.size], qty: Object.assign({}, ed.qty || {}), controllerQty: ed.cqty || 1 });
 
     function openKit(turn) {
         const C = cat(), ed = turn.edit;
@@ -1196,6 +1212,14 @@
             renderTurn(turn);
         }
         else if (a === 'tweak' && turn) { turn.mode = 'kit'; renderTurn(turn); }
+        else if (a === 'qty' && turn && turn.edit) {
+            const e = turn.edit, id = b.dataset.id, d = +b.dataset.d;
+            if (id === '__ctrl') e.cqty = Math.min(10, Math.max(1, (e.cqty || 1) + d));
+            else { e.qty = e.qty || {}; e.qty[id] = Math.min(50, Math.max(1, (e.qty[id] || 1) + d)); }
+            const keep = thread.scrollTop;
+            renderTurn(turn);
+            thread.scrollTop = keep;
+        }
         else if (a === 'addon' && turn && turn.edit) {
             const keep = thread.scrollTop;
             applyAddon(turn, b.dataset.a);

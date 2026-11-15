@@ -309,8 +309,8 @@
     }
 
     function setPreset(preset, why) {
-        recommended = { controller: preset.controller, parts: [...preset.parts], material: preset.material, size: [...preset.size] };
-        cfg = { controller: preset.controller, parts: new Set(preset.parts), material: preset.material, size: [...preset.size] };
+        recommended = { controller: preset.controller, parts: [...preset.parts], material: preset.material, size: [...preset.size], qty: Object.assign({}, preset.qty || {}), controllerQty: preset.controllerQty || 1 };
+        cfg = { controller: preset.controller, parts: new Set(preset.parts), material: preset.material, size: [...preset.size], qty: Object.assign({}, preset.qty || {}), cqty: preset.controllerQty || 1 };
         reasons = Object.assign({}, why || {});
     }
 
@@ -543,11 +543,18 @@
         const el = document.getElementById('ucConfig');
         const rec = new Set(recommended.parts);
         const groups = [...new Set(PARTS.map(p => p.group))];
+        const stepper = (value, on) => {
+            if (!on || /^ai\d$/.test(value)) return '';
+            const isCtrl = CONTROLLERS.some(c => c.id === value);
+            const q = isCtrl ? (cfg.cqty || 1) : ((cfg.qty && cfg.qty[value]) || 1);
+            const unit = value === 'mist' ? t(`${q} set${q > 1 ? 's' : ''} (${q * 2} nozzles)`, `${q} ชุด (${q * 2} หัว)`) : t(`× ${q}`, `× ${q} ชิ้น`);
+            return `<span class="cfg-qty"><button type="button" data-cfgqty="${value}" data-d="-1" aria-label="${esc(t('Fewer', 'ลดจำนวน'))}"${q <= 1 ? ' disabled' : ''}>−</button><span>${esc(unit)}</span><button type="button" data-cfgqty="${value}" data-d="1" aria-label="${esc(t('More', 'เพิ่มจำนวน'))}">+</button></span>`;
+        };
         const option = (type, name, value, on, label, price, isRec) => `
             <label class="cfg-option ${type}${on ? ' is-on' : ''}${isRec ? ' is-rec' : ''}${value === 'ai3' && ARDUINO.includes(cfg.controller) ? ' is-off' : ''}">
                 <input type="${type}" name="${name}" value="${value}"${on ? ' checked' : ''}${value === 'ai3' && ARDUINO.includes(cfg.controller) ? ' disabled' : ''}>
                 <span class="cfg-check" aria-hidden="true"></span>
-                <span class="cfg-name">${esc(label)}${isRec ? `<small class="cfg-why"><i class="fas fa-circle-check"></i> ${esc(reasonFor(value))}</small>` : ''}</span>
+                <span class="cfg-name">${esc(label)}${isRec ? `<small class="cfg-why"><i class="fas fa-circle-check"></i> ${esc(reasonFor(value))}</small>` : ''}${stepper(value, on)}</span>
                 <span class="cfg-price">${money(price)}</span>
             </label>`;
         const showSize = cfg.material !== 'none';
@@ -598,8 +605,10 @@
         const nm = v => (lang === 'en' ? v.en : T(v));
         const out = [];
         const ctrl = CONTROLLERS.find(x => x.id === c.controller);
-        if (ctrl) out.push({ id: ctrl.id, name: nm(ctrl.name), price: ctrl.price });
-        PARTS.forEach(p => { if (c.parts.has(p.id)) out.push({ id: p.id, name: nm(p.name), price: p.price }); });
+        const times = n => (n > 1 ? ` × ${n}` : '');
+        const cq = c.cqty || 1;
+        if (ctrl) out.push({ id: ctrl.id, name: nm(ctrl.name) + times(cq), price: ctrl.price * cq });
+        PARTS.forEach(p => { if (c.parts.has(p.id)) { const q = (c.qty && c.qty[p.id]) || 1; out.push({ id: p.id, name: nm(p.name) + times(q), price: p.price * q }); } });
         const m = MATERIALS.find(x => x.id === c.material);
         if (m && m.rate) {
             const [w, l, h] = c.size.map(v => Math.max(0, v || 0));
@@ -708,7 +717,11 @@
         const ok = pushToCart({
             // What the server prices: chosen controller, parts, material and size
             type: 'build',
-            build: { label, controller: cfg.controller, parts: [...cfg.parts], material: cfg.material, size: [...cfg.size] },
+            build: {
+                label, controller: cfg.controller, controllerQty: cfg.cqty || 1,
+                parts: [...cfg.parts].map(id => ((cfg.qty && cfg.qty[id]) > 1 ? { id, qty: cfg.qty[id] } : id)),
+                material: cfg.material, size: [...cfg.size],
+            },
             id: `custom-${current}`, name, controller: ctrl ? T(ctrl.name) : '',
             selectedSensors: items.map(i => ({ name: `${i.name} (${money(i.price)})`, price: i.price, included: false })),
             totalPrice: total,
@@ -821,6 +834,7 @@
             renderConfig($('#ucConfig h3') ? $('#ucConfig h3').textContent : undefined);
         } else if (action === 'kit-essential' || action === 'kit-full') {
             const next = action === 'kit-essential' ? essentialCfg() : fullCfg();
+            next.qty = next.qty || {}; next.cqty = next.cqty || 1;
             cfg = next;
             renderConfig($('#ucConfig h3') ? $('#ucConfig h3').textContent : undefined);
         } else if (action === 'custom-add') addCustom(false);
@@ -851,6 +865,13 @@
         } else if (el.dataset.dim) {
             cfg.size[+el.dataset.dim] = Math.max(0, parseFloat(el.value) || 0);
         } else return;
+        if (el.name === 'cfgController' || el.name === 'cfgPart') {
+            // redraw so the − / + quantity buttons follow what is ticked
+            const keep = window.scrollY;
+            renderConfig($('#ucConfig h3') ? $('#ucConfig h3').textContent : undefined);
+            window.scrollTo({ top: keep, behavior: 'instant' });
+            return;
+        }
         renderSummary();
     }
     // Keep the AI checkboxes in step with cfg (one model at a time, Model 3 off for Arduino)
@@ -864,6 +885,19 @@
             inp.closest('.cfg-option').classList.toggle('is-off', inp.disabled);
         });
     }
+    // + / − on a part or the board: every piece is charged (misting comes in sets of 2 nozzles)
+    document.addEventListener('click', e => {
+        const b = e.target.closest('[data-cfgqty]');
+        if (!b || !cfg || !b.closest('#ucConfigForm')) return;
+        e.preventDefault();
+        const id = b.dataset.cfgqty, d = +b.dataset.d;
+        const isCtrl = CONTROLLERS.some(c => c.id === id);
+        if (isCtrl) cfg.cqty = Math.min(10, Math.max(1, (cfg.cqty || 1) + d));
+        else { cfg.qty = cfg.qty || {}; cfg.qty[id] = Math.min(50, Math.max(1, (cfg.qty[id] || 1) + d)); }
+        const keep = window.scrollY;
+        renderConfig($('#ucConfig h3') ? $('#ucConfig h3').textContent : undefined);
+        window.scrollTo({ top: keep, behavior: 'instant' });
+    });
     document.addEventListener('change', onConfigChange);
     document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.dim) onConfigChange(e); });
 

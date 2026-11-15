@@ -1983,3 +1983,21 @@ body.boxai-open { overflow: hidden; }
 .boxai-budget-opt:hover { border-color: #2c6a46; background: rgba(44, 106, 70, 0.06); }
 
 .boxai-budget-opt .boxai-full { color: #8a6a1f; font-style: italic; }
+
+/* quantities: every piece is charged */
+.boxai-pricecol { display: grid; justify-items: end; gap: 0.3rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.boxai-qty { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.76rem; color: rgba(29, 58, 42, 0.8); }
+.boxai-qty b { font-weight: 600; min-width: 3.2em; text-align: center; }
+.boxai-qty button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(29, 58, 42, 0.3); background: #fffdf8; color: #1d3a2a; font: 600 0.95rem/1 var(--sans); cursor: pointer; }
+.boxai-qty button:hover:not(:disabled) { border-color: #2c6a46; background: rgba(44, 106, 70, 0.08); }
+.boxai-qty button:disabled { opacity: 0.35; cursor: default; }
+.boxai-qty.fixed { font-style: italic; opacity: 0.7; }
+.boxai-ctrlqty { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-top: 0.35rem; font-size: 0.8rem; color: rgba(29, 58, 42, 0.75); }
+.boxai-lines li.is-off { opacity: 0.55; }
+.boxai-lines li.is-off b { text-decoration: line-through; text-decoration-thickness: 1px; }
+.boxai-lines li.is-off small { display: block; font-size: 0.75rem; color: #8a5a00; }
+/* builder (box pages): quantity on ticked parts */
+.cfg-qty { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.35rem; font-size: 0.75rem; }
+.cfg-qty button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid currentColor; background: transparent; color: inherit; font: 600 0.9rem/1 var(--sans); cursor: pointer; opacity: 0.85; }
+.cfg-qty button:disabled { opacity: 0.3; cursor: default; }
+.cfg-qty span { min-width: 3.4em; text-align: center; font-weight: 600; }
