@@ -13,7 +13,7 @@ global.window = {};
 require(path.join(root, 'js', 'advisor-kb.js'));
 const K = window.__kb.TOPICS;
 
-const VERSION = process.argv[2] || '20261116j'; // cache tag for style.css / scripts
+const VERSION = process.argv[2] || '20261116k'; // cache tag for style.css / scripts
 
 const GROUPS = [
     { id: 'start', th: 'เริ่มต้น', en: 'Getting started', icon: 'fa-seedling', topics: ['how'] },
@@ -156,7 +156,7 @@ ${article('en')}
 
     <footer class="pv-foot">
         <p><span class="pv-th">&copy; 2026 Smart Plant Box V4 · เว็บไซต์จำหน่ายนวัตกรรม</span><span class="pv-en">&copy; 2026 Smart Plant Box V4 · Innovations Selling Website</span></p>
-        <span class="pv-foot-links"><a href="/privacy/"><span class="pv-th">ความเป็นส่วนตัว</span><span class="pv-en">Privacy</span></a></span>
+        <a class="pv-faq-link" href="/privacy/"><i class="fas fa-shield-halved" aria-hidden="true"></i> <span class="pv-th">นโยบายความเป็นส่วนตัว</span><span class="pv-en">Privacy policy</span></a>
     </footer>
 
     <script src="/js/i18n.js?v=${VERSION}"></script>

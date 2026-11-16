@@ -102,13 +102,37 @@
             .eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
         if (error) { box.innerHTML = `<p class="acct-muted">${esc(t('Could not load your orders. Please try again.', 'โหลดคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่'))}</p>`; return; }
         if (!data.length) { box.innerHTML = `<p class="acct-muted">${esc(t('No orders yet.', 'ยังไม่มีคำสั่งซื้อ'))}</p>`; return; }
-        box.innerHTML = data.map(o => {
-            const names = (o.items || []).map(i => i.name).filter(Boolean);
+        box.innerHTML = data.map((o, n) => {
+            const items = Array.isArray(o.items) ? o.items : [];
+            const names = items.map(i => i && i.name).filter(Boolean);
             const what = names.length ? names.join(', ') : (o.custom_config ? t('Custom build', 'สร้างเอง') : o.order_type);
             const date = new Date(o.created_at).toLocaleDateString(LANG === 'th' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-            return `<div class="acct-order"><div><strong>${esc(what)}</strong><small>${esc(date)} · #${esc(o.id.slice(0, 8))}</small></div>
-                <div class="acct-order-right"><span class="acct-status s-${esc(o.status)}">${esc(o.status)}</span><span class="acct-total">${baht(o.total)}</span></div></div>`;
+            const st = STATUS[o.status] ? o.status : 'new';
+            return `<details class="acct-order"${n === 0 ? ' open' : ''}>
+                <summary>
+                    <div><strong>${esc(what)}</strong><small>${esc(date)} · #${esc(o.id.slice(0, 8).toUpperCase())}</small></div>
+                    <div class="acct-order-right"><span class="acct-status s-${esc(st)}">${esc(STATUS[st])}</span><span class="acct-total">${baht(o.total)}</span></div>
+                </summary>
+                <div class="acct-order-body">
+                    ${timeline(st)}
+                    <ul class="acct-lines">${items.map(i => `<li><span>${esc(i.name)}</span><span>${baht(i.price)}</span></li>`).join('')}</ul>
+                    ${st === 'new' || st === 'confirmed' ? `<p class="acct-pay"><i class="fas fa-wallet" aria-hidden="true"></i> ${esc(t('Payment: we contact you within 24 hours to confirm the total and how to pay.', 'การชำระเงิน: ทีมงานจะติดต่อภายใน 24 ชั่วโมง เพื่อยืนยันยอดและวิธีชำระเงิน'))}</p>` : ''}
+                </div>
+            </details>`;
         }).join('');
+    }
+    // where an order is: placed → confirmed → shipped (or cancelled)
+    const STATUS = {
+        new: t('Waiting for confirmation', 'รอยืนยัน'),
+        confirmed: t('Confirmed', 'ยืนยันแล้ว'),
+        shipped: t('Shipped', 'จัดส่งแล้ว'),
+        cancelled: t('Cancelled', 'ยกเลิกแล้ว'),
+    };
+    function timeline(st) {
+        if (st === 'cancelled') return `<p class="acct-cancelled"><i class="fas fa-circle-xmark" aria-hidden="true"></i> ${esc(t('This order was cancelled. Questions? Use Contact us on our website.', 'คำสั่งซื้อนี้ถูกยกเลิก หากมีข้อสงสัย ติดต่อทีมงานได้ที่หน้า ติดต่อเรา'))}</p>`;
+        const steps = [['new', t('Order placed', 'สั่งซื้อแล้ว')], ['confirmed', t('Confirmed', 'ยืนยันแล้ว')], ['shipped', t('Shipped', 'จัดส่งแล้ว')]];
+        const at = steps.findIndex(s => s[0] === st);
+        return `<ol class="acct-steps" aria-label="${esc(t('Order progress', 'ความคืบหน้าคำสั่งซื้อ'))}">${steps.map((s, i) => `<li class="${i <= at ? 'done' : ''}${i === at ? ' now' : ''}"><span class="dot" aria-hidden="true"></span>${esc(s[1])}</li>`).join('')}</ol>`;
     }
 
     // ---------- actions ----------
@@ -177,5 +201,18 @@
         const modal = $('accountModal');
         if (modal && modal.classList.contains('show')) renderModal();
     });
-    sb.auth.getSession().then(({ data }) => { user = data.session ? data.session.user : null; renderNav(); prefill(); });
+    sb.auth.getSession().then(({ data }) => {
+        user = data.session ? data.session.user : null;
+        renderNav();
+        prefill();
+        // /?page=orders (menu "My orders", status emails) opens the orders list once we know who this is
+        try {
+            const q = new URLSearchParams(location.search);
+            if (q.get('page') === 'orders') {
+                openModal();
+                q.delete('page');
+                history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
+            }
+        } catch (e) { /* old browser */ }
+    });
 })();

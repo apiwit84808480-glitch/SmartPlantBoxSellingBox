@@ -446,6 +446,13 @@ async function handleCheckout(e) {
         showToast(t('Please fill in all required fields', 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ'));
         return;
     }
+    // the box is ticked already if they pressed "ตกลง" on the cookie notice (js/consent.js)
+    const consent = document.getElementById('orderConsent');
+    if (consent && !consent.checked) {
+        showToast(t('Please tick that you accept the privacy policy before ordering', 'กรุณาติ๊กยอมรับนโยบายความเป็นส่วนตัวก่อนสั่งซื้อ'));
+        consent.focus();
+        return;
+    }
 
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const orig = submitBtn ? submitBtn.innerHTML : 'Confirm Order';

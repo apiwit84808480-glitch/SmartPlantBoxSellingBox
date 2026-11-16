@@ -46,7 +46,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@200;300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="css/style.css?v=20261116j">
+    <link rel="stylesheet" href="css/style.css?v=20261116k">
     <script>
         // If the 3D scene can't load (old browser / blocked CDN), show the photo version of the hero.
         setTimeout(function () { if (!window.__boxSceneReady) document.documentElement.classList.add('no-webgl'); }, 8000);
@@ -77,8 +77,8 @@
             <div class="nav-links" id="navLinks">
                 <a href="#" onclick="showMainPage(); return false;" data-th="หน้าแรก">Home</a>
                 <a href="#" onclick="showProductsSection(); return false;" data-th="สินค้า">Products</a>
-                <a href="#" onclick="showAboutPage(); return false;" data-th="เกี่ยวกับเรา">About Us</a>
-                <a href="#" onclick="showContactPage(); return false;" data-th="ติดต่อ">Contact</a>
+                <a href="#" onclick="window.openAccount && openAccount(); return false;" data-th="คำสั่งซื้อของฉัน">My orders</a>
+                <a href="#" onclick="showContactPage(); return false;" data-th="ติดต่อเรา">Contact us</a>
                 <a href="/privacy/" data-th="ความเป็นส่วนตัว">Privacy</a>
                 <div class="lang-switch lang-switch-menu" role="group" aria-label="Language">
                     <button type="button" data-lang-btn="th" onclick="setLang('th')" lang="th">ไทย</button>
@@ -477,7 +477,8 @@
                     </div>
                     <div class="summary-box" id="orderSummary"></div>
                     <p class="order-note" data-th="ราคาทั้งหมดเป็นเงินบาท (฿) ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมงเพื่อยืนยันยอดและการจัดส่งก่อนชำระเงิน">All prices are in Thai baht (฿). We'll contact you within 24 hours to confirm the total and delivery before you pay.</p>
-                    <p class="order-note" data-th="การกดยืนยันการสั่งซื้อ หมายความว่าคุณรับทราบ<a href=&quot;/privacy/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>นโยบายความเป็นส่วนตัว</a>ของเรา">By confirming, you acknowledge our <a href="/privacy/" target="_blank" rel="noopener">privacy policy</a>.</p>
+                    <label class="order-consent"><input type="checkbox" id="orderConsent" data-consent-box>
+                        <span data-th="ฉันได้อ่านและยอมรับ<a href=&quot;/privacy/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>นโยบายความเป็นส่วนตัวและคุกกี้</a>">I have read and accept the <a href="/privacy/" target="_blank" rel="noopener">privacy and cookie policy</a></span></label>
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="backToProducts()">
                             <i class="fas fa-arrow-left"></i> <span data-th="กลับ">Back</span>
@@ -657,7 +658,7 @@
                     Have a question or want to collaborate? We'd love to hear from you.
                 </p>
                 <button onclick="showAboutPage()" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> <span data-th="กลับไปหน้าเกี่ยวกับเรา">Back to About Us</span>
+                    <i class="fas fa-users"></i> <span data-th="เกี่ยวกับเรา">About us</span>
                 </button>
             </div>
         </section>
@@ -887,8 +888,8 @@
                 <div class="footer-links">
                     <a href="#" onclick="showMainPage(); return false;" data-th="หน้าแรก">Home</a>
                     <a href="#" onclick="showProductsSection(); return false;" data-th="สินค้า">Products</a>
-                    <a href="#" onclick="showAboutPage(); return false;" data-th="เกี่ยวกับเรา">About Us</a>
-                    <a href="#" onclick="showContactPage(); return false;" data-th="ติดต่อ">Contact</a>
+                    <a href="#" onclick="window.openAccount && openAccount(); return false;" data-th="คำสั่งซื้อของฉัน">My orders</a>
+                    <a href="#" onclick="showContactPage(); return false;" data-th="ติดต่อเรา">Contact us</a>
                     <a href="/privacy/" data-th="ความเป็นส่วนตัว">Privacy</a>
                 </div>
             </div>
@@ -896,18 +897,18 @@
     </footer>
 
     <!-- Browsers keep JS/CSS for 4 hours: change ?v= (here, on style.css, and in admin/) whenever those files change -->
-    <script src="js/i18n.js?v=20261116j"></script>
-    <script src="js/main.js?v=20261116j"></script>
-    <script src="js/cart.js?v=20261116j"></script>
-    <script src="js/usecases.js?v=20261116j"></script>
-    <script src="js/advisor-kb.js?v=20261116j"></script>
-    <script src="js/advisor.js?v=20261116j"></script>
+    <script src="js/i18n.js?v=20261116k"></script>
+    <script src="js/main.js?v=20261116k"></script>
+    <script src="js/cart.js?v=20261116k"></script>
+    <script src="js/usecases.js?v=20261116k"></script>
+    <script src="js/advisor-kb.js?v=20261116k"></script>
+    <script src="js/advisor.js?v=20261116k"></script>
     <!-- live prices from the database (edited on /admin → Prices) -->
-    <script src="js/prices.js?v=20261116j"></script>
+    <script src="js/prices.js?v=20261116k"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
-    <script src="js/auth.js?v=20261116j"></script>
-    <script src="js/ui.js?v=20261116j"></script>
-    <script src="js/consent.js?v=20261116j"></script>
-    <script type="module" src="js/scene.js?v=20261116j"></script>
+    <script src="js/auth.js?v=20261116k"></script>
+    <script src="js/ui.js?v=20261116k"></script>
+    <script src="js/consent.js?v=20261116k"></script>
+    <script type="module" src="js/scene.js?v=20261116k"></script>
 </body>
 </html>
