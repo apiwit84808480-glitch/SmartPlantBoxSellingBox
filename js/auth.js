@@ -79,6 +79,7 @@
             ${isGuest(user) ? `<button class="acct-google" type="button" data-acct="link"><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M24 20v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5H24z"/></svg> ${esc(t('Save my orders with Google', 'บันทึกคำสั่งซื้อด้วย Google'))}</button>` : ''}
             <div id="acctAdmin"></div>
             <div class="acct-orders-head"><span class="eyebrow">${esc(t('My orders', 'คำสั่งซื้อของฉัน'))}</span></div>
+            <a class="btn acct-track" href="/orders/"><i class="fas fa-truck-fast"></i> ${esc(t('Track my orders', 'ติดตามคำสั่งซื้อ'))}</a>
             <div class="acct-orders" id="acctOrders"><p class="acct-muted">${esc(t('Loading…', 'กำลังโหลด…'))}</p></div>
             <button class="btn btn-ghost acct-signout" type="button" data-acct="signout"><i class="fas fa-arrow-right-from-bracket"></i> ${esc(t('Sign out', 'ออกจากระบบ'))}</button>`;
         loadOrders();
@@ -101,39 +102,25 @@
         const { data, error } = await sb.from('orders').select('id, created_at, status, order_type, items, custom_config, total')
             .eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
         if (error) { box.innerHTML = `<p class="acct-muted">${esc(t('Could not load your orders. Please try again.', 'โหลดคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่'))}</p>`; return; }
-        if (!data.length) { box.innerHTML = `<p class="acct-muted">${esc(t('No orders yet.', 'ยังไม่มีคำสั่งซื้อ'))}</p>`; return; }
-        box.innerHTML = data.map((o, n) => {
-            const items = Array.isArray(o.items) ? o.items : [];
-            const names = items.map(i => i && i.name).filter(Boolean);
+        if (!data.length) { box.innerHTML = `<p class="acct-muted">${esc(t('No orders yet — once you order, you can follow every step of your box here.', 'ยังไม่มีคำสั่งซื้อ เมื่อสั่งแล้วจะติดตามทุกขั้นตอนของกล่องได้ที่ปุ่มด้านบน'))}</p>`; return; }
+        box.innerHTML = data.slice(0, 4).map(o => {
+            const names = (Array.isArray(o.items) ? o.items : []).map(i => i && i.name).filter(Boolean);
             const what = names.length ? names.join(', ') : (o.custom_config ? t('Custom build', 'สร้างเอง') : o.order_type);
             const date = new Date(o.created_at).toLocaleDateString(LANG === 'th' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             const st = STATUS[o.status] ? o.status : 'new';
-            return `<details class="acct-order"${n === 0 ? ' open' : ''}>
-                <summary>
-                    <div><strong>${esc(what)}</strong><small>${esc(date)} · #${esc(o.id.slice(0, 8).toUpperCase())}</small></div>
-                    <div class="acct-order-right"><span class="acct-status s-${esc(st)}">${esc(STATUS[st])}</span><span class="acct-total">${baht(o.total)}</span></div>
-                </summary>
-                <div class="acct-order-body">
-                    ${timeline(st)}
-                    <ul class="acct-lines">${items.map(i => `<li><span>${esc(i.name)}</span><span>${baht(i.price)}</span></li>`).join('')}</ul>
-                    ${st === 'new' || st === 'confirmed' ? `<p class="acct-pay"><i class="fas fa-wallet" aria-hidden="true"></i> ${esc(t('Payment: we contact you within 24 hours to confirm the total and how to pay.', 'การชำระเงิน: ทีมงานจะติดต่อภายใน 24 ชั่วโมง เพื่อยืนยันยอดและวิธีชำระเงิน'))}</p>` : ''}
-                </div>
-            </details>`;
+            const ref = o.id.slice(0, 8).toUpperCase();
+            return `<a class="acct-order" href="/orders/?ref=${esc(ref)}"><div><strong>${esc(what)}</strong><small>${esc(date)} · #${esc(ref)}</small></div>
+                <div class="acct-order-right"><span class="acct-status s-${esc(st)}">${esc(STATUS[st])}</span><span class="acct-total">${baht(o.total)}</span></div></a>`;
         }).join('');
     }
-    // where an order is: placed → confirmed → shipped (or cancelled)
     const STATUS = {
         new: t('Waiting for confirmation', 'รอยืนยัน'),
         confirmed: t('Confirmed', 'ยืนยันแล้ว'),
-        shipped: t('Shipped', 'จัดส่งแล้ว'),
+        preparing: t('Building', 'กำลังประกอบ'),
+        shipped: t('On its way', 'กำลังจัดส่ง'),
+        delivered: t('Delivered', 'ได้รับแล้ว'),
         cancelled: t('Cancelled', 'ยกเลิกแล้ว'),
     };
-    function timeline(st) {
-        if (st === 'cancelled') return `<p class="acct-cancelled"><i class="fas fa-circle-xmark" aria-hidden="true"></i> ${esc(t('This order was cancelled. Questions? Use Contact us on our website.', 'คำสั่งซื้อนี้ถูกยกเลิก หากมีข้อสงสัย ติดต่อทีมงานได้ที่หน้า ติดต่อเรา'))}</p>`;
-        const steps = [['new', t('Order placed', 'สั่งซื้อแล้ว')], ['confirmed', t('Confirmed', 'ยืนยันแล้ว')], ['shipped', t('Shipped', 'จัดส่งแล้ว')]];
-        const at = steps.findIndex(s => s[0] === st);
-        return `<ol class="acct-steps" aria-label="${esc(t('Order progress', 'ความคืบหน้าคำสั่งซื้อ'))}">${steps.map((s, i) => `<li class="${i <= at ? 'done' : ''}${i === at ? ' now' : ''}"><span class="dot" aria-hidden="true"></span>${esc(s[1])}</li>`).join('')}</ol>`;
-    }
 
     // ---------- actions ----------
     async function signInGoogle() {
@@ -205,14 +192,10 @@
         user = data.session ? data.session.user : null;
         renderNav();
         prefill();
-        // /?page=orders (menu "My orders", status emails) opens the orders list once we know who this is
+        // old links (/?page=orders) go to the tracking page
         try {
             const q = new URLSearchParams(location.search);
-            if (q.get('page') === 'orders') {
-                openModal();
-                q.delete('page');
-                history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
-            }
+            if (q.get('page') === 'orders') location.replace('/orders/');
         } catch (e) { /* old browser */ }
     });
 })();

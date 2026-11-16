@@ -489,7 +489,9 @@ async function handleCheckout(e) {
         customOrderData = null;
         localStorage.removeItem('smartPlantCart');
         if (typeof updateCartCount === 'function') updateCartCount();
-        setTimeout(() => location.reload(), 2500);
+        // follow the new order on the tracking page
+        const ref = String(result.id || '').slice(0, 8).toUpperCase();
+        setTimeout(() => { location.href = ref ? '/orders/?placed=' + ref : '/orders/'; }, 1500);
     } catch (err) {
         console.error(err);
         showToast((err && err.message) ? `${t('Could not place the order', 'สั่งซื้อไม่สำเร็จ')}: ${err.message}` : t('Submission failed, please try again.', 'ส่งไม่สำเร็จ กรุณาลองใหม่'));
@@ -523,7 +525,7 @@ window.addEventListener('scroll', function() {
 (function () {
     let p;
     try { p = new URLSearchParams(location.search).get('page'); } catch (e) { return; }
-    const go = { contact: 'showContactPage', about: 'showAboutPage' }[p];
+    const go = { contact: 'showContactPage', about: 'showAboutPage', products: 'showProductsSection' }[p];
     if (!go) return;
     const run = () => {
         if (typeof window[go] === 'function') window[go]();

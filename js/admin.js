@@ -7,7 +7,10 @@
     const SUPABASE_KEY = 'sb_publishable_GJ2OSOL0VpllgcH2Q9lQww_wqg5aqEj';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const STATUSES = ['new', 'confirmed', 'shipped', 'cancelled'];
+    // the customer follows these steps on /orders/ (placed → confirmed → preparing → shipped → delivered)
+    const STATUSES = ['new', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'];
+    const STATUS_LABEL = { new: 'New', confirmed: 'Confirmed', preparing: 'Building the box', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' };
+    const CARRIERS = { thailandpost: 'Thailand Post', kex: 'KEX (Kerry)', flash: 'Flash Express', jt: 'J&T Express', self: 'Our team delivers', other: 'Other' };
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const money = v => { const n = Math.round((Number(v) || 0) * 100) / 100; return '฿' + n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); };
@@ -62,7 +65,7 @@
     // ---------- data ----------
     async function load() {
         const { data, error } = await sb.from('orders')
-            .select('id, created_at, status, order_type, customer, items, total')
+            .select('id, created_at, status, order_type, customer, items, total, carrier, tracking_no')
             .order('created_at', { ascending: false })
             .limit(500);
         if (error) { $('list').innerHTML = `<p class="adm-empty">Could not load orders: ${esc(error.message)}</p>`; return; }
@@ -122,6 +125,17 @@
         render();
         toast(`Order #${id.slice(0, 8)} → ${status}${EMAILED.includes(status) ? ' · the customer gets an email' : ''}`);
     }
+    async function saveTracking(id) {
+        const carrier = document.querySelector(`[data-carrier-for="${id}"]`).value || null;
+        const raw = document.querySelector(`[data-tracking-for="${id}"]`).value.trim().replace(/\s+/g, '');
+        if (raw && !/^[A-Za-z0-9-]{4,40}$/.test(raw)) { toast('Tracking numbers use letters, digits and - only (4–40)'); return; }
+        const { error } = await sb.from('orders').update({ carrier, tracking_no: raw || null }).eq('id', id);
+        if (error) { toast('Could not save tracking: ' + error.message); return; }
+        const o = orders.find(x => x.id === id);
+        if (o) { o.carrier = carrier; o.tracking_no = raw || null; }
+        render();
+        toast(raw ? `Tracking saved for #${id.slice(0, 8)} — the customer can see it now` : 'Tracking cleared');
+    }
     // the database emails the customer when an order moves to one of these (private.notify_customer_status)
     const EMAILED = ['confirmed', 'shipped', 'cancelled'];
 
@@ -158,6 +172,8 @@
         $('cConfirmed').textContent = $('stConfirmed').textContent = count('confirmed');
         $('cShipped').textContent = $('stShipped').textContent = count('shipped');
         $('cCancelled').textContent = count('cancelled');
+        $('cPreparing').textContent = count('preparing');
+        $('cDelivered').textContent = count('delivered');
         $('stRevenue').textContent = money(orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total || 0), 0));
         if (view === 'sales') renderSales();
 
@@ -203,11 +219,21 @@
                     <div class="adm-actions">
                         <label>Status
                             <select data-status-for="${esc(o.id)}">
-                                ${STATUSES.map(s => `<option value="${s}"${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}
+                                ${STATUSES.map(s => `<option value="${s}"${s === o.status ? ' selected' : ''}>${STATUS_LABEL[s]}</option>`).join('')}
                             </select>
                         </label>
                         <small class="adm-hint"><i class="fas fa-envelope"></i> Confirmed, shipped and cancelled email the customer${c.email ? ` (${esc(c.email)})` : ''}</small>
                         <span class="adm-total-big">Total ${money(o.total)}</span>
+                    </div>
+                    <div class="adm-tracking">
+                        <label>Carrier
+                            <select data-carrier-for="${esc(o.id)}"><option value="">—</option>${Object.entries(CARRIERS).map(([k, v]) => `<option value="${k}"${k === o.carrier ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select>
+                        </label>
+                        <label>Tracking number
+                            <input data-tracking-for="${esc(o.id)}" value="${esc(o.tracking_no || '')}" maxlength="40" placeholder="e.g. TH0123456789A" autocomplete="off">
+                        </label>
+                        <button class="btn btn-ghost adm-small" type="button" data-save-tracking="${esc(o.id)}"><i class="fas fa-truck-fast"></i> Save tracking</button>
+                        <small class="adm-hint">Save it before choosing Shipped — the customer sees it on their tracking page and in the shipped email.</small>
                     </div>
                 </div>` : ''}
             </article>`;
@@ -256,7 +282,7 @@
         const months = sumBy(live, o => monthKey(o.created_at), o => ({ n: 1, total: Number(o.total || 0) })).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 12);
         const top = sumBy(items, i => i.name || 'Item', i => ({ n: 1, total: Number(i.price || 0) })).sort((a, b) => b[1].total - a[1].total).slice(0, 12);
         // what to buy / build for orders that aren't shipped yet
-        const waiting = orders.filter(o => o.status === 'new' || o.status === 'confirmed');
+        const waiting = orders.filter(o => o.status === 'new' || o.status === 'confirmed' || o.status === 'preparing');
         const parts = sumBy(waiting.flatMap(o => (Array.isArray(o.items) ? o.items : []).flatMap(i => (Array.isArray(i.lines) ? i.lines : []))),
             l => splitQty(l.name)[0], l => ({ n: splitQty(l.name)[1], total: Number(l.price || 0) })).sort((a, b) => b[1].n - a[1].n);
         const table = (head, rows, empty) => rows.length
@@ -297,11 +323,11 @@
     function download(kind) {
         const rows = [];
         if (kind === 'orders') {
-            rows.push(['Order #', 'Date (Bangkok)', 'Status', 'First name', 'Last name', 'Phone', 'Email', 'Address', 'Comments', 'Items', 'Total (THB)']);
+            rows.push(['Order #', 'Date (Bangkok)', 'Status', 'First name', 'Last name', 'Phone', 'Email', 'Address', 'Comments', 'Items', 'Total (THB)', 'Carrier', 'Tracking number']);
             orders.forEach(o => {
                 const c = o.customer || {};
                 const items = (Array.isArray(o.items) ? o.items : []).map(i => i && i.name).filter(Boolean).join(' | ');
-                rows.push([o.id.slice(0, 8), dateTime(o.created_at), o.status, c.firstName, c.lastName, c.phone, c.email, c.address, c.comments, items, Number(o.total || 0)]);
+                rows.push([o.id.slice(0, 8), dateTime(o.created_at), o.status, c.firstName, c.lastName, c.phone, c.email, c.address, c.comments, items, Number(o.total || 0), CARRIERS[o.carrier] || '', o.tracking_no || '']);
             });
         } else {
             rows.push(['Order #', 'Date (Bangkok)', 'Status', 'Box / kit', 'Item line', 'Pieces', 'Price (THB)']);
@@ -403,6 +429,8 @@
         if (dl) { download(dl.dataset.download); return; }
         if (e.target.closest('#savePrices')) { savePrices(); return; }
         if (e.target.closest('#discardPrices')) { edits.clear(); renderPrices(); return; }
+        const st = e.target.closest('[data-save-tracking]');
+        if (st) { saveTracking(st.dataset.saveTracking); return; }
         const row = e.target.closest('[data-toggle]');
         if (row) {
             const id = row.dataset.toggle;

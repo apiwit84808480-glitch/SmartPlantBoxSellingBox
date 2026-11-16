@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ติดตามคำสั่งซื้อ — Smart Plant Box Selling Website</title>
+    <meta name="description" content="ติดตามว่ากล่องปลูกพืช Smart Plant Box ที่คุณสั่งถึงขั้นไหนแล้ว ตั้งแต่ยืนยัน ประกอบ จนถึงจัดส่ง">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#1d3a2a">
+    <link rel="icon" href="/favicon.ico?v=4" sizes="any">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=4">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
+    <script>
+        (function () {
+            var l = 'th';
+            try { l = localStorage.getItem('spbLang') || 'th'; } catch (e) {}
+            document.documentElement.lang = l === 'en' ? 'en' : 'th';
+            if (l === 'en') document.title = 'Track your order — Smart Plant Box Selling Website';
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/css/style.css?v=20261116l">
+</head>
+<body class="pv-page">
+    <header class="pv-bar">
+        <a class="pv-back" href="/"><i class="fas fa-arrow-left" aria-hidden="true"></i> <span class="pv-th">กลับหน้าแรก</span><span class="pv-en">Back to home</span></a>
+        <a class="pv-brand" href="/" aria-label="Smart Plant Box"><span class="pv-mark"><i class="fas fa-seedling"></i></span><span class="pv-brand-name">Smart Plant Box</span></a>
+        <div class="pv-lang" role="group" aria-label="Language">
+            <button type="button" data-lang-btn="th" onclick="setLang('th')" lang="th">ไทย</button>
+            <button type="button" data-lang-btn="en" onclick="setLang('en')" lang="en">EN</button>
+        </div>
+    </header>
+
+    <main class="pv-main trk-main">
+        <p class="pv-eyebrow"><span class="pv-th">ติดตามคำสั่งซื้อ</span><span class="pv-en">Track your order</span></p>
+        <h1 class="trk-title"><span class="pv-th">กล่องของคุณถึงไหนแล้ว</span><span class="pv-en">Where is your box?</span></h1>
+        <p class="pv-updated"><span class="pv-th">ทุกขั้นตอนตั้งแต่สั่งซื้อจนถึงมือคุณ อัปเดตทันทีที่ทีมงานเปลี่ยนสถานะ</span><span class="pv-en">Every step from your order to your door, updated the moment our team moves it along.</span></p>
+
+        <div class="trk-placed" id="trkPlaced" hidden>
+            <i class="fas fa-circle-check" aria-hidden="true"></i>
+            <div><b><span class="pv-th">สั่งซื้อสำเร็จ!</span><span class="pv-en">Order placed!</span></b>
+            <span class="pv-th">เลขคำสั่งซื้อของคุณคือ</span><span class="pv-en">Your order number is</span> <b id="trkPlacedRef"></b> <span class="pv-th">— ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง</span><span class="pv-en">— our team will contact you within 24 hours.</span></div>
+        </div>
+
+        <section id="trkMine" aria-live="polite"><p class="trk-loading"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></p></section>
+
+        <section class="trk-lookup" aria-labelledby="trkLookupTitle">
+            <h2 id="trkLookupTitle"><i class="fas fa-magnifying-glass" aria-hidden="true"></i> <span class="pv-th">ค้นหาด้วยเลขคำสั่งซื้อ</span><span class="pv-en">Look up an order</span></h2>
+            <p><span class="pv-th">ใช้ได้ทุกเครื่อง ไม่ต้องเข้าสู่ระบบ เลขคำสั่งซื้อ 8 ตัวอยู่ในอีเมลแจ้งสถานะ</span><span class="pv-en">Works on any device, no sign-in needed. The 8-character order number is in your status emails.</span></p>
+            <form id="trkForm" class="trk-form" novalidate>
+                <label><span class="pv-th">เลขคำสั่งซื้อ</span><span class="pv-en">Order number</span>
+                    <input id="trkRef" inputmode="text" autocomplete="off" maxlength="9" placeholder="1A2B3C4D"></label>
+                <label><span class="pv-th">เบอร์โทรที่ใช้สั่งซื้อ</span><span class="pv-en">Phone used to order</span>
+                    <input id="trkPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="08x-xxx-xxxx"></label>
+                <button id="trkFind" class="trk-btn" type="submit"><i class="fas fa-magnifying-glass" aria-hidden="true"></i> <span class="pv-th">ค้นหา</span><span class="pv-en">Find</span></button>
+            </form>
+            <div id="trkFound" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <footer class="pv-foot">
+        <p><span class="pv-th">&copy; 2026 Smart Plant Box V4 · เว็บไซต์จำหน่ายนวัตกรรม</span><span class="pv-en">&copy; 2026 Smart Plant Box V4 · Innovations Selling Website</span></p>
+        <a class="pv-faq-link" href="/?page=contact"><i class="fas fa-envelope" aria-hidden="true"></i> <span class="pv-th">ติดต่อทีมงาน</span><span class="pv-en">Contact us</span></a>
+    </footer>
+
+    <div class="trk-toast" id="trkToast" role="status" aria-live="polite"></div>
+
+    <script src="/js/i18n.js?v=20261116l"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
+    <script src="/js/orders.js?v=20261116l"></script>
+    <script src="/js/consent.js?v=20261116l"></script>
+</body>
+</html>
