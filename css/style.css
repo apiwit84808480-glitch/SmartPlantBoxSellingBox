@@ -2278,3 +2278,9 @@ html[lang="en"] .pv-th, html:not([lang="en"]) .pv-en { display: none !important;
     .trk-parcel-actions { width: 100%; }
     .trk-parcel-actions .trk-btn { flex: 1; }
 }
+
+/* 404 page */
+.nf-main { text-align: center; padding-top: clamp(3rem, 10vw, 6rem); }
+.nf-code { margin: 0; font-family: var(--serif); font-size: clamp(4.5rem, 18vw, 8rem); line-height: 1; color: rgba(29, 58, 42, 0.14); }
+.nf-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 1.4rem; }
+.nf-main .pv-updated { text-wrap: balance; }

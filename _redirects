@@ -1,0 +1,8 @@
+# Cloudflare Pages redirect rules (this file itself is not served).
+# The repository also holds files that belong to the team, not the public website:
+# database code, the FAQ builder, the GitHub keep-alive job and an old product list.
+# Send anyone who asks for them to the home page instead.
+/supabase/*   /   302
+/tools/*      /   302
+/.github/*    /   302
+/data/*       /   302
