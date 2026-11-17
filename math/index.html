@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="th" class="i18n-wait">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คณิตศาสตร์ในกล่อง — Smart Plant Box Selling Website</title>
+    <meta name="description" content="สามสมการที่ Smart Plant Box ใช้คำนวณปริมาณน้ำที่พืชต้องการ อัตราการเจริญเติบโต และมวลพืช ณ เวลาใด ๆ พร้อมตัวคำนวณและกราฟให้ลองเปลี่ยนค่าเอง">
+    <meta name="theme-color" content="#1d3a2a">
+    <link rel="canonical" href="https://www.smartplantbox.com/math/">
+    <link rel="icon" href="/favicon.ico?v=4" sizes="any">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=4">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4">
+    <script>
+        (function () {
+            var l = 'th';
+            try { l = localStorage.getItem('spbLang') || 'th'; } catch (e) {}
+            document.documentElement.lang = l === 'en' ? 'en' : 'th';
+            if (l === 'en') document.title = 'The math inside the box — Smart Plant Box Selling Website';
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="/css/style.css?v=20261117a">
+</head>
+<body class="pv-page mx-page">
+    <header class="pv-bar">
+        <a class="pv-back" href="/"><i class="fas fa-arrow-left" aria-hidden="true"></i> <span data-th="กลับหน้าแรก">Back to home</span></a>
+        <a class="pv-brand" href="/" aria-label="Smart Plant Box"><span class="pv-mark"><i class="fas fa-seedling"></i></span><span class="pv-brand-name">Smart Plant Box</span></a>
+        <div class="pv-lang" role="group" aria-label="Language">
+            <button type="button" data-lang-btn="th" onclick="setLang('th')" lang="th">ไทย</button>
+            <button type="button" data-lang-btn="en" onclick="setLang('en')" lang="en">EN</button>
+        </div>
+    </header>
+
+    <main class="mx-main">
+        <!-- ===== intro ===== -->
+        <section class="mx-hero">
+            <p class="pv-eyebrow" data-th="คณิตศาสตร์ในกล่อง · โครงงานนวัตกรรมทางคณิตศาสตร์">The math inside the box · Mathematics innovation project</p>
+            <h1 class="mx-title" data-th="สมการที่กล่อง<em>คิดแทนคุณ</em>">The equations the box <em>works out for you</em></h1>
+            <p class="mx-lead" data-th="Smart Plant Box ไม่ได้รดน้ำแบบกะเอา กล่องใช้สมการ 3 ตัวนี้ตัดสินใจว่าควรให้น้ำเท่าไร และทำนายว่าพืชจะโตแค่ไหนในแต่ละวัน ทุกสูตรด้านล่างลองเปลี่ยนค่าแล้วดูผลได้ทันที">Smart Plant Box doesn't water by guesswork. It uses these three equations to decide how much water to give, and to predict how big the plant will be on any day. Every formula below is live — change the numbers and watch the result.</p>
+
+            <ol class="mx-flow" aria-label="How the three formulas work together" data-th-aria="สามสูตรทำงานร่วมกันอย่างไร">
+                <li>
+                    <a href="#water">
+                        <span class="mx-flow-no">1</span>
+                        <b data-th="ปริมาณน้ำที่พืชต้องการ">Water the plant needs</b>
+                        <small data-th="เซนเซอร์ + มวลพืช → น้ำต่อรอบ (มล.)">Sensors + plant mass → water per watering (ml)</small>
+                    </a>
+                </li>
+                <li>
+                    <a href="#rate">
+                        <span class="mx-flow-no">2</span>
+                        <b data-th="อัตราการเจริญเติบโต">Growth rate</b>
+                        <small data-th="พืชโตวันละกี่กรัม (สมการเชิงอนุพันธ์)">Grams gained per day (a differential equation)</small>
+                    </a>
+                </li>
+                <li>
+                    <a href="#mass">
+                        <span class="mx-flow-no">3</span>
+                        <b data-th="มวลพืช ณ เวลาใด ๆ">Plant mass at any time</b>
+                        <small data-th="คำตอบของสมการที่ 2 → มวลในวันที่ t">The solution of equation 2 → mass on day t</small>
+                    </a>
+                </li>
+            </ol>
+            <p class="mx-flow-note"><i class="fas fa-link" aria-hidden="true"></i> <span data-th="สูตรที่ 3 บอกมวลพืช m ในแต่ละวัน แล้วกล่องนำ m นั้นไปใส่ในสูตรที่ 1 ปริมาณน้ำจึงเพิ่มขึ้นเองตามที่พืชโต">Formula 3 gives the plant mass m for each day, and the box feeds that m into formula 1 — so the water grows with the plant.</span></p>
+        </section>
+
+        <!-- ===== 1) water ===== -->
+        <section class="mx-card" id="water" aria-labelledby="waterTitle">
+            <header class="mx-head">
+                <span class="mx-no">1</span>
+                <div>
+                    <h2 id="waterTitle" data-th="ปริมาณน้ำที่พืชต้องการ ต่อการรดหนึ่งครั้ง (รดวันละ 2 ครั้ง)">Water the plant needs per watering (watered twice a day)</h2>
+                    <p data-th="ผสมสองวิธีคิดเข้าด้วยกัน: เติมน้ำให้ดินชื้นถึงเป้าตามที่เซนเซอร์วัดได้ กับน้ำที่พืชใช้จริงตามขนาด อายุ และอุณหภูมิ">Blends two ways of thinking: top the soil up to its target moisture (from the sensor), and the water the plant actually uses (from its size, age and the temperature).</p>
+                </div>
+            </header>
+
+            <div class="mx-formula long" role="math" aria-label="V equals a times g minus h times s, plus one minus a times k times c times m times F over 2">
+                <math display="block">
+                    <mi>V</mi><mo>=</mo>
+                    <mrow><mo>[</mo><mi>a</mi><mo>×</mo><mo>(</mo><mi>g</mi><mo>−</mo><mi>h</mi><mo>)</mo><mo>×</mo><mi>s</mi><mo>]</mo></mrow>
+                    <mo>+</mo>
+                    <mrow><mo>[</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>a</mi><mo>)</mo><mo>×</mo><mfrac><mrow><mi>k</mi><mo>×</mo><mi>c</mi><mo>×</mo><mi>m</mi><mo>×</mo><mi>F</mi></mrow><mn>2</mn></mfrac><mo>]</mo></mrow>
+                </math>
+            </div>
+
+            <div class="mx-parts">
+                <div class="mx-part a">
+                    <b><span class="mx-sw"></span> <span data-th="ส่วนที่ 1: ตามเซนเซอร์">Part 1: from the sensor</span></b>
+                    <p data-th="(g − h) คือความชื้นที่ยังขาด คูณปริมาตรดิน s ได้ปริมาณน้ำที่ต้องเติมให้ดินชื้นถึงเป้า">(g − h) is the moisture still missing; times the soil volume s, it is the water needed to bring the soil up to target.</p>
+                </div>
+                <div class="mx-part b">
+                    <b><span class="mx-sw"></span> <span data-th="ส่วนที่ 2: ตามตัวพืช">Part 2: from the plant</span></b>
+                    <p data-th="k × c × m × F คือน้ำที่พืชใช้ต่อวัน หาร 2 เพราะรดวันละ 2 ครั้ง">k × c × m × F is the water the plant uses in a day; divided by 2 because it is watered twice a day.</p>
+                </div>
+                <div class="mx-part w">
+                    <b><i class="fas fa-scale-balanced" aria-hidden="true"></i> <span data-th="a คือน้ำหนักความเชื่อใจ">a is the weight of trust</span></b>
+                    <p data-th="a กับ (1 − a) รวมกันได้ 1 เสมอ จึงเป็นค่าเฉลี่ยถ่วงน้ำหนัก ถ้า a = 1 เชื่อเซนเซอร์ทั้งหมด ถ้า a = 0 ใช้แต่การคำนวณจากตัวพืช">a and (1 − a) always add up to 1, so V is a weighted average. a = 1 trusts the sensor completely; a = 0 uses only the plant model.</p>
+                </div>
+            </div>
+
+            <div class="mx-calc">
+                <div class="mx-vars" id="waterVars"></div>
+                <div class="mx-out" aria-live="polite">
+                    <p class="mx-out-label" data-th="ปริมาณน้ำต่อการรด 1 ครั้ง">Water per watering</p>
+                    <p class="mx-big" id="waterV">—</p>
+                    <p class="mx-sub" id="waterDay"></p>
+                    <div class="mx-bar" id="waterBar" aria-hidden="true"><i class="a"></i><i class="b"></i></div>
+                    <div class="mx-steps" id="waterSteps"></div>
+                    <p class="mx-unit-note"><i class="fas fa-ruler" aria-hidden="true"></i> <span data-th="หน่วย: ใส่ g และ h เป็น % (ระบบแปลงเป็นทศนิยม เช่น 40% = 0.40) ส่วน s เป็น m³ ซึ่ง 1 m³ = 1,000,000 มล. และ k คิดเป็น มล. ต่อกรัม ต่อวัน">Units: g and h are entered as % (used as decimals, e.g. 40% = 0.40). s is in m³, and 1 m³ = 1,000,000 ml. k is taken as ml per gram per day.</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 2) growth rate ===== -->
+        <section class="mx-card" id="rate" aria-labelledby="rateTitle">
+            <header class="mx-head">
+                <span class="mx-no">2</span>
+                <div>
+                    <h2 id="rateTitle" data-th="อัตราการเจริญเติบโตของพืช">How fast the plant grows</h2>
+                    <p data-th="สมการเชิงอนุพันธ์โลจิสติก บอกว่า ณ ตอนที่พืชหนัก m กรัม มวลกำลังเพิ่มขึ้นวันละกี่กรัม">The logistic differential equation: when the plant weighs m grams, how many grams a day it is gaining.</p>
+                </div>
+            </header>
+
+            <div class="mx-formula" role="math" aria-label="d m by d t equals r times m times, one minus m over K">
+                <math display="block">
+                    <mfrac><mrow><mi>d</mi><mi>m</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo>
+                    <mi>r</mi><mo>·</mo><mi>m</mi><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mfrac><mi>m</mi><mi>K</mi></mfrac><mo>)</mo></mrow>
+                </math>
+            </div>
+
+            <div class="mx-parts">
+                <div class="mx-part a">
+                    <b><span class="mx-sw"></span> <span data-th="r · m — ยิ่งใหญ่ ยิ่งโตเร็ว">r · m — the bigger, the faster</span></b>
+                    <p data-th="ตอนพืชยังเล็ก (m น้อยกว่า K มาก) วงเล็บเกือบเท่ากับ 1 พืชจึงโตแบบเอกซ์โพเนนเชียล">While the plant is small (m much less than K) the bracket is almost 1, so growth is exponential.</p>
+                </div>
+                <div class="mx-part b">
+                    <b><span class="mx-sw"></span> <span data-th="(1 − m/K) — ตัวเบรก">(1 − m/K) — the brake</span></b>
+                    <p data-th="ยิ่ง m เข้าใกล้ K วงเล็บยิ่งเข้าใกล้ 0 พืชจึงโตช้าลงจนหยุดเมื่อโตเต็มที่">As m gets close to K the bracket heads to 0, so growth slows and stops when the plant is fully grown.</p>
+                </div>
+                <div class="mx-part w">
+                    <b><i class="fas fa-mountain" aria-hidden="true"></i> <span data-th="โตเร็วที่สุดตอน m = K/2">Fastest at m = K/2</span></b>
+                    <p data-th="dm/dt = rm − rm²/K หาอนุพันธ์เทียบกับ m ได้ r − 2rm/K ให้เท่ากับ 0 จะได้ m = K/2 และอัตราสูงสุด = rK/4">dm/dt = rm − rm²/K. Its derivative in m, r − 2rm/K, is 0 at m = K/2, where the top rate is rK/4.</p>
+                </div>
+            </div>
+
+            <div class="mx-calc">
+                <div class="mx-vars" id="rateVars"></div>
+                <div class="mx-out" aria-live="polite">
+                    <p class="mx-out-label" data-th="อัตราการเปลี่ยนแปลงของมวลพืช">Rate of change of plant mass</p>
+                    <p class="mx-big" id="rateOut">—</p>
+                    <p class="mx-sub" id="rateMax"></p>
+                    <div class="mx-chart" id="rateChart"></div>
+                    <div class="mx-steps" id="rateSteps"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 3) mass at time t ===== -->
+        <section class="mx-card" id="mass" aria-labelledby="massTitle">
+            <header class="mx-head">
+                <span class="mx-no">3</span>
+                <div>
+                    <h2 id="massTitle" data-th="มวลพืช ณ เวลาใด ๆ">Plant mass at any time</h2>
+                    <p data-th="คำตอบของสมการที่ 2 ได้กราฟรูปตัว S: เริ่มโตช้า เร่งขึ้นจนเร็วที่สุดตรงกลาง แล้วค่อย ๆ เข้าใกล้ K">The solution of equation 2 is an S-shaped curve: slow at first, fastest in the middle, then levelling off towards K.</p>
+                </div>
+            </header>
+
+            <div class="mx-formula" role="math" aria-label="m of t equals K over one plus e to the power of minus, r t plus C">
+                <math display="block">
+                    <mi>m</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo>
+                    <mfrac><mi>K</mi><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mo>(</mo><mi>r</mi><mi>t</mi><mo>+</mo><mi>C</mi><mo>)</mo></mrow></msup></mrow></mfrac>
+                </math>
+            </div>
+
+            <div class="mx-parts">
+                <div class="mx-part a">
+                    <b><span class="mx-sw"></span> <span data-th="หาค่า C จากมวลเริ่มต้น">Finding C from the starting mass</span></b>
+                    <p data-th="แทน t = 0 จะได้ m₀ = K / (1 + e^−C) จัดรูปได้ C = ln( m₀ / (K − m₀) )">Put t = 0: m₀ = K / (1 + e^−C), which rearranges to C = ln( m₀ / (K − m₀) ).</p>
+                </div>
+                <div class="mx-part b">
+                    <b><span class="mx-sw"></span> <span data-th="จุดเปลี่ยนเว้า t* = −C / r">Inflection point t* = −C / r</span></b>
+                    <p data-th="เมื่อ rt + C = 0 ตัวส่วนเท่ากับ 2 จึงได้ m = K/2 ตรงกับจุดที่สูตรที่ 2 บอกว่าโตเร็วที่สุด">When rt + C = 0 the bottom equals 2, so m = K/2 — exactly where formula 2 says growth is fastest.</p>
+                </div>
+                <div class="mx-part w">
+                    <b><i class="fas fa-chart-line" aria-hidden="true"></i> <span data-th="ความชันของกราฟ = สูตรที่ 2">The slope of the curve = formula 2</span></b>
+                    <p data-th="เส้นสีทองในกราฟคือเส้นสัมผัส ความชันของมันเท่ากับ dm/dt ที่คำนวณจากสูตรที่ 2 พอดี">The gold line on the chart is the tangent; its slope is exactly the dm/dt that formula 2 gives.</p>
+                </div>
+            </div>
+
+            <div class="mx-calc mx-calc-wide">
+                <div class="mx-vars" id="massVars"></div>
+                <div class="mx-out" aria-live="polite">
+                    <p class="mx-out-label" id="massLabel" data-th="มวลพืช ณ วันที่ t">Plant mass on day t</p>
+                    <p class="mx-big" id="massOut">—</p>
+                    <p class="mx-sub" id="massRate"></p>
+                    <div class="mx-chart mx-chart-big" id="massChart"></div>
+                    <ul class="mx-facts" id="massFacts"></ul>
+                    <div class="mx-steps" id="massSteps"></div>
+                    <button type="button" class="mx-use" id="useMass"><i class="fas fa-arrow-up" aria-hidden="true"></i> <span data-th="ใช้มวลนี้ในสูตรที่ 1 (ปริมาณน้ำ)">Use this mass in formula 1 (water)</span></button>
+                </div>
+            </div>
+
+            <details class="mx-proof">
+                <summary><i class="fas fa-square-root-variable" aria-hidden="true"></i> <span data-th="ที่มาของสูตรที่ 3: แก้สมการที่ 2 ทีละขั้น">Where formula 3 comes from: solving equation 2 step by step</span> <i class="fas fa-chevron-down mx-chev" aria-hidden="true"></i></summary>
+                <ol>
+                    <li>
+                        <p data-th="เริ่มจากสูตรที่ 2 แล้วแยกตัวแปร ให้ m อยู่ข้างหนึ่ง t อยู่อีกข้าง">Start from formula 2 and separate the variables — m on one side, t on the other.</p>
+                        <math display="block"><mfrac><mrow><mi>d</mi><mi>m</mi></mrow><mrow><mi>m</mi><mo>(</mo><mn>1</mn><mo>−</mo><mfrac><mi>m</mi><mi>K</mi></mfrac><mo>)</mo></mrow></mfrac><mo>=</mo><mi>r</mi><mspace width="0.2em"></mspace><mi>d</mi><mi>t</mi></math>
+                    </li>
+                    <li>
+                        <p data-th="แยกเศษส่วนย่อย (ตรวจได้โดยรวมเศษส่วนกลับ จะได้ K / m(K − m))">Split into partial fractions (add them back together to check: you get K / m(K − m)).</p>
+                        <math display="block"><mfrac><mn>1</mn><mrow><mi>m</mi><mo>(</mo><mn>1</mn><mo>−</mo><mfrac><mi>m</mi><mi>K</mi></mfrac><mo>)</mo></mrow></mfrac><mo>=</mo><mfrac><mn>1</mn><mi>m</mi></mfrac><mo>+</mo><mfrac><mn>1</mn><mrow><mi>K</mi><mo>−</mo><mi>m</mi></mrow></mfrac></math>
+                    </li>
+                    <li>
+                        <p data-th="อินทิเกรตทั้งสองข้าง ค่าคงที่จากการอินทิเกรตคือ C">Integrate both sides; the constant of integration is C.</p>
+                        <math display="block"><mo>ln</mo><mi>m</mi><mo>−</mo><mo>ln</mo><mo>(</mo><mi>K</mi><mo>−</mo><mi>m</mi><mo>)</mo><mo>=</mo><mi>r</mi><mi>t</mi><mo>+</mo><mi>C</mi></math>
+                        <math display="block"><mo>⇒</mo><mspace width="0.5em"></mspace><mfrac><mi>m</mi><mrow><mi>K</mi><mo>−</mo><mi>m</mi></mrow></mfrac><mo>=</mo><msup><mi>e</mi><mrow><mi>r</mi><mi>t</mi><mo>+</mo><mi>C</mi></mrow></msup></math>
+                    </li>
+                    <li>
+                        <p data-th="แก้หา m แล้วหารทั้งเศษและส่วนด้วย e^(rt + C) ได้สูตรที่ 3">Solve for m, then divide top and bottom by e^(rt + C) — that is formula 3.</p>
+                        <math display="block"><mi>m</mi><mo>=</mo><mfrac><mrow><mi>K</mi><msup><mi>e</mi><mrow><mi>r</mi><mi>t</mi><mo>+</mo><mi>C</mi></mrow></msup></mrow><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><mrow><mi>r</mi><mi>t</mi><mo>+</mo><mi>C</mi></mrow></msup></mrow></mfrac><mo>=</mo><mfrac><mi>K</mi><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mo>(</mo><mi>r</mi><mi>t</mi><mo>+</mo><mi>C</mi><mo>)</mo></mrow></msup></mrow></mfrac></math>
+                    </li>
+                </ol>
+            </details>
+        </section>
+
+        <!-- ===== symbols ===== -->
+        <section class="mx-card mx-symbols" aria-labelledby="symTitle">
+            <h2 id="symTitle" data-th="ความหมายของตัวแปรทั้งหมด">What every symbol means</h2>
+            <div class="pv-table-wrap">
+                <table class="pv-table mx-table">
+                    <thead><tr><th data-th="ตัวแปร">Symbol</th><th data-th="ความหมาย">Meaning</th><th data-th="หน่วย">Unit</th><th data-th="สูตร">Formula</th></tr></thead>
+                    <tbody>
+                        <tr><td><i>V</i></td><td data-th="ปริมาณน้ำที่พืชต้องการ ต่อการรด 1 ครั้ง">Water the plant needs per watering</td><td data-th="มล.">ml</td><td>1</td></tr>
+                        <tr><td><i>a</i></td><td data-th="ความน่าเชื่อถือของเซนเซอร์">Sensor reliability</td><td>0 – 1</td><td>1</td></tr>
+                        <tr><td><i>g</i></td><td data-th="ความชื้นในดินที่ต้องการ">Target soil moisture</td><td>%</td><td>1</td></tr>
+                        <tr><td><i>h</i></td><td data-th="ความชื้นในดิน ณ ปัจจุบัน">Current soil moisture</td><td>%</td><td>1</td></tr>
+                        <tr><td><i>s</i></td><td data-th="ปริมาตรดินในกระถาง">Soil volume in the pot</td><td>m³</td><td>1</td></tr>
+                        <tr><td><i>k</i></td><td data-th="ค่าคงที่ความต้องการน้ำของพืช">Plant water-need constant</td><td data-th="มล./ก./วัน">ml/g/day</td><td>1</td></tr>
+                        <tr><td><i>c</i></td><td data-th="ตัวคูณตามอายุพืช">Plant-age multiplier</td><td>—</td><td>1</td></tr>
+                        <tr><td><i>m</i></td><td data-th="มวลพืช">Plant mass</td><td data-th="กรัม (g)">grams (g)</td><td>1, 2, 3</td></tr>
+                        <tr><td><i>F</i></td><td data-th="ตัวคูณตามอุณหภูมิ">Temperature multiplier</td><td>—</td><td>1</td></tr>
+                        <tr><td><i>dm/dt</i></td><td data-th="อัตราการเปลี่ยนแปลงของมวลพืช">Rate of change of plant mass</td><td data-th="กรัม/วัน">g/day</td><td>2</td></tr>
+                        <tr><td><i>r</i></td><td data-th="อัตราการโตสัมพัทธ์ตอนต้น">Initial relative growth rate</td><td data-th="ต่อวัน">per day</td><td>2, 3</td></tr>
+                        <tr><td><i>K</i></td><td data-th="มวลพืช ณ ตอนโตเต็มที่">Plant mass when fully grown</td><td data-th="กรัม (g)">grams (g)</td><td>2, 3</td></tr>
+                        <tr><td><i>m(t)</i></td><td data-th="มวลพืช ณ เวลา t หรือเวลาใด ๆ">Plant mass at time t (any time)</td><td data-th="กรัม (g)">grams (g)</td><td>3</td></tr>
+                        <tr><td><i>t</i></td><td data-th="เวลา">Time</td><td data-th="วัน">days</td><td>3</td></tr>
+                        <tr><td><i>e</i></td><td data-th="ค่าคงที่ของออยเลอร์ ≈ 2.71828">Euler's number ≈ 2.71828</td><td>—</td><td>3</td></tr>
+                        <tr><td><i>C</i></td><td data-th="ค่าคงที่จากการอินทิเกรต (หาได้จากมวลเริ่มต้น)">Constant of integration (found from the starting mass)</td><td>—</td><td>3</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="mx-unit-note"><i class="fas fa-circle-info" aria-hidden="true"></i> <span data-th="ค่าเริ่มต้นในตัวคำนวณเป็นค่าตัวอย่างเพื่อสาธิต ไม่ใช่ค่าที่วัดจากพืชชนิดใดชนิดหนึ่ง">The starting values in the calculators are examples for demonstration, not measurements of a particular plant.</span></p>
+        </section>
+    </main>
+
+    <footer class="pv-foot">
+        <p><span data-th="&copy; 2026 Smart Plant Box V4 · เว็บไซต์จำหน่ายนวัตกรรม">&copy; 2026 Smart Plant Box V4 · Innovations Selling Website</span></p>
+        <a class="pv-faq-link" href="/?page=products"><i class="fas fa-box-open" aria-hidden="true"></i> <span data-th="ดูกล่องที่ใช้สูตรเหล่านี้">See the boxes that use these formulas</span></a>
+    </footer>
+
+    <script src="/js/i18n.js?v=20261117a"></script>
+    <script src="/js/math.js?v=20261117a"></script>
+    <script src="/js/consent.js?v=20261117a"></script>
+</body>
+</html>
