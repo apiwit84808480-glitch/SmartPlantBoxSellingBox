@@ -13,7 +13,7 @@ global.window = {};
 require(path.join(root, 'js', 'advisor-kb.js'));
 const K = window.__kb.TOPICS;
 
-const VERSION = process.argv[2] || '20261117b'; // cache tag for style.css / scripts
+const VERSION = process.argv[2] || '20261117c'; // cache tag for style.css / scripts
 
 const GROUPS = [
     { id: 'start', th: 'เริ่มต้น', en: 'Getting started', icon: 'fa-seedling', topics: ['how'] },
@@ -136,7 +136,7 @@ ${JSON.stringify(ld, null, 1).replace(/</g, '\\u003c')}
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="/css/style.css?v=${VERSION}">
 </head>

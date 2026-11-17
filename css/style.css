@@ -21,9 +21,9 @@
     --radius: 20px;
     --radius-sm: 12px;
     /* Two families: Instrument Serif for big headings, Inter for everything else
-       (Noto Sans Thai only fills in Thai letters, which neither has). */
-    --serif: 'Instrument Serif', 'Noto Sans Thai', Georgia, 'Times New Roman', serif;
-    --sans: 'Inter', 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+       (Sarabun — the web version of TH Sarabun — only fills in Thai letters, which neither has). */
+    --serif: 'Instrument Serif', 'Sarabun', Georgia, 'Times New Roman', serif;
+    --sans: 'Inter', 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --display: var(--sans);
     --ease: cubic-bezier(.2, .7, .1, 1);
     --glow: 0;
@@ -1294,8 +1294,8 @@ select.uc-input { cursor: pointer; }
     .stat:nth-child(n+3) { padding-top: 2rem; }
 }
 
-/* the menu folds into ☰ below 1200px, where the six links no longer fit in one row (Thai is the widest) */
-@media (max-width: 1200px) {
+/* the menu folds into ☰ below 1240px, where the six links no longer fit in one row (Thai is the widest) */
+@media (max-width: 1240px) {
     .nav-toggle { display: block; }
     .nav-links {
         position: fixed;
@@ -1486,7 +1486,7 @@ html[lang="th"] .story-title { font-size: clamp(2.2rem, 4.2vw, 4rem); }
 .lang-switch button.active { background: var(--text); color: #120d15; }
 .lang-switch-menu { display: none; }
 /* When the menu is folded, the language switch moves into it so the top bar fits */
-@media (max-width: 1200px) {
+@media (max-width: 1240px) {
     .nav-actions .lang-switch { display: none; }
     .nav-links .lang-switch-menu { display: inline-flex; margin-top: 1.25rem; }
     .lang-switch-menu button { padding: 0.5rem 1.1rem; font-size: 0.95rem; }
@@ -2323,7 +2323,7 @@ html[lang="en"] .pv-th, html:not([lang="en"]) .pv-en { display: none !important;
 .mx-var label { display: flex; align-items: baseline; gap: 0.45rem; min-width: 0; font-size: 0.86rem; color: #2b4636; line-height: 1.35; }
 .mx-var label span { min-width: 0; }
 .mx-var label small { margin-left: auto; flex: none; color: #8d988f; font-size: 0.75rem; white-space: nowrap; }
-.mx-sym { flex: none; min-width: 1.4em; font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', serif; font-size: 1.15rem; font-weight: 600; color: #1d3a2a; }
+.mx-sym { flex: none; min-width: 1.4em; font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', 'Sarabun', serif; font-size: 1.15rem; font-weight: 600; color: #1d3a2a; }
 .mx-var input[type=number] { width: 100%; padding: 0.35rem 0.5rem; border-radius: 9px; border: 1px solid rgba(29, 58, 42, 0.22); background: #fbf8f2; color: #1d3a2a; font: 600 0.92rem var(--sans); text-align: right; font-variant-numeric: tabular-nums; }
 .mx-var input[type=number]:focus { outline: 2px solid #a8853c; outline-offset: 1px; }
 .mx-var input[type=range] { grid-column: 1 / -1; width: 100%; margin: 0.15rem 0 0; accent-color: #2c6a46; height: 22px; cursor: pointer; }
@@ -2335,7 +2335,7 @@ html[lang="en"] .pv-th, html:not([lang="en"]) .pv-en { display: none !important;
 .mx-bar i { display: block; height: 100%; transition: width 0.25s; }
 .mx-bar .a { background: #7fc497; }
 .mx-bar .b { background: #e6cf98; }
-.mx-steps { padding: 0.7rem 0.8rem; border-radius: 12px; background: rgba(255, 255, 255, 0.07); font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', serif; font-size: 0.95rem; line-height: 1.6; overflow-x: auto; }
+.mx-steps { padding: 0.7rem 0.8rem; border-radius: 12px; background: rgba(255, 255, 255, 0.07); font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', 'Sarabun', serif; font-size: 0.95rem; line-height: 1.6; overflow-x: auto; }
 .mx-steps p { margin: 0; padding-left: 1.2em; text-indent: -1.2em; }
 .mx-steps .mx-steps-title { font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.06em; color: #c9d8cd; margin-bottom: 0.2rem; white-space: normal; }
 .mx-steps b { color: #e6cf98; }
@@ -2374,7 +2374,7 @@ html[lang="en"] .pv-th, html:not([lang="en"]) .pv-en { display: none !important;
 .mx-proof li p { margin: 0 0 0.4rem; color: #2b4636; font-size: 0.92rem; line-height: 1.6; }
 .mx-proof math { font-size: clamp(1rem, 3vw, 1.35rem); overflow-x: auto; max-width: 100%; padding: 0.3rem 0; }
 .mx-symbols h2 { margin: 0 0 0.8rem; font-size: 1.2rem; color: #1d3a2a; }
-.mx-table td:first-child { font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', serif; font-size: 1.05rem; white-space: nowrap; }
+.mx-table td:first-child { font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', 'Sarabun', serif; font-size: 1.05rem; white-space: nowrap; }
 .mx-table td:last-child { white-space: nowrap; color: #5b6b60; }
 
 @media (max-width: 860px) {
@@ -2411,7 +2411,7 @@ html[lang="en"] .pv-th, html:not([lang="en"]) .pv-en { display: none !important;
 @media (max-width: 640px) { .mx-formula { padding: 1rem 0.5rem; } }
 .mx-flow-note, .mx-part p, .mx-head p { text-wrap: pretty; }
 /* six menu links: a little less space between them on laptop widths so they stay on one row */
-@media (min-width: 1201px) and (max-width: 1360px) { .nav-links { gap: 1.6rem; } .nav-links a { white-space: nowrap; } }
+@media (min-width: 1241px) and (max-width: 1360px) { .nav-links { gap: 1.6rem; } .nav-links a { white-space: nowrap; } }
 @media (max-width: 480px) { .math-teaser-list .n { grid-row: auto; } .math-teaser-list math { grid-column: 1 / -1; font-size: 1.1rem; } }
 
 /* /math/ footer: © on the left and the button centred, on one row */
@@ -2423,3 +2423,4 @@ html[lang="en"] .pv-th, html:not([lang="en"]) .pv-en { display: none !important;
     .mx-foot p { grid-column: 1; grid-row: 2; justify-self: center; white-space: normal; }
     .mx-foot .pv-faq-link { grid-column: 1; grid-row: 1; }
 }
+.section-lead { text-wrap: pretty; }
