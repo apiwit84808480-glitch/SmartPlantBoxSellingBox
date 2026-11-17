@@ -10,6 +10,9 @@
     // the customer follows these steps on /orders/ (placed → confirmed → preparing → shipped → delivered)
     const STATUSES = ['new', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'];
     const STATUS_LABEL = { new: 'New', confirmed: 'Confirmed', preparing: 'Building the box', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' };
+    // PromptPay: unpaid → review (customer attached a slip) → paid · rejected (customer attaches again) · refunded
+    const PAY_LABEL = { unpaid: 'Not paid', review: 'Slip to check', paid: 'Paid', rejected: 'Slip rejected', refunded: 'Refunded' };
+    const slipUrls = new Map(); // order id -> blob: URL of the slip picture (downloaded only when asked)
     const CARRIERS = { thailandpost: 'Thailand Post', kex: 'KEX (Kerry)', flash: 'Flash Express', jt: 'J&T Express', self: 'Our team delivers', other: 'Other' };
     const $ = id => document.getElementById(id);
     const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -65,7 +68,7 @@
     // ---------- data ----------
     async function load() {
         const { data, error } = await sb.from('orders')
-            .select('id, created_at, status, order_type, customer, items, total, carrier, tracking_no')
+            .select('id, created_at, status, order_type, customer, items, total, carrier, tracking_no, payment_status, slip_path, slip_at, paid_at, payment_note')
             .order('created_at', { ascending: false })
             .limit(500);
         if (error) { $('list').innerHTML = `<p class="adm-empty">Could not load orders: ${esc(error.message)}</p>`; return; }
@@ -91,7 +94,16 @@
             })
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
                 const i = orders.findIndex(x => x.id === payload.new.id);
-                if (i >= 0) { orders[i] = { ...orders[i], ...payload.new }; render(); }
+                if (i < 0) return;
+                const was = orders[i].payment_status;
+                if (orders[i].slip_path !== payload.new.slip_path) slipUrls.delete(payload.new.id);
+                orders[i] = { ...orders[i], ...payload.new };
+                render();
+                if (was !== 'review' && payload.new.payment_status === 'review') {
+                    const c = orders[i].customer || {};
+                    toast(`Slip to check: ${money(orders[i].total)} from ${c.firstName || ''} ${c.lastName || ''}`);
+                    ping();
+                }
             })
             .subscribe(status => { $('liveDot').hidden = status !== 'SUBSCRIBED'; });
     }
@@ -136,6 +148,56 @@
         render();
         toast(raw ? `Tracking saved for #${id.slice(0, 8)} — the customer can see it now` : 'Tracking cleared');
     }
+    // ---------- payments ----------
+    async function showSlip(id) {
+        const o = orders.find(x => x.id === id);
+        if (!o || !o.slip_path) return;
+        if (!slipUrls.has(id)) {
+            const { data, error } = await sb.storage.from('slips').download(o.slip_path);
+            if (error || !data) { toast('Could not open the slip: ' + (error ? error.message : 'not found')); return; }
+            slipUrls.set(id, URL.createObjectURL(data));
+        }
+        render();
+    }
+    async function payResult(id, result) {
+        const o = orders.find(x => x.id === id);
+        if (!o) return;
+        let note = null;
+        if (result === 'paid' && !confirm(`Did ${money(o.total)} really arrive in the bank account?\n\nCheck your bank app first — a slip picture can be faked.`)) return;
+        if (result === 'rejected') {
+            note = prompt('Why is the slip not OK? The customer sees this (e.g. "amount is ฿100 short", "no transfer found").', '');
+            if (note === null) return;
+        }
+        if (result === 'refunded' && !confirm(`Mark ${money(o.total)} as refunded?\n\nTransfer the money back to the customer first. They get an email.`)) return;
+        if (result === 'unpaid' && !confirm('Set this order back to "not paid"?')) return;
+        const { error } = await sb.rpc('review_payment', { p_order: id, p_result: result, p_note: note });
+        if (error) { toast('Could not save: ' + error.message); return; }
+        o.payment_status = result;
+        o.payment_note = note;
+        if (result === 'paid') o.paid_at = new Date().toISOString();
+        render();
+        toast(`#${id.slice(0, 8)} → ${PAY_LABEL[result]}${result === 'unpaid' ? '' : ' · the customer gets an email'}`);
+    }
+    function payPanel(o) {
+        const ps = o.payment_status || 'unpaid';
+        const slip = slipUrls.get(o.id);
+        const btn = (r, label, icon, ghost = true) => `<button class="btn${ghost ? ' btn-ghost' : ''} adm-small" type="button" data-pay-result="${r}" data-pay-for="${esc(o.id)}"><i class="fas ${icon}"></i> ${label}</button>`;
+        return `<div class="adm-pay-panel">
+            <div class="adm-pay-head">
+                <span class="adm-pay p-${esc(ps)}">${esc(PAY_LABEL[ps] || ps)}</span>
+                <small>${ps === 'paid' && o.paid_at ? `Paid ${esc(when(o.paid_at))}` : o.slip_at ? `Slip sent ${esc(when(o.slip_at))}` : 'PromptPay'}${o.payment_note && ps === 'rejected' ? ` · told the customer: “${esc(o.payment_note)}”` : ''}</small>
+            </div>
+            ${slip ? `<a class="adm-slip" href="${slip}" target="_blank" rel="noopener"><img src="${slip}" alt="Payment slip for order ${esc(o.id.slice(0, 8))}"></a>` : ''}
+            <div class="adm-pay-actions">
+                ${o.slip_path && !slip ? `<button class="btn btn-ghost adm-small" type="button" data-show-slip="${esc(o.id)}"><i class="fas fa-image"></i> View slip</button>` : ''}
+                ${ps === 'review' ? btn('paid', 'Payment received', 'fa-circle-check', false) + btn('rejected', 'Slip not OK', 'fa-circle-xmark') : ''}
+                ${ps === 'unpaid' || ps === 'rejected' ? btn('paid', 'Mark as paid (paid another way)', 'fa-hand-holding-dollar') : ''}
+                ${ps === 'paid' ? btn('refunded', 'Refund sent', 'fa-rotate-left') + btn('unpaid', 'Undo: not paid', 'fa-arrow-rotate-left') : ''}
+            </div>
+            ${ps === 'review' ? '<small class="adm-hint"><i class="fas fa-building-columns"></i> Open your bank app and check the money arrived before pressing Payment received — slip pictures can be faked.</small>' : ''}
+        </div>`;
+    }
+
     // the database emails the customer when an order moves to one of these (private.notify_customer_status)
     const EMAILED = ['confirmed', 'shipped', 'cancelled'];
 
@@ -158,7 +220,8 @@
 
     // ---------- render ----------
     function matches(o) {
-        if (filter !== 'all' && o.status !== filter) return false;
+        if (filter === 'pay:review') { if (o.payment_status !== 'review') return false; }
+        else if (filter !== 'all' && o.status !== filter) return false;
         if (!query) return true;
         const c = o.customer || {};
         const hay = [o.id, c.firstName, c.lastName, c.phone, c.email, c.address].join(' ').toLowerCase();
@@ -174,6 +237,8 @@
         $('cCancelled').textContent = count('cancelled');
         $('cPreparing').textContent = count('preparing');
         $('cDelivered').textContent = count('delivered');
+        $('cReview').textContent = orders.filter(o => o.payment_status === 'review').length;
+        $('tabReview').classList.toggle('attention', orders.some(o => o.payment_status === 'review'));
         $('stRevenue').textContent = money(orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total || 0), 0));
         if (view === 'sales') renderSales();
 
@@ -195,6 +260,7 @@
                     <div class="adm-who">
                         <strong>${esc(c.firstName)} ${esc(c.lastName)}</strong>
                         <small>#${esc(o.id.slice(0, 8))} · ${esc(when(o.created_at))}</small>
+                        <span class="adm-pay p-${esc(o.payment_status || 'unpaid')}">${esc(PAY_LABEL[o.payment_status] || 'Not paid')}</span>
                     </div>
                     <div class="adm-what">${esc(summary)}</div>
                     <div class="adm-total">${money(o.total)}</div>
@@ -216,6 +282,7 @@
                             ${Array.isArray(i.notes) && i.notes.length ? `<div class="adm-notes">${i.notes.map(esc).join('<br>')}</div>` : ''}
                         </div>`).join('')}
                     </div>
+                    ${payPanel(o)}
                     <div class="adm-actions">
                         <label>Status
                             <select data-status-for="${esc(o.id)}">
@@ -245,7 +312,7 @@
     const VIEWS = {
         orders: { eyebrow: 'Orders', title: 'Who ordered what' },
         sales: { eyebrow: 'Sales', title: 'Sales summary' },
-        prices: { eyebrow: 'Prices', title: 'Change prices here' },
+        prices: { eyebrow: 'Prices & payment', title: 'Change prices here' },
     };
     function showView(v) {
         if (!VIEWS[v]) return;
@@ -258,7 +325,7 @@
         $('viewEyebrow').textContent = VIEWS[v].eyebrow;
         $('viewTitle').textContent = VIEWS[v].title;
         if (v === 'sales') renderSales();
-        if (v === 'prices') loadPrices();
+        if (v === 'prices') { loadPrices().then(loadPayCfg); }
     }
 
     // ---------- sales summary ----------
@@ -292,7 +359,7 @@
             <div class="adm-stats">
                 <div class="adm-stat"><span>Revenue (not cancelled)</span><strong>${money(revenue)}</strong></div>
                 <div class="adm-stat"><span>Orders (not cancelled)</span><strong>${live.length}</strong></div>
-                <div class="adm-stat"><span>Average order</span><strong>${money(live.length ? revenue / live.length : 0)}</strong></div>
+                <div class="adm-stat"><span>Received (paid)</span><strong>${money(orders.filter(o => o.payment_status === 'paid').reduce((s, o) => s + Number(o.total || 0), 0))}</strong></div>
                 <div class="adm-stat"><span>Cancelled</span><strong>${orders.length - live.length}</strong></div>
             </div>
             <div class="adm-downloads">
@@ -323,11 +390,11 @@
     function download(kind) {
         const rows = [];
         if (kind === 'orders') {
-            rows.push(['Order #', 'Date (Bangkok)', 'Status', 'First name', 'Last name', 'Phone', 'Email', 'Address', 'Comments', 'Items', 'Total (THB)', 'Carrier', 'Tracking number']);
+            rows.push(['Order #', 'Date (Bangkok)', 'Status', 'First name', 'Last name', 'Phone', 'Email', 'Address', 'Comments', 'Items', 'Total (THB)', 'Payment', 'Paid at (Bangkok)', 'Carrier', 'Tracking number']);
             orders.forEach(o => {
                 const c = o.customer || {};
                 const items = (Array.isArray(o.items) ? o.items : []).map(i => i && i.name).filter(Boolean).join(' | ');
-                rows.push([o.id.slice(0, 8), dateTime(o.created_at), o.status, c.firstName, c.lastName, c.phone, c.email, c.address, c.comments, items, Number(o.total || 0), CARRIERS[o.carrier] || '', o.tracking_no || '']);
+                rows.push([o.id.slice(0, 8), dateTime(o.created_at), o.status, c.firstName, c.lastName, c.phone, c.email, c.address, c.comments, items, Number(o.total || 0), PAY_LABEL[o.payment_status] || '', o.paid_at ? dateTime(o.paid_at) : '', CARRIERS[o.carrier] || '', o.tracking_no || '']);
             });
         } else {
             rows.push(['Order #', 'Date (Bangkok)', 'Status', 'Box / kit', 'Item line', 'Pieces', 'Price (THB)']);
@@ -365,6 +432,7 @@
         prices = data || [];
         edits.clear();
         renderPrices();
+        return true;
     }
     function cfSort(a, b) { // cf:light:10 after cf:light:9
         const [, fa, ia] = a.key.split(':'), [, fb, ib] = b.key.split(':');
@@ -381,6 +449,7 @@
             </div>`;
         };
         box.innerHTML = `
+            <section class="adm-panel adm-paycfg" id="payCfg">${payCfgHtml()}</section>
             <p class="adm-note"><i class="fas fa-circle-info"></i> This is the only place prices live. A saved price is used straight away by the server for new orders, and shows on the website the next time a page is opened (carts in customers' browsers are re-priced too).</p>
             ${PRICE_GROUPS.map(g => {
                 const rows = prices.filter(r => r.key.startsWith(g.p) && !(g.p === 'cf:' && /:0$/.test(r.key)));
@@ -393,6 +462,52 @@
                 <button class="btn adm-small" type="button" id="savePrices"><i class="fas fa-floppy-disk"></i> Save prices</button>
             </div>`;
     }
+    // ---------- payment settings: the PromptPay number customers pay to ----------
+    let payCfg = null;
+    async function loadPayCfg() {
+        const { data, error } = await sb.rpc('get_payment_settings');
+        payCfg = error ? { error: error.message } : (data || {});
+        const el = $('payCfg');
+        if (el) el.innerHTML = payCfgHtml();
+    }
+    function payCfgHtml() {
+        if (!payCfg) return '<p class="adm-empty small">Loading payment settings…</p>';
+        if (payCfg.error) return `<p class="adm-empty small">Could not load payment settings: ${esc(payCfg.error)}</p>`;
+        const on = !!payCfg.promptpay_id;
+        const PP = window.PromptPay;
+        const test = on && PP ? PP.png(PP.payload(payCfg.promptpay_id, 1), 5) : null;
+        return `<h2><i class="fas fa-qrcode"></i> Payment settings (PromptPay) <small>${on ? 'Customers see a QR with the exact amount on their tracking page' : 'Off — customers are told the team will contact them about payment'}</small></h2>
+            <div class="adm-paycfg-grid">
+                <form id="payCfgForm" class="adm-paycfg-form" autocomplete="off">
+                    <label>PromptPay phone or 13-digit ID
+                        <input id="ppId" inputmode="numeric" maxlength="17" value="${esc(payCfg.promptpay_id || '')}" placeholder="08XXXXXXXX">
+                    </label>
+                    <label>Account name customers will see
+                        <input id="ppName" maxlength="80" value="${esc(payCfg.account_name || '')}" placeholder="As shown in your bank app">
+                    </label>
+                    <div class="adm-paycfg-btns">
+                        <button class="btn adm-small" type="submit"><i class="fas fa-floppy-disk"></i> Save</button>
+                        ${on ? '<button class="btn btn-ghost adm-small" type="button" id="ppOff"><i class="fas fa-power-off"></i> Turn off</button>' : ''}
+                    </div>
+                    <small class="adm-hint">${payCfg.updated_by ? `Last changed by ${esc(payCfg.updated_by)} · ${esc(when(payCfg.updated_at))}. ` : ''}Use a number that is linked to PromptPay in your bank app. Only admins can see or change this.</small>
+                </form>
+                ${test ? `<figure class="adm-paycfg-test"><img src="${test}" alt="Test QR for ฿1" width="150" height="150"><figcaption>Test: scan with your bank app — it should show <b>${esc(payCfg.account_name)}</b> and ฿1. You don't need to pay.</figcaption></figure>` : ''}
+            </div>`;
+    }
+    async function savePayCfg(off) {
+        const id = off ? '' : $('ppId').value;
+        const name = off ? '' : $('ppName').value;
+        if (off && !confirm('Turn off PromptPay? Customers will no longer see a QR.')) return;
+        const digits = id.replace(/\D/g, '');
+        if (!off && !/^(0\d{9}|\d{13})$/.test(digits)) { toast('Use a 10-digit phone (0XXXXXXXXX) or a 13-digit ID'); return; }
+        if (!off && !name.trim()) { toast('Add the account name customers will see'); return; }
+        const { data, error } = await sb.rpc('set_payment_settings', { p_promptpay: off ? null : digits, p_name: off ? null : name });
+        if (error) { toast('Could not save: ' + error.message); return; }
+        payCfg = data || {};
+        $('payCfg').innerHTML = payCfgHtml();
+        toast(off ? 'PromptPay turned off' : 'Saved — scan the test QR to check the name');
+    }
+
     function onPriceInput(input) {
         const key = input.dataset.priceKey;
         const r = prices.find(x => x.key === key);
@@ -429,6 +544,11 @@
         if (dl) { download(dl.dataset.download); return; }
         if (e.target.closest('#savePrices')) { savePrices(); return; }
         if (e.target.closest('#discardPrices')) { edits.clear(); renderPrices(); return; }
+        const pr = e.target.closest('[data-pay-result]');
+        if (pr) { payResult(pr.dataset.payFor, pr.dataset.payResult); return; }
+        const ss = e.target.closest('[data-show-slip]');
+        if (ss) { showSlip(ss.dataset.showSlip); return; }
+        if (e.target.closest('#ppOff')) { savePayCfg(true); return; }
         const st = e.target.closest('[data-save-tracking]');
         if (st) { saveTracking(st.dataset.saveTracking); return; }
         const row = e.target.closest('[data-toggle]');
@@ -445,6 +565,9 @@
             document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b === tab));
             render();
         }
+    });
+    document.addEventListener('submit', e => {
+        if (e.target.id === 'payCfgForm') { e.preventDefault(); savePayCfg(false); }
     });
     document.addEventListener('keydown', e => {
         const row = e.target.closest && e.target.closest('[data-toggle]');

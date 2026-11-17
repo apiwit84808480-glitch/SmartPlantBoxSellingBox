@@ -483,8 +483,8 @@ async function handleCheckout(e) {
     try {
         if (typeof window.placeOrder !== 'function') throw new Error(t('Ordering is temporarily unavailable', 'ระบบสั่งซื้อปิดชั่วคราว'));
         const result = await window.placeOrder(customer, items);
-        showToast(t(`Order received! Total ${baht(result.total)}. We will contact you within 24 hours.`,
-            `ได้รับคำสั่งซื้อแล้ว! ยอดรวม ${baht(result.total)} ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง`));
+        showToast(t(`Order received! Total ${baht(result.total)}. Opening your order to pay…`,
+            `ได้รับคำสั่งซื้อแล้ว! ยอดรวม ${baht(result.total)} กำลังเปิดหน้าชำระเงิน…`));
         cart = [];
         customOrderData = null;
         localStorage.removeItem('smartPlantCart');

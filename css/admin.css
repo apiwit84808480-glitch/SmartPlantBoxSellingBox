@@ -168,3 +168,31 @@ body.admin { min-height: 100vh; background: radial-gradient(60% 40% at 50% 0%, r
 .adm-status.s-cancelled { color: var(--faint); }
 /* phones: the seven status filters swipe sideways in one row instead of stacking */
 @media (max-width: 760px) { #tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; } #tabs::-webkit-scrollbar { display: none; } #tabs button { flex: none; } }
+
+/* PromptPay: payment state on each order, the slip, and the settings card */
+.adm-pay { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 999px; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--line-2); color: var(--muted); white-space: nowrap; }
+.adm-pay.p-review { color: #1a0610; background: var(--amber); border-color: var(--amber); }
+.adm-pay.p-paid { color: var(--leaf); border-color: rgba(143, 220, 138, 0.55); }
+.adm-pay.p-rejected { color: #ff8a8a; border-color: rgba(255, 107, 107, 0.5); }
+.adm-pay.p-refunded { color: var(--blue); border-color: rgba(106, 147, 255, 0.5); }
+.adm-pay-panel { display: grid; gap: 0.6rem; padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid var(--line-2); background: var(--bg-2); }
+.adm-pay-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.adm-pay-head .adm-pay { font-size: 0.72rem; padding: 0.2rem 0.65rem; }
+.adm-pay-head small { color: var(--muted); font-size: 0.8rem; }
+.adm-pay-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.adm-pay-actions:empty { display: none; }
+.adm-slip { justify-self: start; display: block; }
+.adm-slip img { display: block; max-width: min(320px, 100%); max-height: 460px; border-radius: 10px; border: 1px solid var(--line-2); background: #fff; }
+#tabReview.attention:not(.active) { color: var(--amber); }
+#tabReview.attention:not(.active) b { color: var(--amber); }
+.adm-paycfg h2 i { color: var(--amber); margin-right: 0.3rem; }
+.adm-paycfg-grid { display: flex; flex-wrap: wrap; gap: 1rem 1.6rem; align-items: flex-start; }
+.adm-paycfg-form { display: grid; gap: 0.7rem; flex: 1 1 320px; max-width: 520px; }
+.adm-paycfg-form label { display: grid; gap: 0.3rem; color: var(--muted); font-size: 0.8rem; }
+.adm-paycfg-form input { padding: 0.55rem 0.7rem; border-radius: 10px; border: 1px solid var(--line-2); background: var(--surface); color: var(--text); font: 500 0.95rem var(--sans); }
+.adm-paycfg-form input:focus { outline: 2px solid var(--pink); outline-offset: 1px; }
+.adm-paycfg-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.adm-paycfg-test { margin: 0; display: grid; gap: 0.4rem; width: 190px; }
+.adm-paycfg-test img { width: 150px; height: 150px; border-radius: 8px; image-rendering: pixelated; }
+.adm-paycfg-test figcaption { color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
+.adm-who .adm-pay { display: block; width: fit-content; margin-top: 0.3rem; }

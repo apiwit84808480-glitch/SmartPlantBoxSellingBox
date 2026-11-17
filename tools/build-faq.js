@@ -13,7 +13,7 @@ global.window = {};
 require(path.join(root, 'js', 'advisor-kb.js'));
 const K = window.__kb.TOPICS;
 
-const VERSION = process.argv[2] || '20261117c'; // cache tag for style.css / scripts
+const VERSION = process.argv[2] || '20261117d'; // cache tag for style.css / scripts
 
 const GROUPS = [
     { id: 'start', th: 'เริ่มต้น', en: 'Getting started', icon: 'fa-seedling', topics: ['how'] },

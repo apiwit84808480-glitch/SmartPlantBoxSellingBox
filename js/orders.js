@@ -31,7 +31,7 @@
         cancelled: L('Cancelled', 'ยกเลิกแล้ว'),
     };
     const NOW = {
-        new: L('We have your order. Our team will contact you within 24 hours to confirm the total and how to pay.', 'ได้รับคำสั่งซื้อแล้ว ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง เพื่อยืนยันยอดและวิธีชำระเงิน'),
+        new: L('We have your order. Our team will confirm it within 24 hours.', 'ได้รับคำสั่งซื้อแล้ว ทีมงานจะยืนยันคำสั่งซื้อภายใน 24 ชั่วโมง'),
         confirmed: L('Your order is confirmed. We are getting the parts ready.', 'ยืนยันคำสั่งซื้อแล้ว ทีมงานกำลังเตรียมชิ้นส่วนให้คุณ'),
         preparing: L('Our team is building and testing your box.', 'ทีมงานกำลังประกอบและทดสอบกล่องของคุณ'),
         shipped: L('Your box is on its way. Use the tracking number below with the carrier.', 'กล่องของคุณออกเดินทางแล้ว ใช้เลขพัสดุด้านล่างติดตามกับบริษัทขนส่งได้'),
@@ -46,6 +46,120 @@
         self: { name: L('Delivered by our team', 'ทีมงานจัดส่งเอง') },
         other: { name: L('Carrier', 'บริษัทขนส่ง') },
     };
+
+    // ---------- paying with PromptPay ----------
+    // unpaid → (customer attaches the slip) review → (team checks the bank app) paid · or rejected → attach again
+    const PAYABLE = ['new', 'confirmed', 'preparing'];
+    const payCache = new Map(); // "REF|mode|payment_status" -> public.order_payment result
+    let lookupPhone = '';
+
+    function payBox(o, mode) {
+        const ps = o.payment_status || 'unpaid';
+        if (ps === 'paid') return `<p class="trk-pay-done"><i class="fas fa-circle-check" aria-hidden="true"></i> ${esc(t('Payment received', 'ได้รับชำระเงินแล้ว'))}${o.paid_at ? ` · ${esc(day(o.paid_at))}` : ''}</p>`;
+        if (ps === 'refunded') return `<p class="trk-pay-done refunded"><i class="fas fa-rotate-left" aria-hidden="true"></i> ${esc(t('We have sent your money back', 'ทีมงานโอนเงินคืนให้คุณแล้ว'))}</p>`;
+        if (o.status === 'cancelled' || !PAYABLE.includes(o.status)) return '';
+        if (ps === 'review') return `<p class="trk-pay-wait"><i class="fas fa-hourglass-half" aria-hidden="true"></i> ${esc(t('Slip received — our team is checking it with the bank (usually within 24 hours).', 'ได้รับสลิปแล้ว ทีมงานกำลังตรวจสอบยอดเงิน (ปกติภายใน 24 ชั่วโมง)'))}</p>`;
+        return `<section class="trk-pay" data-pay-ref="${esc(refOf(o.id))}" data-pay-id="${esc(o.id)}" data-pay-mode="${mode === 'lookup' ? 'lookup' : 'own'}" data-pay-status="${esc(ps)}">
+            <p class="trk-loading"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></p></section>`;
+    }
+
+    function payHtml(p, mode, id, ref) {
+        if (!p || !p.payable) return '';
+        if (!p.ready) return `<p class="trk-msg"><i class="fas fa-circle-info" aria-hidden="true"></i> ${esc(t('Our team will contact you about how to pay.', 'ทีมงานจะติดต่อกลับเรื่องวิธีชำระเงิน'))}</p>`;
+        const PP = window.PromptPay;
+        const img = PP && PP.png(PP.payload(p.promptpay_id, p.amount), 8);
+        const amt = money(p.amount);
+        return `<h3><i class="fas fa-qrcode" aria-hidden="true"></i> ${esc(t('Pay with PromptPay', 'ชำระเงินด้วยพร้อมเพย์'))}</h3>
+            ${p.payment_status === 'rejected' ? `<p class="trk-pay-bad"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> <span>${esc(t('We could not match your last slip with a payment. Check the amount, then attach the slip again.', 'สลิปล่าสุดยังตรวจสอบไม่ผ่าน กรุณาเช็กยอดเงินแล้วแนบสลิปใหม่อีกครั้ง'))}${p.payment_note ? `<br><small>${esc(t('Note from our team', 'หมายเหตุจากทีมงาน'))}: ${esc(p.payment_note)}</small>` : ''}</span></p>` : ''}
+            <div class="trk-pay-grid">
+                <figure class="trk-qr">
+                    ${img ? `<img src="${img}" alt="${esc(t('PromptPay QR code for', 'QR พร้อมเพย์ ยอด'))} ${esc(amt)}" width="232" height="232">` : `<p class="trk-error">${esc(t('Could not draw the QR. Please refresh the page.', 'สร้าง QR ไม่สำเร็จ กรุณารีเฟรชหน้า'))}</p>`}
+                    <figcaption><b>PromptPay</b> · ${esc(amt)}</figcaption>
+                </figure>
+                <div class="trk-pay-info">
+                    <dl>
+                        <dt>${esc(t('Amount to pay', 'ยอดที่ต้องชำระ'))}</dt><dd class="trk-pay-amt">${esc(amt)}</dd>
+                        <dt>${esc(t('Account name', 'ชื่อบัญชีผู้รับ'))}</dt><dd>${esc(p.account_name)}</dd>
+                        <dt>${esc(t('PromptPay number', 'พร้อมเพย์'))}</dt><dd>${esc(PP ? PP.pretty(p.promptpay_id) : '')}</dd>
+                    </dl>
+                    <ol class="trk-pay-steps">
+                        <li>${esc(t('Scan the QR with any Thai bank app — or save the picture and open it with the app\'s "scan from photo".', 'สแกน QR ด้วยแอปธนาคารไหนก็ได้ หรือบันทึกรูป QR แล้วเปิดด้วยเมนู "สแกนจากรูปภาพ" ในแอป'))}</li>
+                        <li>${esc(t('Check the name and amount match, then pay.', 'ตรวจชื่อบัญชีและยอดเงินให้ตรง แล้วกดชำระ'))}</li>
+                        <li>${esc(t('Attach the slip here so our team can check it.', 'แนบสลิปที่นี่ เพื่อให้ทีมงานตรวจสอบ'))}</li>
+                    </ol>
+                    <div class="trk-pay-actions">
+                        ${img ? `<a class="trk-btn ghost" href="${img}" download="smartplantbox-${esc(ref)}-promptpay.png"><i class="fas fa-download" aria-hidden="true"></i> ${esc(t('Save QR', 'บันทึกรูป QR'))}</a>` : ''}
+                        ${mode === 'own' ? `<label class="trk-btn"><i class="fas fa-paperclip" aria-hidden="true"></i> ${esc(t('Attach slip', 'แนบสลิป'))}<input type="file" accept="image/*" data-slip-for="${esc(id)}" hidden></label>` : ''}
+                    </div>
+                    ${mode === 'own' ? '' : `<p class="trk-hint">${esc(t('To attach the slip, open this page on the device you ordered with — or send the slip to our team through Contact us.', 'แนบสลิปได้จากเครื่องที่ใช้สั่งซื้อ หรือส่งสลิปให้ทีมงานทางหน้าติดต่อเรา'))}</p>`}
+                </div>
+            </div>`;
+    }
+
+    // ask the database what to pay (the amount never comes from this page), then draw the QR
+    async function hydratePay(root) {
+        if (!sb) return;
+        for (const el of (root || document).querySelectorAll('[data-pay-ref]')) {
+            const { payRef: ref, payId: id, payMode: mode, payStatus: ps } = el.dataset;
+            const key = `${ref}|${mode}|${ps}`;
+            let p = payCache.get(key);
+            if (!p) {
+                const { data, error } = await sb.rpc('order_payment', mode === 'own' ? { p_ref: ref } : { p_ref: ref, p_phone: lookupPhone });
+                if (error) { el.innerHTML = `<p class="trk-error">${esc(t('Could not load payment details. Please refresh.', 'โหลดข้อมูลการชำระเงินไม่สำเร็จ กรุณารีเฟรช'))}</p>`; continue; }
+                p = data || { payable: false };
+                payCache.set(key, p);
+            }
+            if (!el.isConnected) continue;
+            const html = payHtml(p, mode, id, ref);
+            if (html) el.innerHTML = html; else el.remove();
+        }
+    }
+
+    // phone photos can be huge and carry the location: redraw as a plain JPEG, at most 1600 px
+    function toJpeg(file) {
+        return new Promise(resolve => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+                const c = document.createElement('canvas');
+                c.width = Math.max(1, Math.round(img.naturalWidth * k));
+                c.height = Math.max(1, Math.round(img.naturalHeight * k));
+                const g = c.getContext('2d');
+                g.fillStyle = '#fff';
+                g.fillRect(0, 0, c.width, c.height);
+                g.drawImage(img, 0, 0, c.width, c.height);
+                URL.revokeObjectURL(url);
+                c.toBlob(b => resolve(b), 'image/jpeg', 0.85);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+            img.src = url;
+        });
+    }
+
+    async function uploadSlip(input) {
+        const file = input.files && input.files[0];
+        const id = input.dataset.slipFor;
+        input.value = '';
+        if (!file || !user || !sb) return;
+        if (!/^image\//.test(file.type) || file.size > 25e6) { note(t('Please choose a picture of the slip (JPG or PNG)', 'กรุณาเลือกรูปสลิป (JPG หรือ PNG)')); return; }
+        const btn = input.closest('.trk-btn');
+        if (btn) btn.classList.add('busy');
+        note(t('Sending your slip…', 'กำลังส่งสลิป…'));
+        const fail = msg => { if (btn) btn.classList.remove('busy'); note(msg); };
+        const jpg = await toJpeg(file);
+        if (!jpg) return fail(t('Could not read this picture. Try a screenshot of the slip instead.', 'อ่านรูปนี้ไม่ได้ ลองใช้รูปแคปหน้าจอสลิปแทน'));
+        if (jpg.size > 5e6) return fail(t('The picture is too large. Try a screenshot of the slip.', 'รูปใหญ่เกินไป ลองใช้รูปแคปหน้าจอสลิปแทน'));
+        const path = `${user.id}/${id}/${Date.now()}.jpg`;
+        const up = await sb.storage.from('slips').upload(path, jpg, { contentType: 'image/jpeg', upsert: false });
+        if (up.error) return fail(t('Could not send the slip. Please try again.', 'ส่งสลิปไม่สำเร็จ กรุณาลองใหม่'));
+        const { error } = await sb.rpc('submit_slip', { p_order: id, p_path: path });
+        if (error) return fail(t('Could not send the slip. Please try again.', 'ส่งสลิปไม่สำเร็จ กรุณาลองใหม่'));
+        const o = orders.find(x => x.id === id);
+        if (o) o.payment_status = 'review';
+        renderMine();
+        note(t('Slip sent — our team will check it soon', 'ส่งสลิปแล้ว ทีมงานจะตรวจสอบโดยเร็ว'));
+    }
 
     // when each step happened (the latest time a step was reached)
     function stepTimes(o) {
@@ -90,6 +204,7 @@
             </header>
             ${tracker(st, at)}
             ${st !== 'cancelled' ? `<p class="trk-msg"><i class="fas fa-circle-info" aria-hidden="true"></i> ${esc(T(NOW[st]))}</p>` : ''}
+            ${payBox(o, opts.mode)}
             ${trackingBox(o)}
             <details class="trk-items"${opts.openItems ? ' open' : ''}>
                 <summary>${esc(t('Items', 'รายการสินค้า'))} (${items.length}) <i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
@@ -121,7 +236,8 @@
             $('trkPlacedRef').textContent = '#' + placed;
         }
         if (orders.length) {
-            box.innerHTML = orders.map(o => card(o, { highlight: refOf(o.id) === placed || refOf(o.id) === wantRef, openItems: refOf(o.id) === placed })).join('');
+            box.innerHTML = orders.map(o => card(o, { mode: 'own', highlight: refOf(o.id) === placed || refOf(o.id) === wantRef, openItems: refOf(o.id) === placed })).join('');
+            hydratePay(box);
             return;
         }
         const guest = user && user.is_anonymous;
@@ -141,7 +257,7 @@
         const box = $('trkMine');
         if (!user) { orders = []; renderMine(); return; }
         const { data, error } = await sb.from('orders')
-            .select('id, created_at, status, status_log, items, total, carrier, tracking_no')
+            .select('id, created_at, status, status_log, items, total, carrier, tracking_no, payment_status, payment_note, paid_at')
             .eq('user_id', user.id).order('created_at', { ascending: false }).limit(30);
         if (error) { box.innerHTML = `<p class="trk-error">${esc(t('Could not load your orders. Please try again.', 'โหลดคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่'))}</p>`; return; }
         orders = data || [];
@@ -158,10 +274,11 @@
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: 'user_id=eq.' + user.id }, payload => {
                 const i = orders.findIndex(o => o.id === payload.new.id);
                 if (i < 0) return;
-                const was = orders[i].status;
+                const was = orders[i].status, wasPay = orders[i].payment_status;
                 orders[i] = Object.assign({}, orders[i], payload.new);
                 renderMine();
                 if (was !== payload.new.status) note(t('Order', 'คำสั่งซื้อ') + ' #' + refOf(payload.new.id) + ' → ' + T(BADGE[payload.new.status] || BADGE.new));
+                else if (wasPay !== payload.new.payment_status && payload.new.payment_status === 'paid') note(t('Payment received — thank you!', 'ได้รับชำระเงินแล้ว ขอบคุณที่สนับสนุนเรา'));
             })
             .subscribe();
     }
@@ -189,9 +306,11 @@
         const { data, error } = await sb.rpc('track_order', { p_ref: ref, p_phone: phone });
         btn.disabled = false;
         if (error) { out.innerHTML = `<p class="trk-error">${esc(t('Could not search right now. Please try again.', 'ค้นหาไม่ได้ในขณะนี้ กรุณาลองใหม่'))}</p>`; return; }
+        lookupPhone = phone;
         out.innerHTML = data
-            ? card(data, { highlight: true, openItems: true })
+            ? card(data, { mode: 'lookup', highlight: true, openItems: true })
             : `<p class="trk-error">${esc(t('No order matches that number and phone. Check both and try again.', 'ไม่พบคำสั่งซื้อที่ตรงกับเลขและเบอร์โทรนี้ ลองตรวจสอบอีกครั้ง'))}</p>`;
+        if (data) hydratePay(out);
     }
 
     document.addEventListener('click', async e => {
@@ -205,6 +324,11 @@
             const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/orders/' } });
             if (error) note(t('Google sign-in is not available right now', 'เข้าสู่ระบบด้วย Google ไม่ได้ในขณะนี้'));
         }
+    });
+
+    document.addEventListener('change', e => {
+        const f = e.target.closest('[data-slip-for]');
+        if (f) uploadSlip(f);
     });
 
     function start() {

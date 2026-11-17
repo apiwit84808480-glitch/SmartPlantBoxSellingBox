@@ -46,7 +46,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@200;300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="css/style.css?v=20261117c">
+    <link rel="stylesheet" href="css/style.css?v=20261117d">
     <script>
         // If the 3D scene can't load (old browser / blocked CDN), show the photo version of the hero.
         setTimeout(function () { if (!window.__boxSceneReady) document.documentElement.classList.add('no-webgl'); }, 8000);
@@ -497,7 +497,7 @@
                         <input type="file" id="designFile" accept=".pdf,.dwg,.stl,.obj,.png,.jpg">
                     </div>
                     <div class="summary-box" id="orderSummary"></div>
-                    <p class="order-note" data-th="ราคาทั้งหมดเป็นเงินบาท (฿) ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมงเพื่อยืนยันยอดและการจัดส่งก่อนชำระเงิน">All prices are in Thai baht (฿). We'll contact you within 24 hours to confirm the total and delivery before you pay.</p>
+                    <p class="order-note" data-th="ราคาทั้งหมดเป็นเงินบาท (฿) หลังกดสั่งซื้อ คุณจะได้ QR พร้อมเพย์พร้อมยอดเงินในหน้าติดตามคำสั่งซื้อ สแกนจ่ายแล้วแนบสลิปได้ทันที">All prices are in Thai baht (฿). After you order, your tracking page shows a PromptPay QR with the exact amount — scan to pay, then attach the slip.</p>
                     <label class="order-consent"><input type="checkbox" id="orderConsent" data-consent-box>
                         <span data-th="ฉันได้อ่านและยอมรับ<a href=&quot;/privacy/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>นโยบายความเป็นส่วนตัวและคุกกี้</a>">I have read and accept the <a href="/privacy/" target="_blank" rel="noopener">privacy and cookie policy</a></span></label>
                     <div class="form-actions">
@@ -919,18 +919,18 @@
     </footer>
 
     <!-- Browsers keep JS/CSS for 4 hours: change ?v= (here, on style.css, and in admin/) whenever those files change -->
-    <script src="js/i18n.js?v=20261117c"></script>
-    <script src="js/main.js?v=20261117c"></script>
-    <script src="js/cart.js?v=20261117c"></script>
-    <script src="js/usecases.js?v=20261117c"></script>
-    <script src="js/advisor-kb.js?v=20261117c"></script>
-    <script src="js/advisor.js?v=20261117c"></script>
+    <script src="js/i18n.js?v=20261117d"></script>
+    <script src="js/main.js?v=20261117d"></script>
+    <script src="js/cart.js?v=20261117d"></script>
+    <script src="js/usecases.js?v=20261117d"></script>
+    <script src="js/advisor-kb.js?v=20261117d"></script>
+    <script src="js/advisor.js?v=20261117d"></script>
     <!-- live prices from the database (edited on /admin → Prices) -->
-    <script src="js/prices.js?v=20261117c"></script>
+    <script src="js/prices.js?v=20261117d"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
-    <script src="js/auth.js?v=20261117c"></script>
-    <script src="js/ui.js?v=20261117c"></script>
-    <script src="js/consent.js?v=20261117c"></script>
-    <script type="module" src="js/scene.js?v=20261117c"></script>
+    <script src="js/auth.js?v=20261117d"></script>
+    <script src="js/ui.js?v=20261117d"></script>
+    <script src="js/consent.js?v=20261117d"></script>
+    <script type="module" src="js/scene.js?v=20261117d"></script>
 </body>
 </html>

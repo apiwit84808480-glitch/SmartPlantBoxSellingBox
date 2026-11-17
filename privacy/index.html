@@ -26,7 +26,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="/css/style.css?v=20261117c">
+    <link rel="stylesheet" href="/css/style.css?v=20261117d">
 </head>
 <body class="pv-page">
     <header class="pv-bar">
@@ -43,7 +43,7 @@
         <article class="pv-doc pv-th" lang="th">
             <p class="pv-eyebrow">PDPA · พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562</p>
             <h1>นโยบายความเป็นส่วนตัวและคุกกี้</h1>
-            <p class="pv-updated">ปรับปรุงล่าสุด 15 พฤศจิกายน 2569</p>
+            <p class="pv-updated">ปรับปรุงล่าสุด 17 พฤศจิกายน 2569</p>
 
 
             <section>
@@ -56,6 +56,7 @@
                 <ul>
                     <li><b>เมื่อสั่งซื้อ:</b> ชื่อ นามสกุล เบอร์โทร อีเมล ที่อยู่จัดส่ง หมายเหตุที่คุณพิมพ์ และรายการสินค้ากับยอดรวม</li>
                     <li><b>เมื่อเข้าสู่ระบบด้วย Google:</b> ชื่อ อีเมล และรูปโปรไฟล์จากบัญชี Google ของคุณ เราไม่เห็นรหัสผ่านของคุณ</li>
+                    <li><b>เมื่อชำระเงิน:</b> รูปสลิปโอนเงินที่คุณแนบ ซึ่งมีชื่อผู้โอน ธนาคาร วันเวลา และยอดเงิน (ก่อนส่ง เว็บจะย่อรูปและลบข้อมูลแฝงในรูป เช่น ตำแหน่งที่ถ่าย) เราไม่เก็บเลขบัตรหรือรหัสผ่านธนาคารของคุณ</li>
                     <li><b>เมื่อสั่งซื้อโดยไม่เข้าสู่ระบบ:</b> ระบบสร้างบัญชีชั่วคราวแบบไม่ระบุตัวตนในเบราว์เซอร์ของคุณ เพื่อให้คุณดูคำสั่งซื้อของตัวเองได้</li>
                     <li><b>เมื่อใช้แชท AI ออกแบบกล่อง:</b> ข้อความที่คุณพิมพ์จะถูกส่งไปให้ AI ประมวลผล เราไม่ได้บันทึกข้อความแชทลงฐานข้อมูล แต่เก็บค่าแฮชของที่อยู่ IP (แปลงกลับเป็น IP ไม่ได้) เพื่อนับจำนวนคำถามต่อวัน</li>
                 </ul>
@@ -67,6 +68,7 @@
                     <li>ติดต่อยืนยันยอด และจัดส่งสินค้าตามคำสั่งซื้อ</li>
                     <li>แจ้งทีมงานทางอีเมลเมื่อมีคำสั่งซื้อใหม่</li>
                     <li>ส่งอีเมลแจ้งคุณเมื่อสถานะคำสั่งซื้อเปลี่ยน (ยืนยันแล้ว จัดส่งแล้ว หรือยกเลิก) โดยในอีเมลมีเฉพาะเลขคำสั่งซื้อ รายการสินค้า และยอดรวม</li>
+                    <li>แสดง QR พร้อมเพย์พร้อมยอดเงินของคำสั่งซื้อ ตรวจสอบสลิปที่คุณแนบ และส่งอีเมลแจ้งเมื่อได้รับเงิน เมื่อสลิปตรวจสอบไม่ผ่าน หรือเมื่อคืนเงินแล้ว</li>
                     <li>ให้คุณติดตามสถานะคำสั่งซื้อของตัวเองที่หน้าติดตามคำสั่งซื้อ รวมถึงบริษัทขนส่งและเลขพัสดุเมื่อจัดส่งแล้ว การค้นหาด้วยเลขคำสั่งซื้อและเบอร์โทรจะแสดงเฉพาะสถานะ รายการสินค้า และเลขพัสดุ ไม่แสดงชื่อหรือที่อยู่</li>
                     <li>จำกัดจำนวนคำถามที่ส่งให้ AI และป้องกันการใช้งานผิดปกติ</li>
                 </ul>
@@ -80,7 +82,7 @@
                     <table class="pv-table">
                         <thead><tr><th>ผู้ให้บริการ</th><th>ใช้ทำอะไร</th></tr></thead>
                         <tbody>
-                            <tr><td>Supabase</td><td>ฐานข้อมูลคำสั่งซื้อและระบบเข้าสู่ระบบ (เซิร์ฟเวอร์ที่สิงคโปร์)</td></tr>
+                            <tr><td>Supabase</td><td>ฐานข้อมูลคำสั่งซื้อ รูปสลิปโอนเงิน (เปิดดูได้เฉพาะทีมงาน) และระบบเข้าสู่ระบบ (เซิร์ฟเวอร์ที่สิงคโปร์)</td></tr>
                             <tr><td>Cloudflare</td><td>โฮสต์และส่งหน้าเว็บไซต์</td></tr>
                             <tr><td>Resend</td><td>ส่งอีเมลแจ้งคำสั่งซื้อใหม่ถึงทีมงาน (มีชื่อ เบอร์โทร อีเมล และที่อยู่) และอีเมลแจ้งสถานะคำสั่งซื้อถึงคุณ</td></tr>
                             <tr><td>Google</td><td>เข้าสู่ระบบด้วย Google และ AI Gemini ที่อ่านข้อความในแชทออกแบบกล่อง</td></tr>
@@ -110,7 +112,7 @@
 
             <section>
                 <h2>6. เราเก็บข้อมูลไว้นานแค่ไหน</h2>
-                <p>เราเก็บข้อมูลคำสั่งซื้อไว้เท่าที่จำเป็นสำหรับการจัดส่ง การรับประกัน และการทำบัญชี และจะลบเมื่อไม่จำเป็นแล้ว หรือเมื่อคุณขอให้ลบ หากไม่ติดหน้าที่ตามกฎหมาย ตัวนับจำนวนคำถาม AI เป็นแบบรายวัน</p>
+                <p>เราเก็บข้อมูลคำสั่งซื้อไว้เท่าที่จำเป็นสำหรับการจัดส่ง การรับประกัน และการทำบัญชี และจะลบเมื่อไม่จำเป็นแล้ว หรือเมื่อคุณขอให้ลบ หากไม่ติดหน้าที่ตามกฎหมาย รูปสลิปเก็บไว้เป็นหลักฐานการชำระเงินตามระยะเวลาเดียวกับคำสั่งซื้อ ตัวนับจำนวนคำถาม AI เป็นแบบรายวัน</p>
             </section>
 
             <section>
@@ -135,8 +137,20 @@
                 <p>ส่งอีเมลถึงหัวหน้าโครงงานที่ <a href="mailto:natapat.pooh@gmail.com">natapat.pooh@gmail.com</a> หรือดูช่องทางอื่นที่หน้า <a href="/?page=contact">ติดต่อ</a> ของเว็บไซต์ เราจะตอบกลับโดยเร็ว</p>
             </section>
 
+            <section id="payment">
+                <h2>10. การชำระเงินและการคืนเงิน</h2>
+                <ul>
+                    <li><b>วิธีชำระเงิน:</b> พร้อมเพย์ โดยสแกน QR ในหน้าติดตามคำสั่งซื้อ ยอดเงินใน QR คำนวณจากระบบตามราคาสินค้า แล้วแนบสลิปไว้ในหน้าเดียวกัน ทีมงานจะตรวจยอดเงินกับบัญชีธนาคารภายใน 24 ชั่วโมง</li>
+                    <li><b>ก่อนโอน:</b> ตรวจให้ชื่อบัญชีผู้รับตรงกับที่แสดงบนหน้าเว็บ ทีมงานจะไม่ขอให้คุณโอนเงินไปบัญชีอื่นทางแชทหรือโทรศัพท์</li>
+                    <li><b>ยอดไม่ตรง:</b> ถ้าโอนขาด ทีมงานจะแจ้งให้โอนส่วนที่เหลือ ถ้าโอนเกิน ทีมงานจะโอนส่วนเกินคืน</li>
+                    <li><b>ยกเลิกก่อนจัดส่ง:</b> คืนเงินเต็มจำนวนภายใน 7 วัน ไม่ว่าคุณขอยกเลิกเอง หรือเรายกเลิกเพราะทำสินค้าให้ไม่ได้</li>
+                    <li><b>หลังได้รับสินค้า:</b> ถ้าสินค้าเสียหายจากการขนส่งหรือไม่ตรงกับที่สั่ง แจ้งทีมงานภายใน 7 วันหลังได้รับ พร้อมรูปถ่าย เราจะซ่อม เปลี่ยน หรือคืนเงินให้</li>
+                    <li><b>วิธีคืนเงิน:</b> ทีมงานจะติดต่อขอบัญชีหรือพร้อมเพย์ที่จะรับเงินคืน แล้วโอนคืนโดยไม่มีค่าธรรมเนียม และส่งอีเมลแจ้งเมื่อโอนแล้ว</li>
+                </ul>
+            </section>
+
             <section>
-                <h2>10. การเปลี่ยนแปลงนโยบาย</h2>
+                <h2>11. การเปลี่ยนแปลงนโยบาย</h2>
                 <p>หากเราปรับนโยบายนี้ จะแก้วันที่ "ปรับปรุงล่าสุด" ด้านบน และแจ้งในหน้านี้</p>
             </section>
         </article>
@@ -145,7 +159,7 @@
         <article class="pv-doc pv-en" lang="en">
             <p class="pv-eyebrow">PDPA · Thailand Personal Data Protection Act B.E. 2562 (2019)</p>
             <h1>Privacy &amp; Cookie Policy</h1>
-            <p class="pv-updated">Last updated 15 November 2026</p>
+            <p class="pv-updated">Last updated 17 November 2026</p>
 
 
             <section>
@@ -158,6 +172,7 @@
                 <ul>
                     <li><b>When you order:</b> first and last name, phone, email, delivery address, any comments you type, and the items and total.</li>
                     <li><b>When you sign in with Google:</b> your name, email and profile picture from Google. We never see your password.</li>
+                    <li><b>When you pay:</b> the transfer slip picture you attach, which shows the payer's name, bank, date, time and amount (before sending, the site shrinks the picture and removes hidden details such as where it was taken). We never store card numbers or bank passwords.</li>
                     <li><b>When you order without signing in:</b> a temporary anonymous account is created in your browser so you can see your own orders.</li>
                     <li><b>When you use the AI box designer:</b> what you type is sent to an AI to read. We don't store chat messages in our database; we keep a one-way hash of your IP address to count questions per day.</li>
                 </ul>
@@ -169,6 +184,7 @@
                     <li>To confirm the total with you and deliver your order.</li>
                     <li>To email our team when a new order arrives.</li>
                     <li>To email you when your order status changes (confirmed, shipped or cancelled) — with only the order number, items and total.</li>
+                    <li>To show a PromptPay QR with your order's amount, check the slip you attach, and email you when your payment is received, when a slip can't be matched, or when a refund is sent.</li>
                     <li>To let you follow your order on the tracking page, including the carrier and tracking number once it ships. Looking an order up with its number and phone shows only the status, items and tracking — never your name or address.</li>
                     <li>To limit AI questions and prevent abuse.</li>
                 </ul>
@@ -182,7 +198,7 @@
                     <table class="pv-table">
                         <thead><tr><th>Provider</th><th>Used for</th></tr></thead>
                         <tbody>
-                            <tr><td>Supabase</td><td>Order database and sign-in (servers in Singapore)</td></tr>
+                            <tr><td>Supabase</td><td>Order database, payment slips (only our team can open them) and sign-in (servers in Singapore)</td></tr>
                             <tr><td>Cloudflare</td><td>Hosting and serving the website</td></tr>
                             <tr><td>Resend</td><td>Emailing new-order alerts to our team (name, phone, email and address), and order-status emails to you</td></tr>
                             <tr><td>Google</td><td>Sign in with Google, and the Gemini AI that reads the box-designer chat</td></tr>
@@ -212,7 +228,7 @@
 
             <section>
                 <h2>6. How long we keep it</h2>
-                <p>We keep order data only as long as needed for delivery, warranty and bookkeeping, and delete it when no longer needed or when you ask (unless the law requires us to keep it). AI question counters are daily.</p>
+                <p>We keep order data only as long as needed for delivery, warranty and bookkeeping, and delete it when no longer needed or when you ask (unless the law requires us to keep it). Payment slips are kept as proof of payment for as long as the order. AI question counters are daily.</p>
             </section>
 
             <section>
@@ -237,8 +253,20 @@
                 <p>Email our project leader at <a href="mailto:natapat.pooh@gmail.com">natapat.pooh@gmail.com</a>, or see the other channels on our <a href="/?page=contact">Contact</a> page. We'll reply as soon as we can.</p>
             </section>
 
+            <section id="payment-en">
+                <h2>10. Payment and refunds</h2>
+                <ul>
+                    <li><b>How to pay:</b> PromptPay — scan the QR on your order's tracking page. The amount in the QR is worked out by our system from the product prices. Attach the slip on the same page; our team checks it against the bank account within 24 hours.</li>
+                    <li><b>Before you transfer:</b> make sure the account name matches the one shown on the page. Our team will never ask you to transfer to a different account by chat or phone.</li>
+                    <li><b>Wrong amount:</b> if you paid too little we'll ask for the rest; if you paid too much we'll send the difference back.</li>
+                    <li><b>Cancelled before shipping:</b> full refund within 7 days — whether you cancel or we cancel because we can't make the box.</li>
+                    <li><b>After delivery:</b> if the box was damaged in transit or isn't what you ordered, tell us within 7 days of receiving it, with photos, and we'll repair, replace or refund it.</li>
+                    <li><b>How refunds are paid:</b> our team contacts you for the account or PromptPay to refund to, transfers the money back with no fee, and emails you when it's sent.</li>
+                </ul>
+            </section>
+
             <section>
-                <h2>10. Changes</h2>
+                <h2>11. Changes</h2>
                 <p>If we change this policy we'll update the "last updated" date above.</p>
             </section>
         </article>
@@ -258,8 +286,8 @@
         <a class="pv-faq-link" href="/faq/"><i class="fas fa-circle-question" aria-hidden="true"></i> <span class="pv-th">คำถามที่พบบ่อย</span><span class="pv-en">FAQ</span></a>
     </footer>
 
-    <script src="/js/i18n.js?v=20261117c"></script>
-    <script src="/js/consent.js?v=20261117c"></script>
+    <script src="/js/i18n.js?v=20261117d"></script>
+    <script src="/js/consent.js?v=20261117d"></script>
     <script>
         // what ticking / unticking the box means
         (function () {
